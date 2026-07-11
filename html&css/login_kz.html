@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кіру | kz-maxx</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <div class="top-left">
+                <h1 class="logo">
+                    <a href="website_kz.html">kz<span>-</span>maxx</a>
+                </h1>
+
+                <div class="header-contacts">
+                    <a href="https://codeforces.com/profile/Teeleu" target="_blank">📊 Codeforces</a>
+                    <a href="https://t.me/+qaJOFXS6IlYyMjIy" target="_blank">✈️ Telegram</a>
+                </div>
+            </div>
+
+            <div class="top-menu">
+                <div class="langs">
+                    <a class="lang" href="login.html">RU</a>
+                    <a class="lang active" href="login_kz.html">KZ</a>
+                </div>
+
+                <a class="top-btn" href="website_kz.html">Басты бет</a>
+                <a class="top-btn" href="chat_kz.html">Чат</a>
+                <a class="top-btn" href="members_kz.html">Қатысушылар</a>
+                <a class="top-btn blue" href="register.html">Тіркелу</a>
+            </div>
+        </header>
+
+        <main class="auth-page">
+            <section class="auth-card">
+                <h1>Кіру</h1>
+                <p>Аккаунтқа nickname және пароль арқылы кір</p>
+
+                <label for="nicknameInput">Nickname</label>
+                <input id="nicknameInput" class="auth-input" type="text" placeholder="Мысалы: Teeleu">
+
+                <label for="passwordInput">Пароль</label>
+
+                <div class="password-row">
+                    <input id="passwordInput" class="auth-input" type="password" placeholder="Пароль енгіз">
+                    <button id="showPasswordBtn" type="button">👁</button>
+                </div>
+
+                <button id="loginBtn" class="auth-main-btn">Кіру</button>
+
+                <p id="statusText" class="auth-status"></p>
+
+                <div class="auth-bottom">
+                    <span>Аккаунтың жоқ па?</span>
+                    <a href="register.html">Тіркелу</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://jelwhsfcjyqlaxomipam.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_cefK5xE4WT4fltCdlsfV_A_BwlEJKbZ";
+
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const nicknameInput = document.getElementById("nicknameInput");
+        const passwordInput = document.getElementById("passwordInput");
+        const loginBtn = document.getElementById("loginBtn");
+        const statusText = document.getElementById("statusText");
+        const showPasswordBtn = document.getElementById("showPasswordBtn");
+
+        function setStatus(text, type) {
+            statusText.textContent = text;
+            statusText.className = "auth-status " + type;
+        }
+
+        async function checkSession() {
+            const result = await db.auth.getSession();
+
+            if (result.data.session) {
+                setStatus("Сен аккаунтқа кіріп тұрсың", "success");
+            }
+        }
+
+        async function findEmailByNickname(nickname) {
+            const result = await db
+                .from("profiles")
+                .select("email, name")
+                .ilike("name", nickname.trim())
+                .limit(1);
+
+            if (result.error) {
+                console.log(result.error);
+                return null;
+            }
+
+            if (!result.data || result.data.length === 0 || !result.data[0].email) {
+                return null;
+            }
+
+            return result.data[0].email;
+        }
+
+        async function login() {
+            const nickname = nicknameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!nickname || !password) {
+                setStatus("Nickname және пароль енгіз", "error");
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = "Кіріп жатыр...";
+
+            setStatus("Аккаунт тексеріліп жатыр...", "info");
+
+            const email = await findEmailByNickname(nickname);
+
+            if (!email) {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Кіру";
+
+                setStatus("Мұндай nickname бар аккаунт табылмады", "error");
+                return;
+            }
+
+            const result = await db.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Кіру";
+
+            if (result.error) {
+                console.log(result.error);
+                setStatus("Nickname немесе пароль қате", "error");
+                return;
+            }
+
+            setStatus("Сәтті кірдің. Басты бетке өтеміз...", "success");
+
+            setTimeout(() => {
+                window.location.href = "website_kz.html";
+            }, 700);
+        }
+
+        loginBtn.addEventListener("click", login);
+
+        passwordInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+
+        nicknameInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+                passwordInput.focus();
+            }
+        });
+
+        showPasswordBtn.addEventListener("click", () => {
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                showPasswordBtn.textContent = "🙈";
+            } else {
+                passwordInput.type = "password";
+                showPasswordBtn.textContent = "👁";
+            }
+        });
+
+        checkSession();
+    </script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>
