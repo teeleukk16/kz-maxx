@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача о рюкзаке | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="knapsack.html">RU</a>
+                    <a class="lang" href="knapsack_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Задача о рюкзаке</h1>
+            <p>0/1 Knapsack: рекурсия, мемоизация, итеративный DP и оптимизация памяти</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое задача о рюкзаке?</h2>
+
+                <p>
+                    <b>Задача о рюкзаке</b> — это классическая задача динамического программирования.
+                </p>
+
+                <p>
+                    Есть <b>n</b> предметов.
+                    У каждого предмета есть:
+                </p>
+
+                <ul>
+                    <li><b>weight[i]</b> — вес предмета</li>
+                    <li><b>value[i]</b> — ценность предмета</li>
+                </ul>
+
+                <p>
+                    Есть рюкзак вместимостью <b>W</b>.
+                    Нужно выбрать некоторые предметы так, чтобы:
+                </p>
+
+                <div class="scheme">
+                    общий вес ≤ W<br>
+                    общая ценность была максимальной
+                </div>
+
+                <div class="note">
+                    В 0/1 knapsack каждый предмет можно взять максимум один раз:
+                    либо берем предмет, либо не берем.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Простой пример</h2>
+
+                <p>
+                    Пусть вместимость рюкзака:
+                </p>
+
+                <div class="scheme">
+                    W = 5
+                </div>
+
+                <p>
+                    Предметы:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Предмет</th>
+                        <th>Вес</th>
+                        <th>Ценность</th>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>10</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>7</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>12</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Лучший выбор:
+                </p>
+
+                <div class="scheme">
+                    взять предмет 1 и предмет 2<br>
+                    вес = 3 + 2 = 5<br>
+                    ценность = 10 + 7 = 17
+                </div>
+
+                <p>
+                    Ответ:
+                </p>
+
+                <pre><code class="language-none">17</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Главная идея</h2>
+
+                <p>
+                    Для каждого предмета у нас есть два варианта:
+                </p>
+
+                <ul>
+                    <li>не брать предмет</li>
+                    <li>взять предмет, если хватает места</li>
+                </ul>
+
+                <div class="scheme">
+                    answer = max(<br>
+                    &nbsp;&nbsp;вариант без предмета,<br>
+                    &nbsp;&nbsp;вариант с предметом<br>
+                    )
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный метод</h2>
+
+                <p>
+                    Сначала удобно думать рекурсивно.
+                </p>
+
+                <p>
+                    Пусть:
+                </p>
+
+                <pre><code class="language-cpp">f(i, w)</code></pre>
+
+                <p>
+                    Это максимальная ценность, которую можно получить,
+                    если мы рассматриваем первые <b>i</b> предметов
+                    и у нас осталось место <b>w</b>.
+                </p>
+
+                <div class="scheme">
+                    i — сколько предметов рассматриваем<br>
+                    w — текущая вместимость рюкзака
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный переход</h2>
+
+                <p>
+                    Рассмотрим предмет <b>i</b>.
+                </p>
+
+                <p>
+                    Вариант 1: не брать предмет <b>i</b>.
+                </p>
+
+                <pre><code class="language-cpp">f(i - 1, w)</code></pre>
+
+                <p>
+                    Вариант 2: взять предмет <b>i</b>.
+                    Это можно сделать только если его вес не больше текущей вместимости.
+                </p>
+
+                <pre><code class="language-cpp">f(i - 1, w - weight[i]) + value[i]</code></pre>
+
+                <p>
+                    Тогда формула:
+                </p>
+
+                <pre><code class="language-cpp">f(i, w) = max(f(i - 1, w), f(i - 1, w - weight[i]) + value[i]);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Базовый случай</h2>
+
+                <p>
+                    Если предметов нет, то ценность равна 0.
+                </p>
+
+                <pre><code class="language-cpp">if (i == 0) {
+    return 0;
+}</code></pre>
+
+                <p>
+                    Еще если вместимость стала 0, больше ничего взять нельзя.
+                </p>
+
+                <pre><code class="language-cpp">if (w == 0) {
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Обычная рекурсия</h2>
+
+                <pre><code class="language-cpp">int solve(int i, int w) {
+    if (i == 0 || w == 0) {
+        return 0;
+    }
+
+    int ans = solve(i - 1, w);
+
+    if (weight[i] &lt;= w) {
+        ans = max(ans, solve(i - 1, w - weight[i]) + value[i]);
+    }
+
+    return ans;
+}</code></pre>
+
+                <p>
+                    Этот код правильный по идее, но медленный.
+                    Он много раз пересчитывает одинаковые состояния.
+                </p>
+
+                <div class="note">
+                    Обычная рекурсия может работать примерно за O(2ⁿ),
+                    потому что каждый предмет дает два варианта: взять или не взять.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия + мемоизация</h2>
+
+                <p>
+                    Чтобы не пересчитывать одинаковые состояния, сохраняем ответы:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][w]</code></pre>
+
+                <p>
+                    Это ответ для состояния <b>i, w</b>.
+                </p>
+
+                <p>
+                    Если ответ уже посчитан, возвращаем его:
+                </p>
+
+                <pre><code class="language-cpp">if (dp[i][w] != -1) {
+    return dp[i][w];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация: рекурсия + мемоизация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 110;
+const int M = 10010;
+
+int n, W;
+int weight[N];
+int value[N];
+int dp[N][M];
+
+int solve(int i, int w) {
+    if (i == 0 || w == 0) {
+        return 0;
+    }
+
+    if (dp[i][w] != -1) {
+        return dp[i][w];
+    }
+
+    int ans = solve(i - 1, w);
+
+    if (weight[i] &lt;= w) {
+        ans = max(ans, solve(i - 1, w - weight[i]) + value[i]);
+    }
+
+    dp[i][w] = ans;
+    return dp[i][w];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; W;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+    }
+
+    memset(dp, -1, sizeof(dp));
+
+    cout &lt;&lt; solve(n, W);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как перевести в итеративный DP?</h2>
+
+                <p>
+                    Было рекурсивно:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, w)</code></pre>
+
+                <p>
+                    Станет:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][w]</code></pre>
+
+                <p>
+                    Где:
+                </p>
+
+                <div class="scheme">
+                    dp[i][w] = максимальная ценность<br>
+                    если рассматриваем первые i предметов<br>
+                    и вместимость рюкзака равна w
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Базовые значения</h2>
+
+                <p>
+                    Если предметов 0, ответ 0:
+                </p>
+
+                <pre><code class="language-cpp">dp[0][w] = 0;</code></pre>
+
+                <p>
+                    Если вместимость 0, ответ 0:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][0] = 0;</code></pre>
+
+                <p>
+                    Обычно глобальный массив уже заполнен нулями,
+                    поэтому отдельно можно не писать.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Итеративный переход</h2>
+
+                <p>
+                    Для каждого предмета <b>i</b> и каждой вместимости <b>w</b>:
+                </p>
+
+                <p>
+                    Не берем предмет:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][w] = dp[i - 1][w];</code></pre>
+
+                <p>
+                    Если можем взять предмет:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][w] = max(dp[i][w], dp[i - 1][w - weight[i]] + value[i]);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация 2D DP</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 110;
+const int M = 10010;
+
+int n, W;
+int weight[N];
+int value[N];
+int dp[N][M];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; W;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int w = 0; w &lt;= W; w++) {
+            dp[i][w] = dp[i - 1][w];
+
+            if (weight[i] &lt;= w) {
+                dp[i][w] = max(dp[i][w], dp[i - 1][w - weight[i]] + value[i]);
+            }
+        }
+    }
+
+    cout &lt;&lt; dp[n][W];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример входных данных</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">3 5
+3 10
+2 7
+4 12</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">17</code></pre>
+
+                <p>
+                    Здесь:
+                </p>
+
+                <div class="scheme">
+                    предмет 1: вес 3, ценность 10<br>
+                    предмет 2: вес 2, ценность 7<br>
+                    предмет 3: вес 4, ценность 12<br>
+                    W = 5
+                </div>
+
+                <p>
+                    Лучший выбор — предмет 1 и предмет 2.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Как читать dp[i][w]?</h2>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-cpp">dp[3][5]</code></pre>
+
+                <p>
+                    Это означает:
+                </p>
+
+                <div class="scheme">
+                    мы рассмотрели первые 3 предмета<br>
+                    вместимость рюкзака равна 5<br>
+                    какое максимальное value можно получить?
+                </div>
+
+                <p>
+                    Ответ лежит в:
+                </p>
+
+                <pre><code class="language-cpp">dp[n][W]</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Оптимизация памяти</h2>
+
+                <p>
+                    В формуле:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][w]</code></pre>
+
+                <p>
+                    зависит только от предыдущей строки:
+                </p>
+
+                <pre><code class="language-cpp">dp[i - 1][...]</code></pre>
+
+                <p>
+                    Поэтому можно использовать одномерный массив:
+                </p>
+
+                <pre><code class="language-cpp">dp[w]</code></pre>
+
+                <p>
+                    Где <b>dp[w]</b> — лучший ответ для вместимости <b>w</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Почему цикл идет справа налево?</h2>
+
+                <p>
+                    Для 0/1 knapsack каждый предмет можно взять только один раз.
+                </p>
+
+                <p>
+                    Поэтому при обновлении <b>dp[w]</b> нужно идти справа налево:
+                </p>
+
+                <pre><code class="language-cpp">for (int w = W; w &gt;= weight[i]; w--)</code></pre>
+
+                <p>
+                    Если идти слева направо, один и тот же предмет может использоваться несколько раз.
+                </p>
+
+                <div class="note">
+                    Главное правило 0/1 knapsack:
+                    цикл по весу идет от W к weight[i].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация 1D DP</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 10010;
+
+int n, W;
+int dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; W;
+
+    for (int i = 1; i &lt;= n; i++) {
+        int weight, value;
+        cin &gt;&gt; weight &gt;&gt; value;
+
+        for (int w = W; w &gt;= weight; w--) {
+            dp[w] = max(dp[w], dp[w - weight] + value);
+        }
+    }
+
+    cout &lt;&lt; dp[W];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>2D DP vs 1D DP</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Память</th>
+                        <th>Плюс</th>
+                        <th>Минус</th>
+                    </tr>
+
+                    <tr>
+                        <td>2D DP</td>
+                        <td>O(nW)</td>
+                        <td>легко понять</td>
+                        <td>больше памяти</td>
+                    </tr>
+
+                    <tr>
+                        <td>1D DP</td>
+                        <td>O(W)</td>
+                        <td>экономит память</td>
+                        <td>важен порядок цикла</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Восстановление выбранных предметов</h2>
+
+                <p>
+                    Иногда нужно вывести не только максимальную ценность,
+                    но и какие предметы были выбраны.
+                </p>
+
+                <p>
+                    Для этого удобнее использовать 2D DP.
+                </p>
+
+                <p>
+                    Идем назад:
+                </p>
+
+                <div class="scheme">
+                    начинаем с i = n, w = W<br>
+                    если dp[i][w] == dp[i - 1][w], предмет i не взяли<br>
+                    иначе предмет i взяли
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код восстановления</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; items;
+int w = W;
+
+for (int i = n; i &gt;= 1; i--) {
+    if (dp[i][w] == dp[i - 1][w]) {
+        continue;
+    }
+
+    items.push_back(i);
+    w -= weight[i];
+}
+
+reverse(items.begin(), items.end());</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация с восстановлением</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 110;
+const int M = 10010;
+
+int n, W;
+int weight[N];
+int value[N];
+int dp[N][M];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; W;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; weight[i] &gt;&gt; value[i];
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int w = 0; w &lt;= W; w++) {
+            dp[i][w] = dp[i - 1][w];
+
+            if (weight[i] &lt;= w) {
+                dp[i][w] = max(dp[i][w], dp[i - 1][w - weight[i]] + value[i]);
+            }
+        }
+    }
+
+    cout &lt;&lt; "Max value: " &lt;&lt; dp[n][W] &lt;&lt; '\n';
+
+    vector&lt;int&gt; items;
+    int w = W;
+
+    for (int i = n; i &gt;= 1; i--) {
+        if (dp[i][w] == dp[i - 1][w]) {
+            continue;
+        }
+
+        items.push_back(i);
+        w -= weight[i];
+    }
+
+    reverse(items.begin(), items.end());
+
+    cout &lt;&lt; "Items: ";
+
+    for (int x : items) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Unbounded Knapsack</h2>
+
+                <p>
+                    Есть другая версия рюкзака:
+                    каждый предмет можно брать сколько угодно раз.
+                </p>
+
+                <p>
+                    Это называется:
+                </p>
+
+                <div class="scheme">
+                    unbounded knapsack<br>
+                    полный рюкзак
+                </div>
+
+                <p>
+                    Здесь цикл по весу идет слева направо:
+                </p>
+
+                <pre><code class="language-cpp">for (int w = weight; w &lt;= W; w++)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полный рюкзак: реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 10010;
+
+int n, W;
+int dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; W;
+
+    for (int i = 1; i &lt;= n; i++) {
+        int weight, value;
+        cin &gt;&gt; weight &gt;&gt; value;
+
+        for (int w = weight; w &lt;= W; w++) {
+            dp[w] = max(dp[w], dp[w - weight] + value);
+        }
+    }
+
+    cout &lt;&lt; dp[W];
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    0/1 knapsack: цикл справа налево.
+                    Unbounded knapsack: цикл слева направо.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>0/1 vs полный рюкзак</h2>
+
+                <table>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Сколько раз можно взять предмет?</th>
+                        <th>Цикл по w</th>
+                    </tr>
+
+                    <tr>
+                        <td>0/1 Knapsack</td>
+                        <td>0 или 1 раз</td>
+                        <td>от W вниз</td>
+                    </tr>
+
+                    <tr>
+                        <td>Unbounded Knapsack</td>
+                        <td>сколько угодно раз</td>
+                        <td>от weight вверх</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Не понять, что означает <b>dp[i][w]</b></li>
+                    <li>Перепутать вес и ценность</li>
+                    <li>В 0/1 knapsack идти циклом слева направо</li>
+                    <li>В полном рюкзаке идти циклом справа налево</li>
+                    <li>Забыть проверить <b>weight[i] &lt;= w</b></li>
+                    <li>Восстанавливать предметы по 1D DP, когда проще использовать 2D DP</li>
+                    <li>Поставить слишком маленький размер массива</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Обычная рекурсия</td>
+                        <td>O(2ⁿ)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Мемоизация</td>
+                        <td>O(nW)</td>
+                        <td>O(nW)</td>
+                    </tr>
+
+                    <tr>
+                        <td>2D DP</td>
+                        <td>O(nW)</td>
+                        <td>O(nW)</td>
+                    </tr>
+
+                    <tr>
+                        <td>1D DP</td>
+                        <td>O(nW)</td>
+                        <td>O(W)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Как думать на задачах?</h2>
+
+                <div class="scheme">
+                    1. Что является предметом?<br>
+                    2. Что является весом?<br>
+                    3. Что является ценностью?<br>
+                    4. Предмет можно брать один раз или много раз?<br>
+                    5. Нужно максимум, минимум или количество способов?<br>
+                    6. Какой размер W?<br>
+                    7. Можно ли использовать O(nW)?
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон 0/1 Knapsack</h2>
+
+                <pre><code class="language-cpp">int dp[W + 1];
+
+for (int i = 1; i &lt;= n; i++) {
+    cin &gt;&gt; weight &gt;&gt; value;
+
+    for (int w = W; w &gt;= weight; w--) {
+        dp[w] = max(dp[w], dp[w - weight] + value);
+    }
+}
+
+cout &lt;&lt; dp[W];</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон полного рюкзака</h2>
+
+                <pre><code class="language-cpp">int dp[W + 1];
+
+for (int i = 1; i &lt;= n; i++) {
+    cin &gt;&gt; weight &gt;&gt; value;
+
+    for (int w = weight; w &lt;= W; w++) {
+        dp[w] = max(dp[w], dp[w - weight] + value);
+    }
+}
+
+cout &lt;&lt; dp[W];</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

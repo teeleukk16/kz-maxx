@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Декартово дерево | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="treap.html">RU</a>
+                    <a class="lang" href="treap_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Декартово дерево</h1>
+            <p>Treap на массивах: split через pair&lt;int, int&gt;, merge, insert, erase, find, kth</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Объяснение</h2>
+
+                <p>
+                    Декартово дерево, или <b>Treap</b>, — это структура данных,
+                    которая соединяет две идеи:
+                </p>
+
+                <ul>
+                    <li><b>Binary Search Tree</b> — по значению <b>key</b></li>
+                    <li><b>Heap</b> — по случайному приоритету <b>prior</b></li>
+                </ul>
+
+                <div class="note">
+                    По <b>key</b>: слева лежат меньшие значения, справа — большие.  
+                    По <b>prior</b>: у родителя приоритет больше, чем у детей.
+                </div>
+
+                <div class="scheme">
+                    key: left &lt; root &lt; right<br>
+                    prior: root.prior &gt; child.prior
+                </div>
+
+                <p>
+                    Благодаря случайным приоритетам дерево обычно получается сбалансированным.
+                    Поэтому основные операции работают за <b>O(log n)</b> в среднем.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Что храним в массиве?</h2>
+
+                <pre><code class="language-cpp">struct Node {
+    int key, prior;
+    int l, r;
+    int cnt;
+} tr[N];
+
+int root;</code></pre>
+
+                <ul>
+                    <li><b>key</b> — значение вершины</li>
+                    <li><b>prior</b> — случайный приоритет</li>
+                    <li><b>l</b> — индекс левого сына</li>
+                    <li><b>r</b> — индекс правого сына</li>
+                    <li><b>cnt</b> — размер поддерева</li>
+                    <li><b>root</b> — корень всего дерева</li>
+                </ul>
+
+                <div class="note">
+                    Индекс <b>0</b> означает пустую вершину.  
+                    Это как <b>nullptr</b>, только для массива.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Главные операции</h2>
+
+                <h3>split</h3>
+
+                <p>
+                    <b>split(v, x)</b> делит дерево <b>v</b> на две части:
+                </p>
+
+                <ul>
+                    <li>первая часть — все значения <b>&lt;= x</b></li>
+                    <li>вторая часть — все значения <b>&gt; x</b></li>
+                </ul>
+
+                <div class="scheme">
+                    split(root, 10) → {дерево &lt;= 10, дерево &gt; 10}
+                </div>
+
+                <h3>merge</h3>
+
+                <p>
+                    <b>merge(a, b)</b> соединяет два дерева в одно.
+                </p>
+
+                <div class="note">
+                    Важно: все значения в <b>a</b> должны быть меньше всех значений в <b>b</b>.
+                </div>
+
+                <div class="scheme">
+                    merge(a, b) → одно дерево
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Пример задачи для реализации</h2>
+
+                <p>
+                    Нужно хранить множество чисел и обрабатывать команды.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>insert x</b></td>
+                        <td>Добавить число <b>x</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>erase x</b></td>
+                        <td>Удалить число <b>x</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>find x</b></td>
+                        <td>Проверить, есть ли <b>x</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>kth k</b></td>
+                        <td>Найти <b>k-й</b> элемент по возрастанию</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">10
+insert 10
+insert 5
+insert 20
+find 10
+find 7
+kth 2
+erase 10
+find 10
+kth 2
+find 20</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES
+NO
+10
+NO
+20
+YES</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+struct Node {
+    int key, prior;
+    int l, r;
+    int cnt;
+} tr[N];
+
+int root;
+int idx;
+
+int sizeOf(int v) {
+    if (v == 0) {
+        return 0;
+    }
+
+    return tr[v].cnt;
+}
+
+void pull(int v) {
+    if (v == 0) {
+        return;
+    }
+
+    tr[v].cnt = 1 + sizeOf(tr[v].l) + sizeOf(tr[v].r);
+}
+
+int newNode(int x) {
+    idx++;
+
+    tr[idx].key = x;
+    tr[idx].prior = rand();
+    tr[idx].l = 0;
+    tr[idx].r = 0;
+    tr[idx].cnt = 1;
+
+    return idx;
+}
+
+pair&lt;int, int&gt; split(int v, int x) {
+    if (v == 0) {
+        return {0, 0};
+    }
+
+    if (tr[v].key &lt;= x) {
+        pair&lt;int, int&gt; p = split(tr[v].r, x);
+
+        tr[v].r = p.first;
+        pull(v);
+
+        return {v, p.second};
+    } else {
+        pair&lt;int, int&gt; p = split(tr[v].l, x);
+
+        tr[v].l = p.second;
+        pull(v);
+
+        return {p.first, v};
+    }
+}
+
+int merge(int a, int b) {
+    if (a == 0) {
+        return b;
+    }
+
+    if (b == 0) {
+        return a;
+    }
+
+    if (tr[a].prior &gt; tr[b].prior) {
+        tr[a].r = merge(tr[a].r, b);
+        pull(a);
+
+        return a;
+    } else {
+        tr[b].l = merge(a, tr[b].l);
+        pull(b);
+
+        return b;
+    }
+}
+
+bool findKey(int v, int x) {
+    if (v == 0) {
+        return false;
+    }
+
+    if (tr[v].key == x) {
+        return true;
+    }
+
+    if (x &lt; tr[v].key) {
+        return findKey(tr[v].l, x);
+    } else {
+        return findKey(tr[v].r, x);
+    }
+}
+
+void insertKey(int x) {
+    if (findKey(root, x)) {
+        return;
+    }
+
+    pair&lt;int, int&gt; p = split(root, x);
+
+    int leftTree = p.first;
+    int rightTree = p.second;
+    int node = newNode(x);
+
+    root = merge(merge(leftTree, node), rightTree);
+}
+
+void eraseKey(int &amp;v, int x) {
+    if (v == 0) {
+        return;
+    }
+
+    if (tr[v].key == x) {
+        v = merge(tr[v].l, tr[v].r);
+        return;
+    }
+
+    if (x &lt; tr[v].key) {
+        eraseKey(tr[v].l, x);
+    } else {
+        eraseKey(tr[v].r, x);
+    }
+
+    pull(v);
+}
+
+int kth(int v, int k) {
+    int leftSize = sizeOf(tr[v].l);
+
+    if (k == leftSize + 1) {
+        return tr[v].key;
+    }
+
+    if (k &lt;= leftSize) {
+        return kth(tr[v].l, k);
+    }
+
+    return kth(tr[v].r, k - leftSize - 1);
+}
+
+void printTree(int v) {
+    if (v == 0) {
+        return;
+    }
+
+    printTree(tr[v].l);
+    cout &lt;&lt; tr[v].key &lt;&lt; ' ';
+    printTree(tr[v].r);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    srand(time(0));
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string op;
+        int x;
+
+        cin &gt;&gt; op &gt;&gt; x;
+
+        if (op == "insert") {
+            insertKey(x);
+        } else if (op == "erase") {
+            eraseKey(root, x);
+        } else if (op == "find") {
+            if (findKey(root, x)) {
+                cout &lt;&lt; "YES\n";
+            } else {
+                cout &lt;&lt; "NO\n";
+            }
+        } else if (op == "kth") {
+            if (x &gt;= 1 &amp;&amp; x &lt;= sizeOf(root)) {
+                cout &lt;&lt; kth(root, x) &lt;&lt; '\n';
+            }
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Объяснение функций</h2>
+
+                <h3>1. sizeOf</h3>
+
+                <pre><code class="language-cpp">int sizeOf(int v) {
+    if (v == 0) {
+        return 0;
+    }
+
+    return tr[v].cnt;
+}</code></pre>
+
+                <p>
+                    Функция возвращает размер поддерева.
+                    Если вершина пустая, размер равен <b>0</b>.
+                </p>
+
+                <div class="scheme">
+                    sizeOf(0) = 0<br>
+                    sizeOf(v) = tr[v].cnt
+                </div>
+
+                <h3>2. pull</h3>
+
+                <pre><code class="language-cpp">void pull(int v) {
+    tr[v].cnt = 1 + sizeOf(tr[v].l) + sizeOf(tr[v].r);
+}</code></pre>
+
+                <p>
+                    Функция пересчитывает размер поддерева вершины <b>v</b>.
+                </p>
+
+                <div class="scheme">
+                    если слева 2 вершины, справа 3 вершины<br>
+                    cnt = 1 + 2 + 3 = 6
+                </div>
+
+                <h3>3. newNode</h3>
+
+                <pre><code class="language-cpp">int newNode(int x)</code></pre>
+
+                <p>
+                    Создает новую вершину в массиве <b>tr</b>.
+                    Возвращает индекс этой вершины.
+                </p>
+
+                <div class="scheme">
+                    newNode(10)<br>
+                    key = 10<br>
+                    l = 0, r = 0<br>
+                    cnt = 1
+                </div>
+
+                <h3>4. split</h3>
+
+                <pre><code class="language-cpp">pair&lt;int, int&gt; split(int v, int x)</code></pre>
+
+                <p>
+                    Делит дерево на две части:
+                </p>
+
+                <ul>
+                    <li>первая часть содержит значения <b>&lt;= x</b></li>
+                    <li>вторая часть содержит значения <b>&gt; x</b></li>
+                </ul>
+
+                <div class="scheme">
+                    дерево: 3 5 8 10 15<br>
+                    split(root, 8)<br>
+                    leftTree: 3 5 8<br>
+                    rightTree: 10 15
+                </div>
+
+                <p>
+                    Если текущий <b>key &lt;= x</b>, значит эта вершина должна попасть в левую часть.
+                    Тогда мы делим её правого сына.
+                </p>
+
+                <pre><code class="language-cpp">if (tr[v].key &lt;= x) {
+    pair&lt;int, int&gt; p = split(tr[v].r, x);
+
+    tr[v].r = p.first;
+    pull(v);
+
+    return {v, p.second};
+}</code></pre>
+
+                <p>
+                    Если текущий <b>key &gt; x</b>, значит эта вершина должна попасть в правую часть.
+                    Тогда мы делим её левого сына.
+                </p>
+
+                <pre><code class="language-cpp">else {
+    pair&lt;int, int&gt; p = split(tr[v].l, x);
+
+    tr[v].l = p.second;
+    pull(v);
+
+    return {p.first, v};
+}</code></pre>
+
+                <h3>5. merge</h3>
+
+                <pre><code class="language-cpp">int merge(int a, int b)</code></pre>
+
+                <p>
+                    Соединяет два дерева.
+                    Все значения в <b>a</b> должны быть меньше всех значений в <b>b</b>.
+                </p>
+
+                <div class="scheme">
+                    a: 1 3 5<br>
+                    b: 8 10 12<br>
+                    merge(a, b): 1 3 5 8 10 12
+                </div>
+
+                <p>
+                    Корнем становится дерево с большим <b>prior</b>.
+                </p>
+
+                <pre><code class="language-cpp">if (tr[a].prior &gt; tr[b].prior) {
+    tr[a].r = merge(tr[a].r, b);
+    pull(a);
+
+    return a;
+}</code></pre>
+
+                <p>
+                    Если у <b>b</b> приоритет больше, то <b>b</b> становится корнем.
+                </p>
+
+                <pre><code class="language-cpp">else {
+    tr[b].l = merge(a, tr[b].l);
+    pull(b);
+
+    return b;
+}</code></pre>
+
+                <h3>6. findKey</h3>
+
+                <pre><code class="language-cpp">bool findKey(int v, int x)</code></pre>
+
+                <p>
+                    Ищет число <b>x</b> как в обычном бинарном дереве поиска.
+                </p>
+
+                <div class="scheme">
+                    если x меньше key → идем влево<br>
+                    если x больше key → идем вправо<br>
+                    если x == key → нашли
+                </div>
+
+                <h3>7. insertKey</h3>
+
+                <pre><code class="language-cpp">void insertKey(int x)</code></pre>
+
+                <p>
+                    Добавляет число <b>x</b> в дерево.
+                </p>
+
+                <div class="scheme">
+                    было: 3 5 10<br>
+                    insert 7<br>
+                    split(root, 7): 3 5 и 10<br>
+                    потом: merge(3 5, 7, 10)<br>
+                    стало: 3 5 7 10
+                </div>
+
+                <pre><code class="language-cpp">pair&lt;int, int&gt; p = split(root, x);
+
+int leftTree = p.first;
+int rightTree = p.second;
+int node = newNode(x);
+
+root = merge(merge(leftTree, node), rightTree);</code></pre>
+
+                <h3>8. eraseKey</h3>
+
+                <pre><code class="language-cpp">void eraseKey(int &amp;v, int x)</code></pre>
+
+                <p>
+                    Удаляет число <b>x</b> из дерева.
+                    Когда нашли нужную вершину, заменяем её на merge левого и правого сына.
+                </p>
+
+                <div class="scheme">
+                    было: left ← x → right<br>
+                    стало: merge(left, right)
+                </div>
+
+                <pre><code class="language-cpp">if (tr[v].key == x) {
+    v = merge(tr[v].l, tr[v].r);
+    return;
+}</code></pre>
+
+                <h3>9. kth</h3>
+
+                <pre><code class="language-cpp">int kth(int v, int k)</code></pre>
+
+                <p>
+                    Находит <b>k-й</b> элемент по возрастанию.
+                    Для этого используется размер левого поддерева.
+                </p>
+
+                <div class="scheme">
+                    дерево: 3 5 7 10 20<br>
+                    kth(1) = 3<br>
+                    kth(3) = 7<br>
+                    kth(5) = 20
+                </div>
+
+                <p>
+                    Если слева стоит <b>leftSize</b> элементов:
+                </p>
+
+                <ul>
+                    <li>если <b>k == leftSize + 1</b>, ответ — текущая вершина</li>
+                    <li>если <b>k &lt;= leftSize</b>, идем влево</li>
+                    <li>иначе идем вправо и уменьшаем <b>k</b></li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Среднее время</th>
+                    </tr>
+
+                    <tr>
+                        <td>insert</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>erase</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>find</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>kth</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>split / merge</td>
+                        <td>O(log n)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

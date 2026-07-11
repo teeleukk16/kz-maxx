@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сочетания | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="combinations.html">RU</a>
+                    <a class="lang" href="combinations_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Сочетания</h1>
+            <p>Выбор k элементов из n, формула C(n,k), генерация и подсчет</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое сочетание?</h2>
+
+                <p>
+                    <b>Сочетание</b> — это способ выбрать <b>k</b> элементов из <b>n</b> элементов,
+                    где порядок не важен.
+                </p>
+
+                <div class="scheme">
+                    выбрать k элементов из n<br>
+                    порядок не учитывается
+                </div>
+
+                <p>
+                    Например, если есть числа:
+                </p>
+
+                <pre><code class="language-none">1 2 3</code></pre>
+
+                <p>
+                    Сочетания по 2:
+                </p>
+
+                <pre><code class="language-none">1 2
+1 3
+2 3</code></pre>
+
+                <p>
+                    Здесь <b>1 2</b> и <b>2 1</b> — это одно и то же сочетание.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Обозначение</h2>
+
+                <p>
+                    Количество сочетаний обозначают так:
+                </p>
+
+                <pre><code class="language-none">C(n, k)</code></pre>
+
+                <p>
+                    Или так:
+                </p>
+
+                <pre><code class="language-none">n choose k</code></pre>
+
+                <p>
+                    Это читается:
+                </p>
+
+                <div class="scheme">
+                    сколько способов выбрать k элементов из n
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Формула сочетаний</h2>
+
+                <p>
+                    Формула:
+                </p>
+
+                <pre><code class="language-none">C(n, k) = n! / (k! * (n - k)!)</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">C(5, 2) = 5! / (2! * 3!)</code></pre>
+
+                <p>
+                    Считаем:
+                </p>
+
+                <pre><code class="language-none">5! = 120
+2! = 2
+3! = 6
+
+C(5, 2) = 120 / (2 * 6) = 10</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Почему порядок не важен?</h2>
+
+                <p>
+                    Допустим, выбираем 2 человека из 3:
+                </p>
+
+                <pre><code class="language-none">A B C</code></pre>
+
+                <p>
+                    Сочетания:
+                </p>
+
+                <pre><code class="language-none">A B
+A C
+B C</code></pre>
+
+                <p>
+                    Пары <b>A B</b> и <b>B A</b> считаются одинаковыми.
+                </p>
+
+                <div class="note">
+                    Если порядок важен, это уже не сочетания, а размещения или перестановки.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Сочетания, размещения, перестановки</h2>
+
+                <table>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Что значит</th>
+                        <th>Порядок важен?</th>
+                    </tr>
+
+                    <tr>
+                        <td>Сочетания</td>
+                        <td>Выбрать k из n</td>
+                        <td>Нет</td>
+                    </tr>
+
+                    <tr>
+                        <td>Размещения</td>
+                        <td>Выбрать k из n и расставить</td>
+                        <td>Да</td>
+                    </tr>
+
+                    <tr>
+                        <td>Перестановки</td>
+                        <td>Расставить все n элементов</td>
+                        <td>Да</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Пример разницы</h2>
+
+                <p>
+                    Есть:
+                </p>
+
+                <pre><code class="language-none">1 2 3</code></pre>
+
+                <p>
+                    Сочетания по 2:
+                </p>
+
+                <pre><code class="language-none">1 2
+1 3
+2 3</code></pre>
+
+                <p>
+                    Размещения по 2:
+                </p>
+
+                <pre><code class="language-none">1 2
+2 1
+1 3
+3 1
+2 3
+3 2</code></pre>
+
+                <div class="note">
+                    В сочетаниях порядок не важен, поэтому вариантов меньше.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Свойства C(n,k)</h2>
+
+                <p>
+                    Главные свойства:
+                </p>
+
+                <pre><code class="language-none">C(n, 0) = 1
+C(n, n) = 1
+C(n, k) = C(n, n - k)</code></pre>
+
+                <p>
+                    Почему <b>C(n, 0) = 1</b>?
+                    Потому что есть ровно один способ выбрать ничего.
+                </p>
+
+                <p>
+                    Почему <b>C(n, n) = 1</b>?
+                    Потому что есть ровно один способ выбрать все элементы.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Формула Паскаля</h2>
+
+                <p>
+                    Очень важная формула:
+                </p>
+
+                <pre><code class="language-none">C(n, k) = C(n - 1, k - 1) + C(n - 1, k)</code></pre>
+
+                <p>
+                    Смысл:
+                </p>
+
+                <div class="scheme">
+                    берем последний элемент<br>
+                    или не берем последний элемент
+                </div>
+
+                <ul>
+                    <li><b>C(n - 1, k - 1)</b> — последний элемент взяли</li>
+                    <li><b>C(n - 1, k)</b> — последний элемент не взяли</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Треугольник Паскаля</h2>
+
+                <p>
+                    Значения C(n,k) можно представить как треугольник:
+                </p>
+
+                <pre><code class="language-none">n = 0:        1
+n = 1:       1 1
+n = 2:      1 2 1
+n = 3:     1 3 3 1
+n = 4:    1 4 6 4 1
+n = 5:   1 5 10 10 5 1</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">C(5, 2) = 10</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Подсчет C(n,k) через DP</h2>
+
+                <p>
+                    Можно считать через формулу Паскаля:
+                </p>
+
+                <pre><code class="language-cpp">C[n][k] = C[n - 1][k - 1] + C[n - 1][k]</code></pre>
+
+                <p>
+                    База:
+                </p>
+
+                <pre><code class="language-cpp">C[i][0] = 1;
+C[i][i] = 1;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: C(n,k) через DP</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000;
+
+long long C[N + 1][N + 1];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    for (int n = 0; n &lt;= N; n++) {
+        C[n][0] = 1;
+        C[n][n] = 1;
+
+        for (int k = 1; k &lt; n; k++) {
+            C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
+        }
+    }
+
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+
+    cout &lt;&lt; C[n][k];
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Такой код подходит только для небольших n, потому что значения C(n,k) быстро становятся огромными.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Подсчет по модулю</h2>
+
+                <p>
+                    В задачах часто нужно считать:
+                </p>
+
+                <pre><code class="language-none">C(n, k) mod MOD</code></pre>
+
+                <p>
+                    Тогда в DP просто берем остаток после сложения.
+                </p>
+
+                <pre><code class="language-cpp">C[n][k] = (C[n - 1][k - 1] + C[n - 1][k]) % MOD;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: C(n,k) через DP по модулю</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000;
+const long long MOD = 1000000007;
+
+long long C[N + 1][N + 1];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    for (int n = 0; n &lt;= N; n++) {
+        C[n][0] = 1;
+        C[n][n] = 1;
+
+        for (int k = 1; k &lt; n; k++) {
+            C[n][k] = (C[n - 1][k - 1] + C[n - 1][k]) % MOD;
+        }
+    }
+
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+
+    cout &lt;&lt; C[n][k];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>C(n,k) через факториалы</h2>
+
+                <p>
+                    Если <b>n</b> большой и много запросов, удобно заранее посчитать факториалы:
+                </p>
+
+                <pre><code class="language-none">fact[i] = i!</code></pre>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-none">C(n, k) = fact[n] / (fact[k] * fact[n-k])</code></pre>
+
+                <p>
+                    По модулю деление заменяется на обратный элемент.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Быстрая степень</h2>
+
+                <p>
+                    Для обратного элемента по простому модулю используем:
+                </p>
+
+                <pre><code class="language-cpp">inv(x) = x^(MOD - 2) mod MOD</code></pre>
+
+                <p>
+                    Поэтому нужна быстрая степень:
+                </p>
+
+                <pre><code class="language-cpp">long long binpow(long long a, long long b) {
+    long long res = 1;
+
+    while (b &gt; 0) {
+        if (b % 2 == 1) {
+            res = res * a % MOD;
+        }
+
+        a = a * a % MOD;
+        b /= 2;
+    }
+
+    return res;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: C(n,k) через factorial</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000000;
+const long long MOD = 1000000007;
+
+long long fact[N + 1];
+long long invFact[N + 1];
+
+long long binpow(long long a, long long b) {
+    long long res = 1;
+
+    while (b &gt; 0) {
+        if (b % 2 == 1) {
+            res = res * a % MOD;
+        }
+
+        a = a * a % MOD;
+        b /= 2;
+    }
+
+    return res;
+}
+
+long long inv(long long x) {
+    return binpow(x, MOD - 2);
+}
+
+void build() {
+    fact[0] = 1;
+
+    for (int i = 1; i &lt;= N; i++) {
+        fact[i] = fact[i - 1] * i % MOD;
+    }
+
+    invFact[N] = inv(fact[N]);
+
+    for (int i = N - 1; i &gt;= 0; i--) {
+        invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+    }
+}
+
+long long comb(int n, int k) {
+    if (k &lt; 0 || k &gt; n) {
+        return 0;
+    }
+
+    return fact[n] * invFact[k] % MOD * invFact[n - k] % MOD;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    build();
+
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+
+    cout &lt;&lt; comb(n, k);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Генерация сочетаний</h2>
+
+                <p>
+                    Иногда нужно не количество, а вывести все сочетания.
+                </p>
+
+                <p>
+                    Например, для:
+                </p>
+
+                <pre><code class="language-none">n = 4
+k = 2</code></pre>
+
+                <p>
+                    Нужно вывести:
+                </p>
+
+                <pre><code class="language-none">1 2
+1 3
+1 4
+2 3
+2 4
+3 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Идея генерации</h2>
+
+                <p>
+                    Будем строить ответ рекурсивно.
+                    На каждом шаге выбираем следующее число.
+                </p>
+
+                <div class="scheme">
+                    cur — текущее сочетание<br>
+                    start — с какого числа можно брать следующий элемент<br>
+                    если cur.size() == k, выводим cur
+                </div>
+
+                <p>
+                    Чтобы не получить повторы, всегда берем числа в возрастающем порядке.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: генерация сочетаний</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n, k;
+vector&lt;int&gt; cur;
+
+void gen(int start) {
+    if ((int)cur.size() == k) {
+        for (int x : cur) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+        return;
+    }
+
+    for (int x = start; x &lt;= n; x++) {
+        cur.push_back(x);
+        gen(x + 1);
+        cur.pop_back();
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; k;
+
+    gen(1);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример генерации</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">4 2</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">1 2
+1 3
+1 4
+2 3
+2 4
+3 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Оптимизация генерации</h2>
+
+                <p>
+                    Можно не перебирать лишние числа.
+                    Если осталось мало чисел, нет смысла продолжать.
+                </p>
+
+                <p>
+                    Осталось выбрать:
+                </p>
+
+                <pre><code class="language-cpp">need = k - cur.size()</code></pre>
+
+                <p>
+                    Значит последнее возможное первое число:
+                </p>
+
+                <pre><code class="language-cpp">n - need + 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: оптимизированная генерация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n, k;
+vector&lt;int&gt; cur;
+
+void gen(int start) {
+    if ((int)cur.size() == k) {
+        for (int x : cur) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+        return;
+    }
+
+    int need = k - (int)cur.size();
+
+    for (int x = start; x &lt;= n - need + 1; x++) {
+        cur.push_back(x);
+        gen(x + 1);
+        cur.pop_back();
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; k;
+
+    gen(1);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Генерация через битмаски</h2>
+
+                <p>
+                    Если <b>n</b> маленькое, можно перебрать все маски от <b>0</b> до <b>2^n - 1</b>.
+                </p>
+
+                <p>
+                    В маске бит равен 1, если элемент выбран.
+                </p>
+
+                <div class="scheme">
+                    mask = 10110<br>
+                    выбраны элементы, где стоят единицы
+                </div>
+
+                <p>
+                    Для сочетания размера <b>k</b> нужно, чтобы количество единиц было равно <b>k</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: сочетания через битмаски</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+
+    for (int mask = 0; mask &lt; (1 &lt;&lt; n); mask++) {
+        if (__builtin_popcount(mask) == k) {
+            for (int i = 0; i &lt; n; i++) {
+                if (mask &amp; (1 &lt;&lt; i)) {
+                    cout &lt;&lt; i + 1 &lt;&lt; ' ';
+                }
+            }
+
+            cout &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Этот способ работает только для маленьких n, потому что всего масок 2^n.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>next_permutation для сочетаний</h2>
+
+                <p>
+                    Можно создать массив из нулей и единиц.
+                    Единица означает, что элемент выбран.
+                </p>
+
+                <p>
+                    Например, для <b>n = 5</b>, <b>k = 3</b>:
+                </p>
+
+                <pre><code class="language-none">0 0 1 1 1</code></pre>
+
+                <p>
+                    Потом запускаем <b>next_permutation</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: сочетания через next_permutation</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, k;
+    cin &gt;&gt; n &gt;&gt; k;
+
+    vector&lt;int&gt; a(n, 0);
+
+    for (int i = n - k; i &lt; n; i++) {
+        a[i] = 1;
+    }
+
+    do {
+        for (int i = 0; i &lt; n; i++) {
+            if (a[i] == 1) {
+                cout &lt;&lt; i + 1 &lt;&lt; ' ';
+            }
+        }
+
+        cout &lt;&lt; '\n';
+    } while (next_permutation(a.begin(), a.end()));
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Когда какой способ использовать?</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Способ</th>
+                    </tr>
+
+                    <tr>
+                        <td>Нужно количество C(n,k), n маленькое</td>
+                        <td>DP Паскаля</td>
+                    </tr>
+
+                    <tr>
+                        <td>Нужно количество C(n,k), n большое</td>
+                        <td>Факториалы + inverse</td>
+                    </tr>
+
+                    <tr>
+                        <td>Нужно вывести все сочетания</td>
+                        <td>Рекурсия / backtracking</td>
+                    </tr>
+
+                    <tr>
+                        <td>n маленькое и удобно работать с подмножествами</td>
+                        <td>Битмаски</td>
+                    </tr>
+
+                    <tr>
+                        <td>Нужен простой способ через STL</td>
+                        <td>next_permutation</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>DP Паскаля</td>
+                        <td>O(n²)</td>
+                        <td>O(n²)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Факториалы build</td>
+                        <td>O(n log MOD)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Один запрос C(n,k) после build</td>
+                        <td>O(1)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Генерация всех сочетаний</td>
+                        <td>O(C(n,k) * k)</td>
+                        <td>O(k)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Битмаски</td>
+                        <td>O(2^n * n)</td>
+                        <td>O(1)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Путать сочетания и перестановки</li>
+                    <li>Считать <b>1 2</b> и <b>2 1</b> разными сочетаниями</li>
+                    <li>Забыть базы <b>C(n,0)=1</b> и <b>C(n,n)=1</b></li>
+                    <li>Получить overflow при обычном подсчете C(n,k)</li>
+                    <li>Использовать факториалы без модуля для больших n</li>
+                    <li>Делить по модулю обычным делением</li>
+                    <li>В генерации не делать <b>pop_back()</b></li>
+                    <li>В генерации начинать всегда с 1 и получить повторы</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон генерации</h2>
+
+                <pre><code class="language-cpp">int n, k;
+vector&lt;int&gt; cur;
+
+void gen(int start) {
+    if ((int)cur.size() == k) {
+        for (int x : cur) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+        return;
+    }
+
+    for (int x = start; x &lt;= n; x++) {
+        cur.push_back(x);
+        gen(x + 1);
+        cur.pop_back();
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон C(n,k) mod</h2>
+
+                <pre><code class="language-cpp">long long comb(int n, int k) {
+    if (k &lt; 0 || k &gt; n) {
+        return 0;
+    }
+
+    return fact[n] * invFact[k] % MOD * invFact[n - k] % MOD;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Главное запомнить</h2>
+
+                <div class="scheme">
+                    сочетание = выбрать k из n<br>
+                    порядок не важен<br>
+                    C(n,k) = n! / (k! * (n-k)!)<br>
+                    C(n,k) = C(n-1,k-1) + C(n-1,k)<br>
+                    все сочетания удобно генерировать рекурсией
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Одномерный связный список | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+    <a href="../website.html">kz<span>-</span>maxx</a>
+</h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="list1.html">RU</a>
+                    <a class="lang" href="list1_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Одномерный связный список</h1>
+            <p>Объяснение, пример задачи и строгая реализация на массивах</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Объяснение</h2>
+
+                <p>
+                    Одномерный связный список — это структура данных, где каждый элемент хранит
+                    значение и индекс следующего элемента.
+                </p>
+
+                <div class="scheme">
+                    10 → 20 → 30 → конец
+                </div>
+
+                <p>
+                    В обычном массиве элементы стоят подряд.  
+                    В связном списке элементы могут лежать в разных местах, но каждый элемент знает,
+                    куда идти дальше.
+                </p>
+
+                <p>
+                    В олимпиадном программировании связный список часто реализуют через массивы.
+                    Это быстрее и проще, чем работать с указателями.
+                </p>
+
+                <ul>
+                    <li><b>val[i]</b> — значение элемента с индексом <b>i</b></li>
+                    <li><b>nxt[i]</b> — индекс следующего элемента после <b>i</b></li>
+                    <li><b>head</b> — индекс первого элемента списка</li>
+                    <li><b>idx</b> — индекс свободной ячейки для нового элемента</li>
+                </ul>
+
+                <div class="note">
+                    Если <b>nxt[2] = 5</b>, значит после элемента с индексом 2 идет элемент с индексом 5.
+                </div>
+
+                <h3>Пример хранения</h3>
+
+                <p>
+                    Пусть список такой:
+                </p>
+
+                <div class="scheme">
+                    10 → 20 → 30
+                </div>
+
+                <p>
+                    Тогда в массивах это может выглядеть так:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>i</th>
+                        <th>val[i]</th>
+                        <th>nxt[i]</th>
+                    </tr>
+
+                    <tr>
+                        <td>0</td>
+                        <td>10</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>20</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>30</td>
+                        <td>-1</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Значение <b>-1</b> означает, что следующего элемента нет.
+                    То есть список закончился.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Пример задачи для реализации</h2>
+
+                <p>
+                    Дан пустой связный список. Нужно обработать несколько команд.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>H x</b></td>
+                        <td>Добавить число <b>x</b> в начало списка</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>I k x</b></td>
+                        <td>Вставить число <b>x</b> после <b>k-го добавленного элемента</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>D k</b></td>
+                        <td>Удалить элемент после <b>k-го добавленного элемента</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>D 0</b></td>
+                        <td>Удалить первый элемент списка</td>
+                    </tr>
+                </table>
+
+                <h3>Вход</h3>
+
+                <pre><code class="language-none">8
+H 10
+H 20
+I 1 30
+D 2
+H 5
+I 3 7
+D 0
+H 1</code></pre>
+
+                <h3>Выход</h3>
+
+                <pre><code class="language-none">1 20 30 7</code></pre>
+
+                <div class="note">
+                    В командах <b>I k x</b> и <b>D k</b> число <b>k</b> — это номер добавленного элемента.  
+                    Но в массиве индексы начинаются с 0, поэтому в коде используется <b>k - 1</b>.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int head;
+int val[N];
+int nxt[N];
+int idx;
+
+void init() {
+    head = -1;
+    idx = 0;
+}
+
+void addHead(int x) {
+    val[idx] = x;
+    nxt[idx] = head;
+    head = idx;
+    idx++;
+}
+
+void addAfter(int pos, int x) {
+    val[idx] = x;
+    nxt[idx] = nxt[pos];
+    nxt[pos] = idx;
+    idx++;
+}
+
+void delHead() {
+    head = nxt[head];
+}
+
+void delAfter(int pos) {
+    nxt[pos] = nxt[nxt[pos]];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    init();
+
+    int m;
+    cin &gt;&gt; m;
+
+    while (m--) {
+        char op;
+        cin &gt;&gt; op;
+
+        if (op == 'H') {
+            int x;
+            cin &gt;&gt; x;
+
+            addHead(x);
+        } else if (op == 'I') {
+            int k, x;
+            cin &gt;&gt; k &gt;&gt; x;
+
+            addAfter(k - 1, x);
+        } else if (op == 'D') {
+            int k;
+            cin &gt;&gt; k;
+
+            if (k == 0) {
+                delHead();
+            } else {
+                delAfter(k - 1);
+            }
+        }
+    }
+
+    for (int i = head; i != -1; i = nxt[i]) {
+        cout &lt;&lt; val[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+
+                <h3>Объяснение переменных</h3>
+
+                <ul>
+                    <li><b>head</b> — первый элемент списка</li>
+                    <li><b>val</b> — значения элементов</li>
+                    <li><b>nxt</b> — следующий элемент</li>
+                    <li><b>idx</b> — свободная ячейка для нового элемента</li>
+                    <li><b>pos</b> — позиция элемента, после которого делаем действие</li>
+                </ul>
+
+                <h3>Добавление в начало</h3>
+
+                <pre><code class="language-cpp">void addHead(int x) {
+    val[idx] = x;
+    nxt[idx] = head;
+    head = idx;
+    idx++;
+}</code></pre>
+
+                <p>
+                    Новый элемент получает значение <b>x</b>.  
+                    Потом он указывает на старый первый элемент.  
+                    После этого новый элемент становится первым.
+                </p>
+
+                <div class="scheme">
+                    было: 20 → 30<br>
+                    стало: 10 → 20 → 30
+                </div>
+
+                <h3>Вставка после элемента</h3>
+
+                <pre><code class="language-cpp">void addAfter(int pos, int x) {
+    val[idx] = x;
+    nxt[idx] = nxt[pos];
+    nxt[pos] = idx;
+    idx++;
+}</code></pre>
+
+                <p>
+                    Новый элемент вставляется после элемента <b>pos</b>.
+                    Сначала новый элемент указывает туда, куда раньше указывал <b>pos</b>.
+                    Потом <b>pos</b> начинает указывать на новый элемент.
+                </p>
+
+                <div class="scheme">
+                    было: pos → oldNext<br>
+                    стало: pos → new → oldNext
+                </div>
+
+                <h3>Удаление первого элемента</h3>
+
+                <pre><code class="language-cpp">void delHead() {
+    head = nxt[head];
+}</code></pre>
+
+                <p>
+                    Первый элемент удаляется так: голова списка просто переходит на следующий элемент.
+                </p>
+
+                <h3>Удаление после элемента</h3>
+
+                <pre><code class="language-cpp">void delAfter(int pos) {
+    nxt[pos] = nxt[nxt[pos]];
+}</code></pre>
+
+                <p>
+                    Мы перепрыгиваем через следующий элемент.
+                    Он остается в массиве, но больше не находится в списке.
+                </p>
+
+                <div class="scheme">
+                    было: pos → deleted → right<br>
+                    стало: pos → right
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

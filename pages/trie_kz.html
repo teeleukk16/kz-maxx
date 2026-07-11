@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бор | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="trie.html">RU</a>
+                    <a class="lang active" href="trie_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Бор</h1>
+            <p>Trie: string сақтау, insert, search, prefix count және массив арқылы реализация</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Бор деген не?</h2>
+
+                <p>
+                    <b>Бор</b>, немесе <b>trie</b>, — string-терді сақтайтын ағаш.
+                    Онда әр вершина қандай да бір prefix-ке сәйкес келеді.
+                </p>
+
+                <div class="scheme">
+                    root — бос string<br>
+                    edge — бір символ<br>
+                    root-тан жол — string немесе string prefix-і
+                </div>
+
+                <p>
+                    Бор мына жағдайларда ыңғайлы:
+                </p>
+
+                <ul>
+                    <li>string қосу</li>
+                    <li>string бар ма тексеру</li>
+                    <li>prefix бар ма тексеру</li>
+                    <li>берілген prefix-пен басталатын string санын табу</li>
+                    <li>сөздікпен жұмыс істеу</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Мысал</h2>
+
+                <p>
+                    Борға мына string-тер қосылған болсын:
+                </p>
+
+                <pre><code class="language-none">ab
+abc
+ac</code></pre>
+
+                <p>
+                    Онда ортақ prefix <b>a</b> бір рет қана сақталады.
+                </p>
+
+                <div class="scheme">
+                    root<br>
+                    └── a<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── b<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── c<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── c
+                </div>
+
+                <p>
+                    <b>ab</b> string-і <b>b</b> вершинасында аяқталады,
+                    <b>abc</b> string-і <b>c</b> вершинасында аяқталады,
+                    <b>ac</b> string-і басқа <b>c</b> вершинасында аяқталады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі идея</h2>
+
+                <p>
+                    String қосқанда символдар бойынша солдан оңға жүреміз.
+                    Егер керек transition жоқ болса, жаңа вершина жасаймыз.
+                </p>
+
+                <div class="scheme">
+                    current vertex v<br>
+                    current symbol c<br>
+                    transition жоқ болса → жаңа vertex жасаймыз<br>
+                    келесі vertex-ке өтеміз<br>
+                    соңында word end белгілейміз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Массив арқылы реализация</h2>
+
+                <p>
+                    Кіші ағылшын әріптері <b>a...z</b> үшін массив қолдану ыңғайлы:
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][26];</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <div class="scheme">
+                    tr[v][c] — v вершинасынан c символы бойынша қайда барамыз<br>
+                    егер tr[v][c] = 0 болса, transition жоқ<br>
+                    cnt[v] — v вершинасында қанша word аяқталады<br>
+                    pass[v] — v арқылы қанша word өтеді<br>
+                    idx — жасалған vertex саны
+                </div>
+
+                <div class="note">
+                    Әдетте root номері 0 болады.
+                    Жаңа вершина номерлері 1, 2, 3 болып кете береді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Базалық массивтер</h2>
+
+                <pre><code class="language-cpp">const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;</code></pre>
+
+                <p>
+                    Егер барлық қосылатын string ұзындықтарының суммасы <b>S</b> болса,
+                    бордағы vertex саны ең көбі <b>S + 1</b>.
+                </p>
+
+                <div class="note">
+                    Сондықтан N шамамен барлық string ұзындықтарының суммасы + 5 болуы керек.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Символды санға қалай айналдырамыз?</h2>
+
+                <p>
+                    Кіші ағылшын әріптері үшін:
+                </p>
+
+                <pre><code class="language-cpp">int c = s[i] - 'a';</code></pre>
+
+                <p>
+                    Сонда:
+                </p>
+
+                <div class="scheme">
+                    'a' → 0<br>
+                    'b' → 1<br>
+                    'c' → 2<br>
+                    ...<br>
+                    'z' → 25
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>String қосу</h2>
+
+                <p>
+                    <b>insert</b> функциясы string-ті борға қосады.
+                </p>
+
+                <pre><code class="language-cpp">void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}</code></pre>
+
+                <p>
+                    Соңында:
+                </p>
+
+                <div class="scheme">
+                    cnt[v]++ → осы vertex ішінде word аяқталады<br>
+                    pass[v]++ → осы vertex арқылы word өтеді
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Толық string іздеу</h2>
+
+                <p>
+                    String бар ма тексеру үшін,
+                    оның символдары бойынша борда жүреміз.
+                </p>
+
+                <p>
+                    Егер бір жерде transition жоқ болса, string жоқ.
+                    Егер соңына жетсек, <b>cnt[v]</b> тексереміз.
+                </p>
+
+                <pre><code class="language-cpp">bool search(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v] &gt; 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Prefix тексеру</h2>
+
+                <p>
+                    Берілген prefix-пен басталатын кем дегенде бір word бар ма,
+                    соны тексеру үшін prefix символдары бойынша жүреміз.
+                </p>
+
+                <pre><code class="language-cpp">bool startsWith(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return true;
+}</code></pre>
+
+                <p>
+                    Мұнда <b>cnt[v]</b> тексерудің қажеті жоқ,
+                    себебі бізге word end емес, path бар ма сол маңызды.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Берілген prefix-пен қанша word басталады?</h2>
+
+                <p>
+                    Бұл үшін <b>pass</b> массиві керек.
+                    Ол vertex арқылы қанша word өткенін көрсетеді.
+                </p>
+
+                <pre><code class="language-cpp">int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Нақты word қанша рет қосылды?</h2>
+
+                <p>
+                    Бұл үшін <b>cnt[v]</b> қолданамыз.
+                    Ол <b>v</b> вершинасында қанша word аяқталатынын сақтайды.
+                </p>
+
+                <pre><code class="language-cpp">int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Массив арқылы бордың толық коды</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+bool search(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v] &gt; 0;
+}
+
+bool startsWith(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return true;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    insert("ab");
+    insert("abc");
+    insert("ac");
+    insert("ab");
+
+    cout &lt;&lt; search("ab") &lt;&lt; '\n';
+    cout &lt;&lt; search("a") &lt;&lt; '\n';
+    cout &lt;&lt; startsWith("a") &lt;&lt; '\n';
+    cout &lt;&lt; countWord("ab") &lt;&lt; '\n';
+    cout &lt;&lt; countPrefix("a") &lt;&lt; '\n';
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Мысал output</h2>
+
+                <pre><code class="language-none">1
+0
+1
+2
+4</code></pre>
+
+                <p>
+                    Неге:
+                </p>
+
+                <ul>
+                    <li><b>search("ab") = 1</b>, себебі word бар</li>
+                    <li><b>search("a") = 0</b>, себебі prefix бар, бірақ <b>a</b> word ретінде жоқ</li>
+                    <li><b>startsWith("a") = 1</b>, себебі <b>a</b>-дан басталатын word бар</li>
+                    <li><b>countWord("ab") = 2</b>, себебі <b>ab</b> екі рет қосылды</li>
+                    <li><b>countPrefix("a") = 4</b>, себебі 4 word-тың бәрі <b>a</b>-дан басталады</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Word өшіру</h2>
+
+                <p>
+                    Егер word бұрын қосылған болса, оны өшіруге болады.
+                    Path бойынша жүріп <b>pass</b> азайтамыз,
+                    соңында <b>cnt</b> азайтамыз.
+                </p>
+
+                <pre><code class="language-cpp">bool eraseWord(string s) {
+    if (countWord(s) == 0) {
+        return false;
+    }
+
+    int v = 0;
+
+    pass[v]--;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        v = tr[v][c];
+        pass[v]--;
+    }
+
+    cnt[v]--;
+
+    return true;
+}</code></pre>
+
+                <div class="note">
+                    Бұл қарапайым версияда vertex-тер физически өшірілмейді,
+                    тек counter-лер азаяды.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>insert / find / prefix командалары</h2>
+
+                <p>
+                    Көп задачада query түрлері былай беріледі:
+                </p>
+
+                <div class="scheme">
+                    add s — string қосу<br>
+                    find s — толық string бар ма тексеру<br>
+                    pref s — prefix s-пен қанша string басталады
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Query-лермен толық программа</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string type, s;
+        cin &gt;&gt; type &gt;&gt; s;
+
+        if (type == "add") {
+            insert(s);
+        } else if (type == "find") {
+            if (countWord(s) &gt; 0) {
+                cout &lt;&lt; "YES\n";
+            } else {
+                cout &lt;&lt; "NO\n";
+            }
+        } else if (type == "pref") {
+            cout &lt;&lt; countPrefix(s) &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">7
+add ab
+add abc
+add ac
+find ab
+find a
+pref a
+pref ab</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES
+NO
+3
+2</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Цифрлар үшін бор</h2>
+
+                <p>
+                    Егер string тек <b>0...9</b> цифрларынан тұрса,
+                    alphabet size 10 болады.
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][10];
+
+int c = ch - '0';</code></pre>
+
+                <p>
+                    Бұл телефон номерлері туралы задачаларда жиі кездеседі.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Үлкен әріптер үшін бор</h2>
+
+                <p>
+                    Егер тек үлкен әріптер <b>A...Z</b> болса:
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][26];
+
+int c = ch - 'A';</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Егер alphabet үлкен болса</h2>
+
+                <p>
+                    Егер символ көп болса, <b>tr[N][alphabet]</b> өте көп memory алуы мүмкін.
+                    Онда <b>map</b> немесе <b>unordered_map</b> қолдануға болады.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;unordered_map&lt;char, int&gt;&gt; tr;</code></pre>
+
+                <div class="note">
+                    Бірақ кіші ағылшын әріптері үшін массив тезірек және қарапайым.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Телефон номерлері conflict тексеру</h2>
+
+                <p>
+                    Типтік задача:
+                    телефон номерлерінің тізімі бар.
+                    Бір номер екінші номердің prefix-і болып тұр ма, соны тексеру керек.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">911
+9112</code></pre>
+
+                <p>
+                    Мұнда <b>911</b> — <b>9112</b>-нің prefix-і, демек conflict бар.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Conflict тексеру идеясы</h2>
+
+                <p>
+                    String қосқанда:
+                </p>
+
+                <ul>
+                    <li>жолда келе жатып word аяқталатын vertex кездессек, ескі word жаңа word-тың prefix-і</li>
+                    <li>қосу біткеннен кейін current vertex-тің child-тары болса, жаңа word ескі word-тың prefix-і</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Conflict тексеру коды</h2>
+
+                <pre><code class="language-cpp">int tr[N][10];
+int cnt[N];
+int idx;
+
+bool hasChild(int v) {
+    for (int c = 0; c &lt; 10; c++) {
+        if (tr[v][c] != 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool insertPhone(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        if (cnt[v] &gt; 0) {
+            return false;
+        }
+
+        int c = ch - '0';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+    }
+
+    if (cnt[v] &gt; 0) {
+        return false;
+    }
+
+    if (hasChild(v)) {
+        return false;
+    }
+
+    cnt[v]++;
+
+    return true;
+}</code></pre>
+
+                <div class="note">
+                    false — prefix conflict табылды деген сөз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td>Ұзындығы L string қосу</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Ұзындығы L string іздеу</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Ұзындығы L prefix тексеру</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Prefix-пен word санын табу</td>
+                        <td>O(L)</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Memory:
+                </p>
+
+                <div class="scheme">
+                    O(vertex саны * alphabet size)
+                </div>
+
+                <p>
+                    <b>tr[N][26]</b> үшін memory шамамен:
+                </p>
+
+                <pre><code class="language-none">N * 26 * sizeof(int)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Бор қашан қолданылады?</h2>
+
+                <div class="scheme">
+                    көп string сақтау керек<br>
+                    string тез іздеу керек<br>
+                    prefix тез іздеу керек<br>
+                    prefix-пен басталатын string санын табу керек<br>
+                    prefix conflict тексеру керек<br>
+                    string dictionary керек
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>root — 0 вершина екенін ұмыту</li>
+                    <li>0-ді жаңа vertex ретінде қолдану, бірақ 0 root болып тұр</li>
+                    <li>Жаңа vertex жасағанда <b>idx</b> арттырмау</li>
+                    <li>Word end белгілеу үшін <b>cnt[v]++</b> ұмыту</li>
+                    <li><b>cnt</b> пен <b>pass</b> шатастыру</li>
+                    <li><b>N</b> массив size-ын тым кіші алу</li>
+                    <li>Цифрлар үшін <b>tr[N][26]</b> және <b>ch - 'a'</b> қолдану</li>
+                    <li>Бірнеше test арасында массивтерді тазаламау</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Test арасында борды қалай тазалаймыз?</h2>
+
+                <p>
+                    Егер test көп болса, тек қолданылған vertex-терді тазалауға болады.
+                </p>
+
+                <pre><code class="language-cpp">void clearTrie() {
+    for (int i = 0; i &lt;= idx; i++) {
+        for (int c = 0; c &lt; 26; c++) {
+            tr[i][c] = 0;
+        }
+
+        cnt[i] = 0;
+        pass[i] = 0;
+    }
+
+    idx = 0;
+}</code></pre>
+
+                <div class="note">
+                    Бұл бүкіл үлкен N массивін тазалағаннан тезірек.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ең бастысы</h2>
+
+                <div class="scheme">
+                    бор = prefix ағашы<br>
+                    root = 0<br>
+                    tr[v][c] = v вершинасынан c символы бойынша transition<br>
+                    cnt[v] = v ішінде қанша word аяқталады<br>
+                    pass[v] = v арқылы қанша word өтеді<br>
+                    insert/search/prefix O(string length) жұмыс істейді
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

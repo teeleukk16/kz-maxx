@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treap | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="treap.html">RU</a>
+                    <a class="lang active" href="treap_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Treap</h1>
+            <p>Массив арқылы реализация: split pair&lt;int, int&gt;, merge, insert, erase, find, kth</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Түсіндіру</h2>
+
+                <p>
+                    <b>Treap</b> — бұл декартово дерево.
+                    Ол екі идеяны бірге қолданады:
+                </p>
+
+                <ul>
+                    <li><b>Binary Search Tree</b> — <b>key</b> бойынша</li>
+                    <li><b>Heap</b> — кездейсоқ <b>prior</b> бойынша</li>
+                </ul>
+
+                <div class="note">
+                    <b>key</b> бойынша: сол жақта кіші мәндер, оң жақта үлкен мәндер тұрады.  
+                    <b>prior</b> бойынша: parent prior балаларының prior мәнінен үлкен болады.
+                </div>
+
+                <div class="scheme">
+                    key: left &lt; root &lt; right<br>
+                    prior: root.prior &gt; child.prior
+                </div>
+
+                <p>
+                    Приоритет кездейсоқ болғандықтан, дерево көбіне теңгерілген болады.
+                    Сондықтан негізгі операциялар орташа <b>O(log n)</b> уақытта жұмыс істейді.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Массивте не сақтаймыз?</h2>
+
+                <pre><code class="language-cpp">struct Node {
+    int key, prior;
+    int l, r;
+    int cnt;
+} tr[N];
+
+int root;</code></pre>
+
+                <ul>
+                    <li><b>key</b> — вершинадағы мән</li>
+                    <li><b>prior</b> — кездейсоқ приоритет</li>
+                    <li><b>l</b> — сол жақ баланың индексі</li>
+                    <li><b>r</b> — оң жақ баланың индексі</li>
+                    <li><b>cnt</b> — осы поддеревоның размері</li>
+                    <li><b>root</b> — барлық деревоның корені</li>
+                </ul>
+
+                <div class="note">
+                    <b>0</b> индексі пустая вершина дегенді білдіреді.  
+                    Яғни бұл <b>nullptr</b> сияқты, бірақ массивте.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі операциялар</h2>
+
+                <h3>split</h3>
+
+                <p>
+                    <b>split(v, x)</b> дерево <b>v</b>-ны екі бөлікке бөледі:
+                </p>
+
+                <ul>
+                    <li>бірінші бөлік — барлық мәндер <b>&lt;= x</b></li>
+                    <li>екінші бөлік — барлық мәндер <b>&gt; x</b></li>
+                </ul>
+
+                <div class="scheme">
+                    split(root, 10) → {дерево &lt;= 10, дерево &gt; 10}
+                </div>
+
+                <h3>merge</h3>
+
+                <p>
+                    <b>merge(a, b)</b> екі деревоны бір деревоға қосады.
+                </p>
+
+                <div class="note">
+                    Маңызды: <b>a</b> ішіндегі барлық мәндер <b>b</b> ішіндегі барлық мәндерден кіші болуы керек.
+                </div>
+
+                <div class="scheme">
+                    merge(a, b) → бір дерево
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализацияға арналған есеп мысалы</h2>
+
+                <p>
+                    Бізге сандар жиынын сақтау керек және бірнеше команда орындау керек.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>insert x</b></td>
+                        <td><b>x</b> санын қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>erase x</b></td>
+                        <td><b>x</b> санын өшіреді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>find x</b></td>
+                        <td><b>x</b> бар ма, соны тексереді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>kth k</b></td>
+                        <td>өсу ретімен <b>k-шы</b> элементті табады</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">10
+insert 10
+insert 5
+insert 20
+find 10
+find 7
+kth 2
+erase 10
+find 10
+kth 2
+find 20</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES
+NO
+10
+NO
+20
+YES</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+struct Node {
+    int key, prior;
+    int l, r;
+    int cnt;
+} tr[N];
+
+int root;
+int idx;
+
+int sizeOf(int v) {
+    if (v == 0) {
+        return 0;
+    }
+
+    return tr[v].cnt;
+}
+
+void pull(int v) {
+    if (v == 0) {
+        return;
+    }
+
+    tr[v].cnt = 1 + sizeOf(tr[v].l) + sizeOf(tr[v].r);
+}
+
+int newNode(int x) {
+    idx++;
+
+    tr[idx].key = x;
+    tr[idx].prior = rand();
+    tr[idx].l = 0;
+    tr[idx].r = 0;
+    tr[idx].cnt = 1;
+
+    return idx;
+}
+
+pair&lt;int, int&gt; split(int v, int x) {
+    if (v == 0) {
+        return {0, 0};
+    }
+
+    if (tr[v].key &lt;= x) {
+        pair&lt;int, int&gt; p = split(tr[v].r, x);
+
+        tr[v].r = p.first;
+        pull(v);
+
+        return {v, p.second};
+    } else {
+        pair&lt;int, int&gt; p = split(tr[v].l, x);
+
+        tr[v].l = p.second;
+        pull(v);
+
+        return {p.first, v};
+    }
+}
+
+int merge(int a, int b) {
+    if (a == 0) {
+        return b;
+    }
+
+    if (b == 0) {
+        return a;
+    }
+
+    if (tr[a].prior &gt; tr[b].prior) {
+        tr[a].r = merge(tr[a].r, b);
+        pull(a);
+
+        return a;
+    } else {
+        tr[b].l = merge(a, tr[b].l);
+        pull(b);
+
+        return b;
+    }
+}
+
+bool findKey(int v, int x) {
+    if (v == 0) {
+        return false;
+    }
+
+    if (tr[v].key == x) {
+        return true;
+    }
+
+    if (x &lt; tr[v].key) {
+        return findKey(tr[v].l, x);
+    } else {
+        return findKey(tr[v].r, x);
+    }
+}
+
+void insertKey(int x) {
+    if (findKey(root, x)) {
+        return;
+    }
+
+    pair&lt;int, int&gt; p = split(root, x);
+
+    int leftTree = p.first;
+    int rightTree = p.second;
+    int node = newNode(x);
+
+    root = merge(merge(leftTree, node), rightTree);
+}
+
+void eraseKey(int &amp;v, int x) {
+    if (v == 0) {
+        return;
+    }
+
+    if (tr[v].key == x) {
+        v = merge(tr[v].l, tr[v].r);
+        return;
+    }
+
+    if (x &lt; tr[v].key) {
+        eraseKey(tr[v].l, x);
+    } else {
+        eraseKey(tr[v].r, x);
+    }
+
+    pull(v);
+}
+
+int kth(int v, int k) {
+    int leftSize = sizeOf(tr[v].l);
+
+    if (k == leftSize + 1) {
+        return tr[v].key;
+    }
+
+    if (k &lt;= leftSize) {
+        return kth(tr[v].l, k);
+    }
+
+    return kth(tr[v].r, k - leftSize - 1);
+}
+
+void printTree(int v) {
+    if (v == 0) {
+        return;
+    }
+
+    printTree(tr[v].l);
+    cout &lt;&lt; tr[v].key &lt;&lt; ' ';
+    printTree(tr[v].r);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    srand(time(0));
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string op;
+        int x;
+
+        cin &gt;&gt; op &gt;&gt; x;
+
+        if (op == "insert") {
+            insertKey(x);
+        } else if (op == "erase") {
+            eraseKey(root, x);
+        } else if (op == "find") {
+            if (findKey(root, x)) {
+                cout &lt;&lt; "YES\n";
+            } else {
+                cout &lt;&lt; "NO\n";
+            }
+        } else if (op == "kth") {
+            if (x &gt;= 1 &amp;&amp; x &lt;= sizeOf(root)) {
+                cout &lt;&lt; kth(root, x) &lt;&lt; '\n';
+            }
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Функциялар түсіндірмесі</h2>
+
+                <h3>1. sizeOf</h3>
+
+                <pre><code class="language-cpp">int sizeOf(int v) {
+    if (v == 0) {
+        return 0;
+    }
+
+    return tr[v].cnt;
+}</code></pre>
+
+                <p>
+                    Бұл функция поддерево размерін қайтарады.
+                    Егер вершина жоқ болса, размер <b>0</b> болады.
+                </p>
+
+                <div class="scheme">
+                    sizeOf(0) = 0<br>
+                    sizeOf(v) = tr[v].cnt
+                </div>
+
+                <h3>2. pull</h3>
+
+                <pre><code class="language-cpp">void pull(int v) {
+    tr[v].cnt = 1 + sizeOf(tr[v].l) + sizeOf(tr[v].r);
+}</code></pre>
+
+                <p>
+                    Бұл функция <b>v</b> вершинасының <b>cnt</b> мәнін қайта есептейді.
+                </p>
+
+                <div class="scheme">
+                    сол жақта 2 вершина<br>
+                    оң жақта 3 вершина<br>
+                    cnt = 1 + 2 + 3 = 6
+                </div>
+
+                <h3>3. newNode</h3>
+
+                <pre><code class="language-cpp">int newNode(int x)</code></pre>
+
+                <p>
+                    Жаңа вершина жасайды және оның индексін қайтарады.
+                </p>
+
+                <div class="scheme">
+                    newNode(10)<br>
+                    key = 10<br>
+                    l = 0, r = 0<br>
+                    cnt = 1
+                </div>
+
+                <h3>4. split</h3>
+
+                <pre><code class="language-cpp">pair&lt;int, int&gt; split(int v, int x)</code></pre>
+
+                <p>
+                    Деревоны екі бөлікке бөледі:
+                </p>
+
+                <ul>
+                    <li>бірінші бөлік: мәндер <b>&lt;= x</b></li>
+                    <li>екінші бөлік: мәндер <b>&gt; x</b></li>
+                </ul>
+
+                <div class="scheme">
+                    дерево: 3 5 8 10 15<br>
+                    split(root, 8)<br>
+                    leftTree: 3 5 8<br>
+                    rightTree: 10 15
+                </div>
+
+                <p>
+                    Егер қазіргі <b>key &lt;= x</b> болса, онда бұл вершина сол жақ бөлікке кіреді.
+                    Сондықтан оның оң жақ баласын бөлеміз.
+                </p>
+
+                <pre><code class="language-cpp">if (tr[v].key &lt;= x) {
+    pair&lt;int, int&gt; p = split(tr[v].r, x);
+
+    tr[v].r = p.first;
+    pull(v);
+
+    return {v, p.second};
+}</code></pre>
+
+                <p>
+                    Егер қазіргі <b>key &gt; x</b> болса, онда бұл вершина оң жақ бөлікке кіреді.
+                    Сондықтан оның сол жақ баласын бөлеміз.
+                </p>
+
+                <pre><code class="language-cpp">else {
+    pair&lt;int, int&gt; p = split(tr[v].l, x);
+
+    tr[v].l = p.second;
+    pull(v);
+
+    return {p.first, v};
+}</code></pre>
+
+                <h3>5. merge</h3>
+
+                <pre><code class="language-cpp">int merge(int a, int b)</code></pre>
+
+                <p>
+                    Екі деревоны бір деревоға қосады.
+                    <b>a</b> ішіндегі барлық мәндер <b>b</b> ішіндегі мәндерден кіші болуы керек.
+                </p>
+
+                <div class="scheme">
+                    a: 1 3 5<br>
+                    b: 8 10 12<br>
+                    merge(a, b): 1 3 5 8 10 12
+                </div>
+
+                <p>
+                    Қай вершинада <b>prior</b> үлкен болса, сол корень болады.
+                </p>
+
+                <pre><code class="language-cpp">if (tr[a].prior &gt; tr[b].prior) {
+    tr[a].r = merge(tr[a].r, b);
+    pull(a);
+
+    return a;
+}</code></pre>
+
+                <p>
+                    Егер <b>b</b> приоритеті үлкен болса, онда <b>b</b> корень болады.
+                </p>
+
+                <pre><code class="language-cpp">else {
+    tr[b].l = merge(a, tr[b].l);
+    pull(b);
+
+    return b;
+}</code></pre>
+
+                <h3>6. findKey</h3>
+
+                <pre><code class="language-cpp">bool findKey(int v, int x)</code></pre>
+
+                <p>
+                    <b>x</b> санын іздейді.
+                    Бұл кәдімгі binary search tree сияқты жұмыс істейді.
+                </p>
+
+                <div class="scheme">
+                    егер x кіші болса → солға барамыз<br>
+                    егер x үлкен болса → оңға барамыз<br>
+                    егер x == key болса → таптық
+                </div>
+
+                <h3>7. insertKey</h3>
+
+                <pre><code class="language-cpp">void insertKey(int x)</code></pre>
+
+                <p>
+                    <b>x</b> санын деревоға қосады.
+                </p>
+
+                <div class="scheme">
+                    бұрын: 3 5 10<br>
+                    insert 7<br>
+                    split(root, 7): 3 5 және 10<br>
+                    кейін: merge(3 5, 7, 10)<br>
+                    болды: 3 5 7 10
+                </div>
+
+                <pre><code class="language-cpp">pair&lt;int, int&gt; p = split(root, x);
+
+int leftTree = p.first;
+int rightTree = p.second;
+int node = newNode(x);
+
+root = merge(merge(leftTree, node), rightTree);</code></pre>
+
+                <h3>8. eraseKey</h3>
+
+                <pre><code class="language-cpp">void eraseKey(int &amp;v, int x)</code></pre>
+
+                <p>
+                    <b>x</b> санын дерево ішінен өшіреді.
+                    Керек вершина табылса, оны сол және оң балаларының merge нәтижесімен ауыстырамыз.
+                </p>
+
+                <div class="scheme">
+                    бұрын: left ← x → right<br>
+                    кейін: merge(left, right)
+                </div>
+
+                <pre><code class="language-cpp">if (tr[v].key == x) {
+    v = merge(tr[v].l, tr[v].r);
+    return;
+}</code></pre>
+
+                <h3>9. kth</h3>
+
+                <pre><code class="language-cpp">int kth(int v, int k)</code></pre>
+
+                <p>
+                    Өсу ретімен <b>k-шы</b> элементті табады.
+                    Ол үшін сол жақ поддерево размері қолданылады.
+                </p>
+
+                <div class="scheme">
+                    дерево: 3 5 7 10 20<br>
+                    kth(1) = 3<br>
+                    kth(3) = 7<br>
+                    kth(5) = 20
+                </div>
+
+                <p>
+                    Егер сол жақта <b>leftSize</b> элемент болса:
+                </p>
+
+                <ul>
+                    <li>егер <b>k == leftSize + 1</b>, жауап — қазіргі вершина</li>
+                    <li>егер <b>k &lt;= leftSize</b>, сол жаққа барамыз</li>
+                    <li>әйтпесе оң жаққа барамыз және <b>k</b> мәнін азайтамыз</li>
+                </ul>
+
+                <h3>10. printTree</h3>
+
+                <pre><code class="language-cpp">void printTree(int v)</code></pre>
+
+                <p>
+                    Деревоны өсу ретімен шығарады.
+                    Себебі алдымен сол жақ, кейін root, соңында оң жақ шығарылады.
+                </p>
+
+                <div class="scheme">
+                    дерево ішінде: 10, 3, 20, 5<br>
+                    printTree шығарады: 3 5 10 20
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Орташа уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td>insert</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>erase</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>find</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>kth</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>split / merge</td>
+                        <td>O(log n)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

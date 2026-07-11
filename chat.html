@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат | kz-maxx</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <div class="top-left">
+                <h1 class="logo">
+                    <a href="website.html">kz<span>-</span>maxx</a>
+                </h1>
+
+                <div class="header-contacts">
+                    <a href="https://codeforces.com/profile/Teeleu" target="_blank">📊 Codeforces</a>
+                    <a href="https://t.me/+qaJOFXS6IlYyMjIy" target="_blank">✈️ Telegram</a>
+                </div>
+            </div>
+
+            <div class="top-menu">
+                <div class="langs">
+                    <a class="lang active" href="chat.html">RU</a>
+                    <a class="lang" href="chat_kz.html">KZ</a>
+                </div>
+
+                <a class="top-btn" href="website.html">Главная</a>
+                <a class="top-btn" href="members.html">Участники</a>
+                <a class="top-btn" href="login.html">Вход</a>
+                <a class="top-btn blue" href="register.html">Регистрация</a>
+            </div>
+        </header>
+
+        <section class="chat-head">
+            <div>
+                <h1>ЧАТ</h1>
+                <p>Общий чат для всех участников сайта</p>
+            </div>
+
+            <div class="online-box">
+                <span class="online-dot"></span>
+                <b id="onlineCount">0</b>
+                <span>online</span>
+            </div>
+        </section>
+
+        <main class="chat-page">
+            <div id="authWarning" class="chat-warning">
+                Чтобы отправлять сообщения, нужно войти в аккаунт.
+                <a href="login.html">Войти</a>
+            </div>
+
+            <section id="messages" class="messages"></section>
+
+            <section class="chat-form">
+                <textarea id="messageInput" placeholder="Напиши сообщение..." maxlength="1000"></textarea>
+
+                <button id="sendBtn">Отправить</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://jelwhsfcjyqlaxomipam.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_cefK5xE4WT4fltCdlsfV_A_BwlEJKbZ";
+
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const messagesBox = document.getElementById("messages");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const onlineCount = document.getElementById("onlineCount");
+        const authWarning = document.getElementById("authWarning");
+
+        let currentUser = null;
+        let currentNickname = "";
+        let currentColor = "";
+        let rendered = new Set();
+
+        const colors = [
+            "#2563eb",
+            "#dc2626",
+            "#16a34a",
+            "#9333ea",
+            "#ea580c",
+            "#0891b2",
+            "#be123c",
+            "#4f46e5",
+            "#059669",
+            "#ca8a04",
+            "#7c3aed",
+            "#db2777",
+            "#0f766e",
+            "#1d4ed8",
+            "#b45309"
+        ];
+
+        function getGuestId() {
+            let id = localStorage.getItem("guest_id");
+
+            if (!id) {
+                id = "guest_" + Math.random().toString(36).slice(2) + Date.now();
+                localStorage.setItem("guest_id", id);
+            }
+
+            return id;
+        }
+
+        function getColorByText(text) {
+            let h = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                h = (h * 31 + text.charCodeAt(i)) >>> 0;
+            }
+
+            return colors[h % colors.length];
+        }
+
+        function formatTime(dateText) {
+            const d = new Date(dateText);
+
+            return d.toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function addMessage(msg) {
+            if (rendered.has(msg.id)) {
+                return;
+            }
+
+            rendered.add(msg.id);
+
+            const shouldScroll =
+                messagesBox.scrollTop + messagesBox.clientHeight >= messagesBox.scrollHeight - 120;
+
+            const item = document.createElement("div");
+            item.className = "message-item";
+
+            const top = document.createElement("div");
+            top.className = "message-top";
+
+            const name = document.createElement("b");
+            name.className = "message-name";
+            name.style.color = msg.color || getColorByText(msg.nickname);
+            name.textContent = msg.nickname;
+
+            const time = document.createElement("span");
+            time.className = "message-time";
+            time.textContent = formatTime(msg.created_at);
+
+            const text = document.createElement("p");
+            text.className = "message-text";
+            text.textContent = msg.text;
+
+            top.appendChild(name);
+            top.appendChild(time);
+
+            item.appendChild(top);
+            item.appendChild(text);
+
+            messagesBox.appendChild(item);
+
+            if (shouldScroll) {
+                messagesBox.scrollTop = messagesBox.scrollHeight;
+            }
+        }
+
+        async function loadUser() {
+            const result = await db.auth.getSession();
+            const session = result.data.session;
+
+            if (!session) {
+                currentUser = null;
+                currentNickname = "Гость";
+                currentColor = getColorByText(getGuestId());
+
+                sendBtn.disabled = true;
+                messageInput.disabled = true;
+                authWarning.style.display = "block";
+
+                return;
+            }
+
+            currentUser = session.user;
+
+            let nickname = "";
+
+            const profileResult = await db
+                .from("profiles")
+                .select("name")
+                .eq("id", currentUser.id)
+                .maybeSingle();
+
+            if (profileResult.data && profileResult.data.name) {
+                nickname = profileResult.data.name;
+            } else if (currentUser.user_metadata && currentUser.user_metadata.name) {
+                nickname = currentUser.user_metadata.name;
+            } else if (currentUser.email) {
+                nickname = currentUser.email.split("@")[0];
+            } else {
+                nickname = "Участник";
+            }
+
+            currentNickname = nickname;
+            currentColor = getColorByText(currentUser.id);
+
+            sendBtn.disabled = false;
+            messageInput.disabled = false;
+            authWarning.style.display = "none";
+        }
+
+        async function loadMessages() {
+            const result = await db
+                .from("chat_messages")
+                .select("*")
+                .order("created_at", { ascending: true })
+                .limit(200);
+
+            if (result.error) {
+                console.log(result.error);
+                return;
+            }
+
+            messagesBox.innerHTML = "";
+            rendered.clear();
+
+            result.data.forEach(addMessage);
+
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            if (!currentUser) {
+                location.href = "login.html";
+                return;
+            }
+
+            const text = messageInput.value.trim();
+
+            if (!text) {
+                return;
+            }
+
+            sendBtn.disabled = true;
+
+            const result = await db
+                .from("chat_messages")
+                .insert({
+                    user_id: currentUser.id,
+                    nickname: currentNickname,
+                    color: currentColor,
+                    text: text
+                });
+
+            sendBtn.disabled = false;
+
+            if (result.error) {
+                alert("Ошибка отправки сообщения");
+                console.log(result.error);
+                return;
+            }
+
+            messageInput.value = "";
+            messageInput.focus();
+        }
+
+        function subscribeMessages() {
+            db.channel("chat_messages_realtime")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "chat_messages"
+                    },
+                    payload => {
+                        addMessage(payload.new);
+                    }
+                )
+                .subscribe();
+        }
+
+        function subscribeOnline() {
+            const key = currentUser ? currentUser.id : getGuestId();
+
+            const channel = db.channel("site_online", {
+                config: {
+                    presence: {
+                        key: key
+                    }
+                }
+            });
+
+            channel.on("presence", { event: "sync" }, () => {
+                const state = channel.presenceState();
+                onlineCount.textContent = Object.keys(state).length;
+            });
+
+            channel.subscribe(async status => {
+                if (status === "SUBSCRIBED") {
+                    await channel.track({
+                        user_id: key,
+                        nickname: currentNickname || "Гость",
+                        online_at: new Date().toISOString()
+                    });
+                }
+            });
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+
+        messageInput.addEventListener("keydown", e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        async function init() {
+            await loadUser();
+            await loadMessages();
+
+            subscribeMessages();
+            subscribeOnline();
+        }
+
+        init();
+    </script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

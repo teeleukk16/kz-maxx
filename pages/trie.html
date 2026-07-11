@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бор | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="trie.html">RU</a>
+                    <a class="lang" href="trie_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Бор</h1>
+            <p>Trie для строк: вставка, поиск, подсчет префиксов и реализация через массивы</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое бор?</h2>
+
+                <p>
+                    <b>Бор</b>, или <b>trie</b>, — это дерево для хранения строк.
+                    В нем каждая вершина соответствует какому-то префиксу.
+                </p>
+
+                <div class="scheme">
+                    root — пустая строка<br>
+                    ребро — один символ<br>
+                    путь от root — строка или префикс строки
+                </div>
+
+                <p>
+                    Бор удобен, когда нужно быстро работать со множеством строк:
+                </p>
+
+                <ul>
+                    <li>добавлять строки</li>
+                    <li>проверять, есть ли строка</li>
+                    <li>проверять, есть ли префикс</li>
+                    <li>считать количество строк с данным префиксом</li>
+                    <li>искать слова в словаре</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Пример</h2>
+
+                <p>
+                    Пусть в бор добавлены строки:
+                </p>
+
+                <pre><code class="language-none">ab
+abc
+ac</code></pre>
+
+                <p>
+                    Тогда общий префикс <b>a</b> будет храниться один раз.
+                </p>
+
+                <div class="scheme">
+                    root<br>
+                    └── a<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── b<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── c<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── c
+                </div>
+
+                <p>
+                    Строка <b>ab</b> заканчивается в вершине <b>b</b>,
+                    строка <b>abc</b> заканчивается в вершине <b>c</b>,
+                    строка <b>ac</b> заканчивается в другой вершине <b>c</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Главная идея</h2>
+
+                <p>
+                    Когда вставляем строку, идем по символам слева направо.
+                    Если нужного перехода нет, создаем новую вершину.
+                </p>
+
+                <div class="scheme">
+                    текущая вершина v<br>
+                    текущий символ c<br>
+                    если перехода нет → создаем вершину<br>
+                    переходим в следующую вершину<br>
+                    в конце отмечаем конец слова
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализация через массивы</h2>
+
+                <p>
+                    Для маленьких английских букв <b>a...z</b> удобно использовать массив:
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][26];</code></pre>
+
+                <p>
+                    Здесь:
+                </p>
+
+                <div class="scheme">
+                    tr[v][c] — куда идем из вершины v по символу c<br>
+                    если tr[v][c] = 0, перехода нет<br>
+                    cnt[v] — сколько слов заканчивается в вершине v<br>
+                    pass[v] — сколько слов проходит через вершину v<br>
+                    idx — количество созданных вершин
+                </div>
+
+                <div class="note">
+                    Обычно root имеет номер 0.
+                    Новые вершины получают номера 1, 2, 3 и так далее.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Базовые массивы</h2>
+
+                <pre><code class="language-cpp">const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;</code></pre>
+
+                <p>
+                    Если сумма длин всех строк не больше <b>S</b>,
+                    то вершин в боре будет не больше <b>S + 1</b>.
+                </p>
+
+                <div class="note">
+                    Поэтому размер N нужно брать примерно как сумма длин всех добавляемых строк + 5.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как символ перевести в число?</h2>
+
+                <p>
+                    Для маленьких английских букв:
+                </p>
+
+                <pre><code class="language-cpp">int c = s[i] - 'a';</code></pre>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <div class="scheme">
+                    'a' → 0<br>
+                    'b' → 1<br>
+                    'c' → 2<br>
+                    ...<br>
+                    'z' → 25
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Вставка строки</h2>
+
+                <p>
+                    Функция <b>insert</b> добавляет строку в бор.
+                </p>
+
+                <pre><code class="language-cpp">void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}</code></pre>
+
+                <p>
+                    В конце:
+                </p>
+
+                <div class="scheme">
+                    cnt[v]++ означает, что в этой вершине заканчивается слово<br>
+                    pass[v]++ означает, что через эту вершину проходит слово
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Поиск полной строки</h2>
+
+                <p>
+                    Чтобы проверить, есть ли строка в боре,
+                    идем по символам строки.
+                </p>
+
+                <p>
+                    Если где-то нет перехода, строки нет.
+                    Если дошли до конца, проверяем <b>cnt[v]</b>.
+                </p>
+
+                <pre><code class="language-cpp">bool search(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v] &gt; 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Проверка префикса</h2>
+
+                <p>
+                    Чтобы проверить, есть ли хотя бы одно слово с таким префиксом,
+                    просто идем по символам префикса.
+                </p>
+
+                <pre><code class="language-cpp">bool startsWith(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return true;
+}</code></pre>
+
+                <p>
+                    Здесь не нужно проверять <b>cnt[v]</b>,
+                    потому что нам важен не конец слова, а существование пути.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Сколько слов имеют данный префикс?</h2>
+
+                <p>
+                    Для этого нужен массив <b>pass</b>.
+                    Он показывает, сколько слов проходит через вершину.
+                </p>
+
+                <pre><code class="language-cpp">int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Сколько раз добавили конкретное слово?</h2>
+
+                <p>
+                    Для этого используем <b>cnt[v]</b>.
+                    Он хранит количество слов, которые заканчиваются в вершине <b>v</b>.
+                </p>
+
+                <pre><code class="language-cpp">int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полный код бора на массивах</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+bool search(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v] &gt; 0;
+}
+
+bool startsWith(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return false;
+        }
+
+        v = tr[v][c];
+    }
+
+    return true;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    insert("ab");
+    insert("abc");
+    insert("ac");
+    insert("ab");
+
+    cout &lt;&lt; search("ab") &lt;&lt; '\n';
+    cout &lt;&lt; search("a") &lt;&lt; '\n';
+    cout &lt;&lt; startsWith("a") &lt;&lt; '\n';
+    cout &lt;&lt; countWord("ab") &lt;&lt; '\n';
+    cout &lt;&lt; countPrefix("a") &lt;&lt; '\n';
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Output примера</h2>
+
+                <pre><code class="language-none">1
+0
+1
+2
+4</code></pre>
+
+                <p>
+                    Почему:
+                </p>
+
+                <ul>
+                    <li><b>search("ab") = 1</b>, потому что слово есть</li>
+                    <li><b>search("a") = 0</b>, потому что префикс есть, но слова <b>a</b> нет</li>
+                    <li><b>startsWith("a") = 1</b>, потому что есть слова на <b>a</b></li>
+                    <li><b>countWord("ab") = 2</b>, потому что <b>ab</b> добавили два раза</li>
+                    <li><b>countPrefix("a") = 4</b>, потому что все 4 добавленных слова начинаются с <b>a</b></li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Удаление слова</h2>
+
+                <p>
+                    Если слово было добавлено, его можно удалить.
+                    Нужно пройти по пути и уменьшить <b>pass</b>,
+                    а в конце уменьшить <b>cnt</b>.
+                </p>
+
+                <pre><code class="language-cpp">bool eraseWord(string s) {
+    if (countWord(s) == 0) {
+        return false;
+    }
+
+    int v = 0;
+
+    pass[v]--;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        v = tr[v][c];
+        pass[v]--;
+    }
+
+    cnt[v]--;
+
+    return true;
+}</code></pre>
+
+                <div class="note">
+                    В этой простой версии мы не удаляем вершины физически,
+                    просто уменьшаем счетчики.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Команды insert / find / prefix</h2>
+
+                <p>
+                    Часто в задачах дают запросы:
+                </p>
+
+                <div class="scheme">
+                    add s — добавить строку<br>
+                    find s — проверить полную строку<br>
+                    pref s — сколько строк имеют префикс s
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Полная программа с запросами</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string type, s;
+        cin &gt;&gt; type &gt;&gt; s;
+
+        if (type == "add") {
+            insert(s);
+        } else if (type == "find") {
+            if (countWord(s) &gt; 0) {
+                cout &lt;&lt; "YES\n";
+            } else {
+                cout &lt;&lt; "NO\n";
+            }
+        } else if (type == "pref") {
+            cout &lt;&lt; countPrefix(s) &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">7
+add ab
+add abc
+add ac
+find ab
+find a
+pref a
+pref ab</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES
+NO
+3
+2</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Бор для цифр</h2>
+
+                <p>
+                    Если строки состоят из цифр <b>0...9</b>,
+                    нужно поменять размер алфавита на 10.
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][10];
+
+int c = ch - '0';</code></pre>
+
+                <p>
+                    Это часто встречается в задачах про номера телефонов.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Бор для больших букв</h2>
+
+                <p>
+                    Если есть только большие буквы <b>A...Z</b>:
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][26];
+
+int c = ch - 'A';</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Если алфавит большой</h2>
+
+                <p>
+                    Если символов много, массив <b>tr[N][alphabet]</b> может занимать слишком много памяти.
+                    Тогда можно использовать <b>map</b> или <b>unordered_map</b>.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;unordered_map&lt;char, int&gt;&gt; tr;</code></pre>
+
+                <div class="note">
+                    Но для маленьких английских букв массив быстрее и проще.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Проверка на конфликт телефонных номеров</h2>
+
+                <p>
+                    Типичная задача:
+                    есть список телефонных номеров.
+                    Нужно проверить, является ли один номер префиксом другого.
+                </p>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">911
+9112</code></pre>
+
+                <p>
+                    Здесь <b>911</b> — префикс <b>9112</b>, значит есть конфликт.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Идея проверки конфликта</h2>
+
+                <p>
+                    Когда вставляем строку:
+                </p>
+
+                <ul>
+                    <li>если во время движения встретили вершину, где уже заканчивается слово, значит старое слово является префиксом нового</li>
+                    <li>если после вставки у текущей вершины есть дети, значит новое слово является префиксом старого</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Код проверки конфликта</h2>
+
+                <pre><code class="language-cpp">int tr[N][10];
+int cnt[N];
+int idx;
+
+bool hasChild(int v) {
+    for (int c = 0; c &lt; 10; c++) {
+        if (tr[v][c] != 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool insertPhone(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        if (cnt[v] &gt; 0) {
+            return false;
+        }
+
+        int c = ch - '0';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+    }
+
+    if (cnt[v] &gt; 0) {
+        return false;
+    }
+
+    if (hasChild(v)) {
+        return false;
+    }
+
+    cnt[v]++;
+
+    return true;
+}</code></pre>
+
+                <div class="note">
+                    false означает, что найден конфликт префиксов.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Время</th>
+                    </tr>
+
+                    <tr>
+                        <td>Вставить строку длины L</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Найти строку длины L</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Проверить префикс длины L</td>
+                        <td>O(L)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Посчитать слова с префиксом</td>
+                        <td>O(L)</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Память:
+                </p>
+
+                <div class="scheme">
+                    O(количество вершин * размер алфавита)
+                </div>
+
+                <p>
+                    Для <b>tr[N][26]</b> память примерно:
+                </p>
+
+                <pre><code class="language-none">N * 26 * sizeof(int)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Когда использовать бор?</h2>
+
+                <div class="scheme">
+                    нужно хранить много строк<br>
+                    нужно быстро искать строки<br>
+                    нужно быстро искать префиксы<br>
+                    нужно считать количество строк с префиксом<br>
+                    нужно проверять prefix conflict<br>
+                    нужен словарь строк
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Забыть, что root — это вершина 0</li>
+                    <li>Использовать 0 как новую вершину, хотя 0 уже root</li>
+                    <li>Не увеличить <b>idx</b> при создании вершины</li>
+                    <li>Забыть отметить конец слова через <b>cnt[v]++</b></li>
+                    <li>Путать <b>cnt</b> и <b>pass</b></li>
+                    <li>Взять маленький размер массива <b>N</b></li>
+                    <li>Использовать <b>tr[N][26]</b> для цифр и делать <b>ch - 'a'</b></li>
+                    <li>Не обнулить массивы между тестами</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Как очистить бор между тестами?</h2>
+
+                <p>
+                    Если тестов много, можно очистить только использованные вершины.
+                </p>
+
+                <pre><code class="language-cpp">void clearTrie() {
+    for (int i = 0; i &lt;= idx; i++) {
+        for (int c = 0; c &lt; 26; c++) {
+            tr[i][c] = 0;
+        }
+
+        cnt[i] = 0;
+        pass[i] = 0;
+    }
+
+    idx = 0;
+}</code></pre>
+
+                <div class="note">
+                    Это быстрее, чем каждый раз очищать весь огромный массив N.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон</h2>
+
+                <pre><code class="language-cpp">const int N = 1000005;
+
+int tr[N][26];
+int cnt[N];
+int pass[N];
+int idx;
+
+void insert(string s) {
+    int v = 0;
+
+    pass[v]++;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            tr[v][c] = ++idx;
+        }
+
+        v = tr[v][c];
+        pass[v]++;
+    }
+
+    cnt[v]++;
+}
+
+int countWord(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return cnt[v];
+}
+
+int countPrefix(string s) {
+    int v = 0;
+
+    for (char ch : s) {
+        int c = ch - 'a';
+
+        if (tr[v][c] == 0) {
+            return 0;
+        }
+
+        v = tr[v][c];
+    }
+
+    return pass[v];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Главное запомнить</h2>
+
+                <div class="scheme">
+                    бор = дерево префиксов<br>
+                    root = 0<br>
+                    tr[v][c] = переход из вершины v по символу c<br>
+                    cnt[v] = сколько слов заканчивается в v<br>
+                    pass[v] = сколько слов проходит через v<br>
+                    insert/search/prefix работают за O(длина строки)
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

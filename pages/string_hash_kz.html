@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String hash | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="string_hash.html">RU</a>
+                    <a class="lang active" href="string_hash_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>String hash</h1>
+            <p>Полиномиальный hash: P = 13331, unsigned long long, prefix hash және substring салыстыру O(1)</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>String hash деген не?</h2>
+
+                <p>
+                    <b>String hash</b> — string-тен алынатын бір сан.
+                    Идея: string-терді әр символ бойынша салыстырмай,
+                    олардың hash мәндерін салыстыру.
+                </p>
+
+                <div class="scheme">
+                    string → сан<br>
+                    бірдей string → бірдей hash<br>
+                    әртүрлі string → көбіне әртүрлі hash
+                </div>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">"abc" → бір сан
+"abd" → басқа сан</code></pre>
+
+                <div class="note">
+                    Әртүрлі string-тердің hash мәні бірдей болып қалуы мүмкін.
+                    Бұл collision деп аталады.
+                    Бірақ жақсы hash қолдансақ, шанс өте аз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>String hash не үшін керек?</h2>
+
+                <p>
+                    String hash көбіне substring-терді тез салыстыру үшін қолданылады.
+                </p>
+
+                <div class="scheme">
+                    екі substring салыстыру O(1)<br>
+                    бірдей substring табу<br>
+                    pattern-ді text ішінде іздеу<br>
+                    palindrome тексеру<br>
+                    string задачаларды тез шешу
+                </div>
+
+                <p>
+                    Hash жоқ болса, ұзындығы <b>len</b> екі substring салыстыру <b>O(len)</b>.
+                    Hash болса, салыстыру <b>O(1)</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Полиномиальный hash идеясы</h2>
+
+                <p>
+                    String-ті <b>P</b> негізіндегі сан сияқты қарауға болады.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">s = "abc"</code></pre>
+
+                <p>
+                    Hash былай көрінеді:
+                </p>
+
+                <pre><code class="language-none">hash = a * P^2 + b * P^1 + c * P^0</code></pre>
+
+                <p>
+                    Кодта көбіне солдан оңға қарай санаймыз:
+                </p>
+
+                <pre><code class="language-none">hash = hash * P + value(s[i])</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Неге P = 13331?</h2>
+
+                <p>
+                    <b>P</b> — hash базасы.
+                    Көбіне үлкен тақ сан алады.
+                </p>
+
+                <pre><code class="language-cpp">const ull P = 13331;</code></pre>
+
+                <p>
+                    <b>13331</b> string hash үшін жиі қолданылатын база.
+                    Практикада жақсы жұмыс істейді.
+                </p>
+
+                <div class="note">
+                    Басқа базалар да болады: 31, 37, 911382323, 1000003.
+                    Бірақ қарапайым ULL hash үшін P = 13331 жақсы вариант.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>ULL деген не?</h2>
+
+                <p>
+                    <b>ULL</b> деген:
+                </p>
+
+                <pre><code class="language-cpp">unsigned long long</code></pre>
+
+                <p>
+                    C++ ішінде қысқа жазу үшін:
+                </p>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;</code></pre>
+
+                <p>
+                    Енді былай жазуға болады:
+                </p>
+
+                <pre><code class="language-cpp">ull x = 0;</code></pre>
+
+                <div class="note">
+                    unsigned long long 0-ден 2^64 - 1-ге дейін сақтайды.
+                    Егер overflow болса, C++ автоматты түрде 2^64 бойынша қалдық алады.
+                    Сондықтан бөлек mod жазбаймыз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі формула</h2>
+
+                <p>
+                    Prefix hash санаймыз:
+                </p>
+
+                <pre><code class="language-none">h[0] = 0
+h[i + 1] = h[i] * P + value(s[i])</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <div class="scheme">
+                    h[i] — алғашқы i символдың hash-і<br>
+                    P — база, мысалы 13331<br>
+                    value(s[i]) — символдың сандық мәні
+                </div>
+
+                <p>
+                    Символ үшін универсальный вариант:
+                </p>
+
+                <pre><code class="language-cpp">(unsigned char)s[i] + 1</code></pre>
+
+                <p>
+                    <b>+1</b> керек, себебі символдың мәні 0 болып кетпегені жақсы.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>P дәрежелері</h2>
+
+                <p>
+                    Substring hash-ін тез алу үшін алдын ала <b>P</b> дәрежелерін санаймыз.
+                </p>
+
+                <pre><code class="language-none">pw[0] = 1
+pw[i + 1] = pw[i] * P</code></pre>
+
+                <p>
+                    Сонда:
+                </p>
+
+                <pre><code class="language-none">pw[i] = P^i</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Prefix hash құру коды</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+const ull P = 13331;
+
+vector&lt;ull&gt; h;
+vector&lt;ull&gt; pw;
+
+void build(string s) {
+    int n = s.size();
+
+    h.assign(n + 1, 0);
+    pw.assign(n + 1, 1);
+
+    for (int i = 0; i &lt; n; i++) {
+        pw[i + 1] = pw[i] * P;
+        h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Substring hash</h2>
+
+                <p>
+                    Мына substring hash-ін алғымыз келеді:
+                </p>
+
+                <pre><code class="language-none">s[l...r-1]</code></pre>
+
+                <p>
+                    Яғни <b>l</b> кіреді, <b>r</b> кірмейді.
+                </p>
+
+                <p>
+                    Формула:
+                </p>
+
+                <pre><code class="language-none">get(l, r) = h[r] - h[l] * P^(r-l)</code></pre>
+
+                <p>
+                    pw массивімен:
+                </p>
+
+                <pre><code class="language-cpp">ull get(int l, int r) {
+    return h[r] - h[l] * pw[r - l];
+}</code></pre>
+
+                <div class="note">
+                    [l, r) форматы өте ыңғайлы:
+                    l кіреді, r кірмейді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге формула жұмыс істейді?</h2>
+
+                <p>
+                    <b>h[r]</b> — алғашқы <b>r</b> символдың hash-і.
+                </p>
+
+                <p>
+                    Оның ішінде бар:
+                </p>
+
+                <pre><code class="language-none">s[0...l-1] + s[l...r-1]</code></pre>
+
+                <p>
+                    Сол жақ бөлікті <b>s[0...l-1]</b> алып тастау үшін
+                    <b>h[l]</b>-ді керек <b>P</b> дәрежесіне көбейтіп, азайтамыз.
+                </p>
+
+                <div class="scheme">
+                    h[r] prefix-ті r-ге дейін сақтайды<br>
+                    h[l] prefix-ті l-ге дейін сақтайды<br>
+                    h[l] * P^(r-l) дәрежелерді теңестіреді<br>
+                    айырма тек s[l...r-1] қалдырады
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Толық StringHash класы</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+
+                <div class="note">
+                    get(l, r) string-тің s[l...r-1] substring hash-ін қайтарады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Екі substring қалай салыстырылады?</h2>
+
+                <p>
+                    Бір string ішінде екі substring берілсін:
+                </p>
+
+                <pre><code class="language-none">s[l1...r1-1]
+s[l2...r2-1]</code></pre>
+
+                <p>
+                    Егер ұзындықтары тең және hash-тері тең болса,
+                    substring-терді бірдей деп санаймыз.
+                </p>
+
+                <pre><code class="language-cpp">bool equal_substrings(StringHash &amp;hs, int l1, int r1, int l2, int r2) {
+    if (r1 - l1 != r2 - l2) {
+        return false;
+    }
+
+    return hs.get(l1, r1) == hs.get(l2, r2);
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Substring салыстыру мысалы</h2>
+
+                <p>
+                    String:
+                </p>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <p>
+                    Substring-тер:
+                </p>
+
+                <pre><code class="language-none">s[0...3) = aba
+s[4...7) = aba</code></pre>
+
+                <p>
+                    Олардың hash-тері тең, демек substring-тер бірдей.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Толық программа: substring салыстыру</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    StringHash hs(s);
+
+    int l1, r1, l2, r2;
+    cin &gt;&gt; l1 &gt;&gt; r1 &gt;&gt; l2 &gt;&gt; r2;
+
+    if (r1 - l1 == r2 - l2 &amp;&amp; hs.get(l1, r1) == hs.get(l2, r2)) {
+        cout &lt;&lt; "YES";
+    } else {
+        cout &lt;&lt; "NO";
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">abacaba
+0 3 4 7</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES</code></pre>
+
+                <p>
+                    Себебі:
+                </p>
+
+                <pre><code class="language-none">s[0...3) = aba
+s[4...7) = aba</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Егер [l, r] inclusive керек болса</h2>
+
+                <p>
+                    Кейде мына формат ыңғайлы:
+                </p>
+
+                <pre><code class="language-none">s[l...r]</code></pre>
+
+                <p>
+                    Онда функция былай болады:
+                </p>
+
+                <pre><code class="language-cpp">ull get_inclusive(int l, int r) {
+    return h[r + 1] - h[l] * pw[r - l + 1];
+}</code></pre>
+
+                <div class="note">
+                    Ең маңыздысы — форматтарды араластырмау.
+                    Не барлық жерде [l, r), не барлық жерде [l, r].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Hash арқылы pattern іздеу</h2>
+
+                <p>
+                    <b>pattern</b> string-і <b>text</b> ішінде қай позицияларда кездесетінін табу керек.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    pattern hash санаймыз<br>
+                    text hash санаймыз<br>
+                    text ішіндегі ұзындығы m барлық substring қараймыз<br>
+                    олардың hash-ін pattern hash-пен салыстырамыз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Pattern іздеу коды</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    int m = pattern.size();
+    int n = text.size();
+
+    StringHash hp(pattern);
+    StringHash ht(text);
+
+    ull need = hp.get(0, m);
+
+    vector&lt;int&gt; ans;
+
+    for (int i = 0; i + m &lt;= n; i++) {
+        if (ht.get(i, i + m) == need) {
+            ans.push_back(i);
+        }
+    }
+
+    return ans;
+}</code></pre>
+
+                <p>
+                    Жұмыс уақыты:
+                </p>
+
+                <div class="scheme">
+                    O(n + m)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Толық программа: pattern іздеу</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};
+
+vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    int m = pattern.size();
+    int n = text.size();
+
+    StringHash hp(pattern);
+    StringHash ht(text);
+
+    ull need = hp.get(0, m);
+
+    vector&lt;int&gt; ans;
+
+    for (int i = 0; i + m &lt;= n; i++) {
+        if (ht.get(i, i + m) == need) {
+            ans.push_back(i);
+        }
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    vector&lt;int&gt; ans = find_occurrences(pattern, text);
+
+    for (int pos : ans) {
+        cout &lt;&lt; pos &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Pattern іздеу мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">aba
+abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Кіші латын әріптері үшін hash</h2>
+
+                <p>
+                    Егер string тек <b>a...z</b> әріптерінен тұрса, былай алуға болады:
+                </p>
+
+                <pre><code class="language-cpp">s[i] - 'a' + 1</code></pre>
+
+                <p>
+                    Сонда build ішінде:
+                </p>
+
+                <pre><code class="language-cpp">h[i + 1] = h[i] * P + (s[i] - 'a' + 1);</code></pre>
+
+                <div class="note">
+                    Бірақ универсальный вариант — (unsigned char)s[i] + 1.
+                    Ол тек кіші ағылшын әріптері үшін ғана емес, басқа символдарға да жұмыс істейді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Palindrome hash</h2>
+
+                <p>
+                    Hash арқылы substring palindrome екенін тексеруге болады.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    original string hash санаймыз<br>
+                    reversed string hash санаймыз<br>
+                    substring palindrome, егер оның hash-і reverse substring hash-іне тең болса
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Palindrome тексеру коды</h2>
+
+                <pre><code class="language-cpp">bool is_palindrome(string s, int l, int r) {
+    int n = s.size();
+
+    string t = s;
+    reverse(t.begin(), t.end());
+
+    StringHash hs(s);
+    StringHash ht(t);
+
+    int rl = n - r;
+    int rr = n - l;
+
+    return hs.get(l, r) == ht.get(rl, rr);
+}</code></pre>
+
+                <div class="note">
+                    Мұнда [l, r) форматы қолданылады.
+                    Мысалы, бүкіл string — [0, n).
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Double hash</h2>
+
+                <p>
+                    Бір ULL hash көбіне жақсы жұмыс істейді, бірақ теориялық collision мүмкін.
+                    Collision шансын азайту үшін екі түрлі hash қолдануға болады.
+                </p>
+
+                <div class="scheme">
+                    hash1 база P1 арқылы<br>
+                    hash2 база P2 арқылы<br>
+                    string-тер тең, егер екі hash те тең болса
+                </div>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-cpp">const ull P1 = 13331;
+const ull P2 = 1000003;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қарапайым double ULL hash</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct DoubleHash {
+    static const ull P1 = 13331;
+    static const ull P2 = 1000003;
+
+    vector&lt;ull&gt; h1;
+    vector&lt;ull&gt; h2;
+    vector&lt;ull&gt; p1;
+    vector&lt;ull&gt; p2;
+
+    DoubleHash(const string &amp;s) {
+        int n = s.size();
+
+        h1.assign(n + 1, 0);
+        h2.assign(n + 1, 0);
+        p1.assign(n + 1, 1);
+        p2.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            p1[i + 1] = p1[i] * P1;
+            p2[i + 1] = p2[i] * P2;
+
+            h1[i + 1] = h1[i] * P1 + x;
+            h2[i + 1] = h2[i] * P2 + x;
+        }
+    }
+
+    pair&lt;ull, ull&gt; get(int l, int r) {
+        ull x = h1[r] - h1[l] * p1[r - l];
+        ull y = h2[r] - h2[l] * p2[r - l];
+
+        return {x, y};
+    }
+};</code></pre>
+
+                <div class="note">
+                    Көп олимпиадалық есептерде бір ULL hash жеткілікті болады,
+                    бірақ double hash қауіпсіздеу.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Hash mod арқылы ма, әлде ULL ма?</h2>
+
+                <table>
+                    <tr>
+                        <th>Вариант</th>
+                        <th>Қалай жұмыс істейді?</th>
+                        <th>Плюс</th>
+                    </tr>
+
+                    <tr>
+                        <td>ULL</td>
+                        <td>overflow арқылы 2^64 бойынша</td>
+                        <td>қарапайым және тез</td>
+                    </tr>
+
+                    <tr>
+                        <td>mod</td>
+                        <td>жай сан mod бойынша қалдық аламыз</td>
+                        <td>көбірек бақылауға болады</td>
+                    </tr>
+
+                    <tr>
+                        <td>double hash</td>
+                        <td>екі тәуелсіз hash</td>
+                        <td>collision шансын азайтады</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі шаблон: P = 13331 + ULL</h2>
+
+                <p>
+                    Мына вариантты жаттап алып қолдануға болады:
+                </p>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct Hash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    Hash() {}
+
+    Hash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            h[i + 1] = h[i] * P + x;
+            pw[i + 1] = pw[i] * P;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қалай қолданамыз?</h2>
+
+                <pre><code class="language-cpp">string s;
+cin &gt;&gt; s;
+
+Hash hs(s);
+
+ull x = hs.get(0, 3);
+ull y = hs.get(4, 7);
+
+if (x == y) {
+    cout &lt;&lt; "same";
+} else {
+    cout &lt;&lt; "different";
+}</code></pre>
+
+                <p>
+                    Егер:
+                </p>
+
+                <pre><code class="language-none">s = abacaba</code></pre>
+
+                <p>
+                    Онда:
+                </p>
+
+                <pre><code class="language-none">get(0, 3) = hash("aba")
+get(4, 7) = hash("aba")</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>String hash құру</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Substring hash алу</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Екі substring салыстыру</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Pattern-ді text ішінде табу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>String hash қашан қолданылады?</h2>
+
+                <div class="scheme">
+                    substring-терді көп рет салыстыру керек<br>
+                    бірдей substring табу керек<br>
+                    pattern-ді text ішінде тез іздеу керек<br>
+                    palindrome тексеру керек<br>
+                    substring query үшін O(1) керек
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li><b>[l, r)</b> және <b>[l, r]</b> форматтарын шатастыру</li>
+                    <li><b>pw</b> массивін санауды ұмыту</li>
+                    <li><b>unsigned long long</b> орнына <b>int</b> қолдану</li>
+                    <li>Hash collision болуы мүмкін екенін ұмыту</li>
+                    <li>Ұзындығы әртүрлі substring-терді тек hash бойынша салыстыру</li>
+                    <li>Символды 0 қылып алу, мысалы <b>s[i] - 'a'</b>, мұнда <b>a</b> үшін 0 болады</li>
+                    <li>Бір string үшін әртүрлі P базаларын араластыру</li>
+                    <li>get ішінде <b>pw[r - l]</b> дәрежесін қате жазу</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+const ull P = 13331;
+
+struct Hash {
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    Hash(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            h[i + 1] = h[i] * P + x;
+            pw[i + 1] = pw[i] * P;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ең бастысы</h2>
+
+                <div class="scheme">
+                    using ull = unsigned long long<br>
+                    P = 13331<br>
+                    h[i + 1] = h[i] * P + value(s[i])<br>
+                    pw[i + 1] = pw[i] * P<br>
+                    get(l, r) = h[r] - h[l] * pw[r-l]<br>
+                    get(l, r) string s[l...r-1] hash-ін береді
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

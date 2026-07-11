@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-функция | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="z_function.html">RU</a>
+                    <a class="lang active" href="z_function_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Z-функция</h1>
+            <p>String алгоритмі: prefix-ті барлық suffix-пен салыстыру және O(n) жұмыс</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Z-функция деген не?</h2>
+
+                <p>
+                    <b>Z-функция</b> — <b>s</b> строкасы үшін <b>z</b> массиві.
+                </p>
+
+                <p>
+                    <b>z[i]</b> — <b>i</b> позициясынан басталатын suffix пен бүкіл строканың prefix-і
+                    қанша символға дейін совпадает ететінін көрсетеді.
+                </p>
+
+                <div class="scheme">
+                    i позициясынан басталатын suffix аламыз<br>
+                    оны string басымен салыстырамыз<br>
+                    z[i] = қатарынан қанша символ совпало
+                </div>
+
+                <p>
+                    Әдетте:
+                </p>
+
+                <pre><code class="language-none">z[0] = 0</code></pre>
+
+                <div class="note">
+                    Кейде z[0] = n деп қояды, бірақ олимпиадалық кодта көбіне z[0] = 0 болады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қарапайым мысал</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">aaaaa</code></pre>
+
+                <p>
+                    Әр позицияны қарайық:
+                </p>
+
+                <pre><code class="language-none">i = 1: aaaa prefix aaaa-пен совпадает → z[1] = 4
+i = 2: aaa prefix aaa-пен совпадает → z[2] = 3
+i = 3: aa prefix aa-пен совпадает → z[3] = 2
+i = 4: a prefix a-пен совпадает → z[4] = 1</code></pre>
+
+                <p>
+                    Сондықтан:
+                </p>
+
+                <pre><code class="language-none">s:  a a a a a
+i:  0 1 2 3 4
+z:  0 4 3 2 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Тағы бір мысал</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <p>
+                    Z-функция:
+                </p>
+
+                <pre><code class="language-none">s:  a b a c a b a
+i:  0 1 2 3 4 5 6
+z:  0 0 1 0 3 0 1</code></pre>
+
+                <p>
+                    Неге <b>z[4] = 3</b>?
+                </p>
+
+                <pre><code class="language-none">s[4...] = aba
+prefix = aba
+
+3 символ совпало</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Prefix function-нан айырмашылығы</h2>
+
+                <table>
+                    <tr>
+                        <th>Функция</th>
+                        <th>Не сақтайды?</th>
+                    </tr>
+
+                    <tr>
+                        <td>Префикс-функция</td>
+                        <td>әр prefix s[0...i] үшін border ұзындығын</td>
+                    </tr>
+
+                    <tr>
+                        <td>Z-функция</td>
+                        <td>әр i позициясынан бастап prefix-пен совпадение ұзындығын</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Екеуі де O(n) жұмыс істейді және substring search үшін жиі қолданылады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Наивный әдіс</h2>
+
+                <p>
+                    Әр <b>i</b> позициясы үшін символдарды string басымен жай салыстыруға болады.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; z_function_slow(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+    }
+
+    return z;
+}</code></pre>
+
+                <p>
+                    Бірақ бұл әдіс ең жаман жағдайда:
+                </p>
+
+                <div class="scheme">
+                    O(n²)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Жылдам алгоритм идеясы</h2>
+
+                <p>
+                    Жылдам алгоритм <b>[l, r]</b> отрезогын сақтайды.
+                </p>
+
+                <p>
+                    Бұл — prefix-пен уже совпадает етіп тұрған ең оң жақтағы segment.
+                </p>
+
+                <div class="scheme">
+                    s[l...r] = s[0...r-l]<br>
+                    l — совпадение-нің сол шекарасы<br>
+                    r — совпадение-нің оң шекарасы
+                </div>
+
+                <p>
+                    <b>z[i]</b> санағанда, егер <b>i</b> осы <b>[l, r]</b> ішінде болса,
+                    дайын ақпаратты қолданамыз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Егер i [l, r] сыртында болса</h2>
+
+                <p>
+                    Егер:
+                </p>
+
+                <pre><code class="language-none">i &gt; r</code></pre>
+
+                <p>
+                    Бұл позиция туралы ештеңе білмейміз.
+                    Сондықтан нөлден бастап салыстырамыз:
+                </p>
+
+                <pre><code class="language-cpp">while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+    z[i]++;
+}</code></pre>
+
+                <p>
+                    Егер жақсы совпадение шықса, <b>[l, r]</b> жаңартамыз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Егер i [l, r] ішінде болса</h2>
+
+                <p>
+                    Егер:
+                </p>
+
+                <pre><code class="language-none">i &lt;= r</code></pre>
+
+                <p>
+                    Онда жауаптың бір бөлігін бұрынғы мәннен аламыз.
+                </p>
+
+                <p>
+                    <b>i</b> позициясы <b>[l, r]</b> ішінде тұр.
+                    Оған prefix жағында сәйкес позиция:
+                </p>
+
+                <pre><code class="language-none">i - l</code></pre>
+
+                <p>
+                    Сондықтан бастапқы мән:
+                </p>
+
+                <pre><code class="language-cpp">z[i] = min(r - i + 1, z[i - l]);</code></pre>
+
+                <div class="note">
+                    min керек, себебі бірден r шекарасынан асып кетуге болмайды.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Z-функцияның негізгі коды</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; z_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z(n);
+
+    int l = 0;
+    int r = 0;
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i &lt;= r) {
+            z[i] = min(r - i + 1, z[i - l]);
+        }
+
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+
+        if (i + z[i] - 1 &gt; r) {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+
+    return z;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық программа</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; z_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z(n);
+
+    int l = 0;
+    int r = 0;
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i &lt;= r) {
+            z[i] = min(r - i + 1, z[i - l]);
+        }
+
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+
+        if (i + z[i] - 1 &gt; r) {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+
+    return z;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    vector&lt;int&gt; z = z_function(s);
+
+    for (int x : z) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 0 1 0 3 0 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>l және r айнымалылары</h2>
+
+                <p>
+                    <b>[l, r]</b> — prefix-пен совпадает етіп тұрған ең оң жақтағы табылған отрезок.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">s = abacaba</code></pre>
+
+                <p>
+                    <b>i = 4</b> позициясында совпадение бар:
+                </p>
+
+                <pre><code class="language-none">s[4...6] = aba
+s[0...2] = aba</code></pre>
+
+                <p>
+                    Онда:
+                </p>
+
+                <pre><code class="language-none">l = 4
+r = 6</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Неге алгоритм O(n)?</h2>
+
+                <p>
+                    Код ішінде <b>while</b> бар, бірақ ол суммарно O(n) ғана жұмыс істейді.
+                </p>
+
+                <p>
+                    Әр успешный comparison кезінде <b>z[i]</b> өседі,
+                    және оң шекара <b>r</b> оңға жылжиды.
+                </p>
+
+                <div class="scheme">
+                    r тек 0-ден n - 1-ге дейін жылжи алады<br>
+                    значит успешный comparison суммарно O(n)<br>
+                    толық алгоритм O(n)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Z-функция арқылы substring іздеу</h2>
+
+                <p>
+                    <b>pattern</b> строкасының <b>text</b> ішіндегі барлық occurrence-ын табу керек.
+                </p>
+
+                <p>
+                    Жаңа string құрамыз:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    Кейін Z-функция санаймыз.
+                </p>
+
+                <div class="scheme">
+                    егер z[i] == pattern.size()<br>
+                    демек pattern text ішінде осы позициядан басталады
+                </div>
+
+                <p>
+                    <b>#</b> символы pattern және text ішінде кездеспеуі керек.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: substring search</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; z_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z(n);
+
+    int l = 0;
+    int r = 0;
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i &lt;= r) {
+            z[i] = min(r - i + 1, z[i - l]);
+        }
+
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+
+        if (i + z[i] - 1 &gt; r) {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+
+    return z;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; z = z_function(s);
+
+    int m = pattern.size();
+
+    for (int i = m + 1; i &lt; (int)s.size(); i++) {
+        if (z[i] == m) {
+            cout &lt;&lt; i - m - 1 &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Іздеу мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">aba
+abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 4</code></pre>
+
+                <p>
+                    Себебі <b>aba</b> строкасы <b>abacaba</b> ішінде мына позицияларда кездеседі:
+                </p>
+
+                <pre><code class="language-none">0 және 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Неге позиция i - m - 1?</h2>
+
+                <p>
+                    Жалпы string:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    Text-тің алдында:
+                </p>
+
+                <pre><code class="language-none">m символ pattern + 1 символ #</code></pre>
+
+                <p>
+                    Сондықтан жалпы string ішіндегі <b>i</b> позициясы text ішінде мына позицияға сәйкес:
+                </p>
+
+                <pre><code class="language-none">i - m - 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>find_occurrences функциясы</h2>
+
+                <p>
+                    Pattern-нің text ішіндегі барлық позициясын қайтаратын функция:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; z = z_function(s);
+    vector&lt;int&gt; ans;
+
+    int m = pattern.size();
+
+    for (int i = m + 1; i &lt; (int)s.size(); i++) {
+        if (z[i] == m) {
+            ans.push_back(i - m - 1);
+        }
+    }
+
+    return ans;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>КМП-пен салыстыру</h2>
+
+                <table>
+                    <tr>
+                        <th>Алгоритм</th>
+                        <th>Негізі</th>
+                        <th>Pattern search</th>
+                    </tr>
+
+                    <tr>
+                        <td>КМП</td>
+                        <td>Префикс-функция</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Z-функция</td>
+                        <td>Prefix-пен совпадение</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Substring search үшін КМП да, Z-функция да қолданылады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>String барлық border-лерін табу</h2>
+
+                <p>
+                    <b>Border</b> — string-тің бір уақытта prefix және suffix болатын бөлігі,
+                    бірақ ол бүкіл string-тің өзі болмауы керек.
+                </p>
+
+                <p>
+                    Z-функция арқылы барлық border ұзындықтарын табуға болады.
+                </p>
+
+                <p>
+                    Егер:
+                </p>
+
+                <pre><code class="language-none">i + z[i] == n</code></pre>
+
+                <p>
+                    Онда <b>i</b> позициясынан басталатын suffix prefix-пен <b>z[i]</b> ұзындыққа совпало.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: барлық border Z-функция арқылы</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; get_borders(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z = z_function(s);
+    vector&lt;int&gt; borders;
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i + z[i] == n) {
+            borders.push_back(z[i]);
+        }
+    }
+
+    sort(borders.begin(), borders.end());
+
+    return borders;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Border мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">ababa</code></pre>
+
+                <p>
+                    Z-функция:
+                </p>
+
+                <pre><code class="language-none">0 0 3 0 1</code></pre>
+
+                <p>
+                    Border ұзындықтары:
+                </p>
+
+                <pre><code class="language-none">1 3</code></pre>
+
+                <p>
+                    Бұл string-тер:
+                </p>
+
+                <pre><code class="language-none">a
+aba</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>String минимальный периоды</h2>
+
+                <p>
+                    <b>Period</b> — string-ті толық құрайтын қайталанатын block ұзындығы.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">ababab</code></pre>
+
+                <p>
+                    Минимальный period:
+                </p>
+
+                <pre><code class="language-none">2</code></pre>
+
+                <p>
+                    Себебі:
+                </p>
+
+                <pre><code class="language-none">ab ab ab</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Period Z-функция арқылы</h2>
+
+                <p>
+                    Period ұзындығы <b>p</b> бола ала ма деп тексереміз.
+                    Егер <b>p</b> позициясынан басталған suffix prefix-пен <b>n - p</b> ұзындыққа совпалса,
+                    онда <b>p</b> period болуы мүмкін.
+                </p>
+
+                <p>
+                    Шарт:
+                </p>
+
+                <pre><code class="language-none">z[p] &gt;= n - p</code></pre>
+
+                <p>
+                    Тағы керек:
+                </p>
+
+                <pre><code class="language-none">n % p == 0</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: минимальный period Z арқылы</h2>
+
+                <pre><code class="language-cpp">int minimal_period(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z = z_function(s);
+
+    for (int p = 1; p &lt;= n; p++) {
+        if (n % p == 0 &amp;&amp; p &lt; n &amp;&amp; z[p] &gt;= n - p) {
+            return p;
+        }
+    }
+
+    return n;
+}</code></pre>
+
+                <div class="note">
+                    Егер string кіші block-тардан құралмаса, минимальный period n болады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Әр prefix қанша рет кездеседі?</h2>
+
+                <p>
+                    Z-функция string prefix-і қай позицияларда кездесетінін көрсетеді.
+                </p>
+
+                <p>
+                    Егер <b>z[i] = len</b>, онда <b>i</b> позициясында мына prefix ұзындықтары кездеседі:
+                </p>
+
+                <pre><code class="language-none">1, 2, 3, ..., len</code></pre>
+
+                <p>
+                    Жылдам санау үшін difference array қолданамыз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: әр prefix неше рет кездеседі</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; count_prefixes(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z = z_function(s);
+    vector&lt;int&gt; diff(n + 2);
+
+    for (int i = 1; i &lt; n; i++) {
+        if (z[i] &gt; 0) {
+            diff[1]++;
+            diff[z[i] + 1]--;
+        }
+    }
+
+    vector&lt;int&gt; cnt(n + 1);
+
+    for (int len = 1; len &lt;= n; len++) {
+        cnt[len] = cnt[len - 1] + diff[len];
+    }
+
+    for (int len = 1; len &lt;= n; len++) {
+        cnt[len]++;
+    }
+
+    return cnt;
+}</code></pre>
+
+                <div class="note">
+                    cnt[len] — ұзындығы len prefix string ішінде қанша рет кездесетінін көрсетеді.
+                    Соңғы +1 — prefix-тің string басындағы өзінің кездесуі.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Z-функция</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Pattern-ді text ішінде іздеу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Border табу</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Минимальный period</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Prefix occurrence санау</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Z-функция қашан қолданылады?</h2>
+
+                <div class="scheme">
+                    pattern-ді text ішінде табу керек<br>
+                    prefix-ті барлық suffix-пен салыстыру керек<br>
+                    string border табу керек<br>
+                    string period табу керек<br>
+                    prefix occurrence санау керек<br>
+                    O(n) алгоритм керек
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>z[i] prefix function сияқты s[0...i] үшін саналады деп ойлау</li>
+                    <li>z[i] s[i...] мен бүкіл string prefix-ін салыстыратынын ұмыту</li>
+                    <li><b>z[i] = min(r - i + 1, z[i - l])</b> формуласынан қателесу</li>
+                    <li><b>l</b> және <b>r</b> жаңартуды ұмыту</li>
+                    <li>pattern немесе text ішінде кездесетін separator қолдану</li>
+                    <li><b>i - m - 1</b> позиция формуласынан қателесу</li>
+                    <li><b>z[0] = 0</b> және <b>z[0] = n</b> варианттарын шатастыру</li>
+                    <li>Period табуда <b>n % p == 0</b> тексеруді ұмыту</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; z_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; z(n);
+
+    int l = 0;
+    int r = 0;
+
+    for (int i = 1; i &lt; n; i++) {
+        if (i &lt;= r) {
+            z[i] = min(r - i + 1, z[i - l]);
+        }
+
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+
+        if (i + z[i] - 1 &gt; r) {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+
+    return z;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа pattern search шаблоны</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; z = z_function(s);
+    vector&lt;int&gt; ans;
+
+    int m = pattern.size();
+
+    for (int i = m + 1; i &lt; (int)s.size(); i++) {
+        if (z[i] == m) {
+            ans.push_back(i - m - 1);
+        }
+    }
+
+    return ans;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ең бастысы</h2>
+
+                <div class="scheme">
+                    z[i] = қанша символ совпало<br>
+                    s[i...] және string prefix-і арасында<br>
+                    [l, r] ең оң жақтағы совпавший block сақтайды<br>
+                    i [l, r] ішінде болса, жауаптың бөлігін z[i-l]-ден аламыз<br>
+                    Z-функция O(n) жұмыс істейді<br>
+                    pattern text ішінде O(n + m) уақытта табылады
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

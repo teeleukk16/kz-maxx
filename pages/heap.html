@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Куча | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="heap.html">RU</a>
+                    <a class="lang" href="heap_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Куча</h1>
+            <p>Объяснение, хранение в массиве, push, pop, top, up, down</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Объяснение</h2>
+
+                <p>
+                    Куча — это структура данных, которая быстро находит самый маленький
+                    или самый большой элемент.
+                </p>
+
+                <p>
+                    Есть два основных вида кучи:
+                </p>
+
+                <ul>
+                    <li><b>min-heap</b> — сверху всегда минимальный элемент</li>
+                    <li><b>max-heap</b> — сверху всегда максимальный элемент</li>
+                </ul>
+
+                <div class="note">
+                    В этой странице мы реализуем <b>min-heap</b>.
+                    То есть <b>h[1]</b> всегда хранит минимальный элемент.
+                </div>
+
+                <div class="scheme">
+                    min-heap:<br>
+                    h[1] = самый маленький элемент
+                </div>
+
+                <p>
+                    Куча похожа на бинарное дерево, но хранится в обычном массиве.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Как куча хранится в массиве?</h2>
+
+                <p>
+                    Используем массив:
+                </p>
+
+                <pre><code class="language-cpp">int h[N];
+int sz;</code></pre>
+
+                <ul>
+                    <li><b>h</b> — массив кучи</li>
+                    <li><b>sz</b> — количество элементов в куче</li>
+                </ul>
+
+                <p>
+                    Индексация начинается с <b>1</b>.
+                    Это удобно, потому что легко находить родителей и детей.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Что ищем</th>
+                        <th>Формула</th>
+                    </tr>
+
+                    <tr>
+                        <td>родитель вершины i</td>
+                        <td><b>i / 2</b></td>
+                    </tr>
+
+                    <tr>
+                        <td>левый сын вершины i</td>
+                        <td><b>i * 2</b></td>
+                    </tr>
+
+                    <tr>
+                        <td>правый сын вершины i</td>
+                        <td><b>i * 2 + 1</b></td>
+                    </tr>
+                </table>
+
+                <h3>Пример</h3>
+
+                <div class="scheme">
+                    индексы: 1  2  3  4  5<br>
+                    h:       2  5  7  9  8
+                </div>
+
+                <p>
+                    Это дерево можно представить так:
+                </p>
+
+                <div class="scheme">
+                    2<br>
+                    5 7<br>
+                    9 8
+                </div>
+
+                <p>
+                    Для min-heap правило такое:
+                </p>
+
+                <div class="scheme">
+                    родитель &lt;= дети
+                </div>
+
+                <p>
+                    Например, <b>2</b> меньше своих детей <b>5</b> и <b>7</b>.
+                    Значит наверху стоит минимальный элемент.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Какие операции нужны?</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push(x)</b></td>
+                        <td>добавляет число <b>x</b> в кучу</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top()</b></td>
+                        <td>возвращает минимальный элемент</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop()</b></td>
+                        <td>удаляет минимальный элемент</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>up(i)</b></td>
+                        <td>поднимает элемент вверх, если он меньше родителя</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>down(i)</b></td>
+                        <td>опускает элемент вниз, если он больше детей</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Пример задачи</h2>
+
+                <p>
+                    Нужно обработать команды для min-heap.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push x</b></td>
+                        <td>добавить число <b>x</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top</b></td>
+                        <td>вывести минимальный элемент</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop</b></td>
+                        <td>удалить минимальный элемент</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>size</b></td>
+                        <td>вывести размер кучи</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">8
+push 5
+push 2
+push 7
+top
+pop
+top
+push 1
+top</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2
+5
+1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация через массив</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int h[N];
+int sz;
+
+void up(int u) {
+    while (u / 2 &gt; 0 &amp;&amp; h[u] &lt; h[u / 2]) {
+        swap(h[u], h[u / 2]);
+        u /= 2;
+    }
+}
+
+void down(int u) {
+    int t = u;
+
+    if (u * 2 &lt;= sz &amp;&amp; h[u * 2] &lt; h[t]) {
+        t = u * 2;
+    }
+
+    if (u * 2 + 1 &lt;= sz &amp;&amp; h[u * 2 + 1] &lt; h[t]) {
+        t = u * 2 + 1;
+    }
+
+    if (t != u) {
+        swap(h[u], h[t]);
+        down(t);
+    }
+}
+
+void push(int x) {
+    sz++;
+    h[sz] = x;
+    up(sz);
+}
+
+int top() {
+    return h[1];
+}
+
+void pop() {
+    h[1] = h[sz];
+    sz--;
+    down(1);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "push") {
+            int x;
+            cin &gt;&gt; x;
+
+            push(x);
+        } else if (op == "top") {
+            cout &lt;&lt; top() &lt;&lt; '\n';
+        } else if (op == "pop") {
+            pop();
+        } else if (op == "size") {
+            cout &lt;&lt; sz &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Объяснение функций</h2>
+
+                <h3>1. up</h3>
+
+                <pre><code class="language-cpp">void up(int u) {
+    while (u / 2 &gt; 0 &amp;&amp; h[u] &lt; h[u / 2]) {
+        swap(h[u], h[u / 2]);
+        u /= 2;
+    }
+}</code></pre>
+
+                <p>
+                    <b>up</b> нужен после добавления нового элемента.
+                    Мы добавляем элемент в конец массива.
+                    Если он меньше родителя, поднимаем его выше.
+                </p>
+
+                <h3>Маленький пример</h3>
+
+                <div class="scheme">
+                    было: 2 5 7<br>
+                    push(1)<br>
+                    стало до up: 2 5 7 1
+                </div>
+
+                <p>
+                    Новый элемент <b>1</b> стоит на позиции <b>4</b>.
+                    Его родитель — позиция <b>2</b>, там стоит <b>5</b>.
+                    Так как <b>1 &lt; 5</b>, меняем их местами.
+                </p>
+
+                <div class="scheme">
+                    2 1 7 5
+                </div>
+
+                <p>
+                    Теперь <b>1</b> стоит на позиции <b>2</b>.
+                    Его родитель — позиция <b>1</b>, там стоит <b>2</b>.
+                    Так как <b>1 &lt; 2</b>, снова меняем.
+                </p>
+
+                <div class="scheme">
+                    1 2 7 5
+                </div>
+
+                <p>
+                    Теперь <b>1</b> наверху. Куча снова правильная.
+                </p>
+
+                <h3>2. down</h3>
+
+                <pre><code class="language-cpp">void down(int u) {
+    int t = u;
+
+    if (u * 2 &lt;= sz &amp;&amp; h[u * 2] &lt; h[t]) {
+        t = u * 2;
+    }
+
+    if (u * 2 + 1 &lt;= sz &amp;&amp; h[u * 2 + 1] &lt; h[t]) {
+        t = u * 2 + 1;
+    }
+
+    if (t != u) {
+        swap(h[u], h[t]);
+        down(t);
+    }
+}</code></pre>
+
+                <p>
+                    <b>down</b> нужен после удаления верхнего элемента.
+                    Мы ставим последний элемент наверх.
+                    Потом опускаем его вниз, пока куча не станет правильной.
+                </p>
+
+                <h3>Маленький пример</h3>
+
+                <div class="scheme">
+                    было: 1 3 2 8 5<br>
+                    pop()
+                </div>
+
+                <p>
+                    Удаляем <b>1</b>.
+                    Последний элемент <b>5</b> ставим наверх.
+                </p>
+
+                <div class="scheme">
+                    стало до down: 5 3 2 8
+                </div>
+
+                <p>
+                    У вершины <b>5</b> дети <b>3</b> и <b>2</b>.
+                    Самый маленький ребенок — <b>2</b>.
+                    Так как <b>2 &lt; 5</b>, меняем их местами.
+                </p>
+
+                <div class="scheme">
+                    стало: 2 3 5 8
+                </div>
+
+                <p>
+                    Теперь куча снова правильная.
+                </p>
+
+                <h3>3. push</h3>
+
+                <pre><code class="language-cpp">void push(int x) {
+    sz++;
+    h[sz] = x;
+    up(sz);
+}</code></pre>
+
+                <p>
+                    <b>push</b> добавляет новый элемент в конец.
+                    Потом вызывает <b>up</b>, чтобы поднять его на правильное место.
+                </p>
+
+                <div class="scheme">
+                    было: 2 5 7<br>
+                    push(1)<br>
+                    сначала: 2 5 7 1<br>
+                    после up: 1 2 7 5
+                </div>
+
+                <h3>4. top</h3>
+
+                <pre><code class="language-cpp">int top() {
+    return h[1];
+}</code></pre>
+
+                <p>
+                    В min-heap минимальный элемент всегда находится в <b>h[1]</b>.
+                    Поэтому <b>top</b> просто возвращает <b>h[1]</b>.
+                </p>
+
+                <div class="scheme">
+                    h = 2 5 7 9<br>
+                    top() = h[1] = 2
+                </div>
+
+                <h3>5. pop</h3>
+
+                <pre><code class="language-cpp">void pop() {
+    h[1] = h[sz];
+    sz--;
+    down(1);
+}</code></pre>
+
+                <p>
+                    <b>pop</b> удаляет минимальный элемент.
+                    Минимум лежит в <b>h[1]</b>.
+                </p>
+
+                <p>
+                    Чтобы удалить его:
+                </p>
+
+                <ul>
+                    <li>ставим последний элемент на место первого</li>
+                    <li>уменьшаем размер</li>
+                    <li>вызываем <b>down(1)</b></li>
+                </ul>
+
+                <div class="scheme">
+                    было: 1 3 2 8 5<br>
+                    pop()<br>
+                    ставим 5 наверх: 5 3 2 8<br>
+                    после down: 2 3 5 8
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>priority_queue в C++</h2>
+
+                <p>
+                    В C++ уже есть готовая куча — <b>priority_queue</b>.
+                    По умолчанию она работает как <b>max-heap</b>.
+                </p>
+
+                <h3>Max-heap</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;int&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Здесь <b>top()</b> вернет <b>7</b>, потому что это максимальный элемент.
+                </p>
+
+                <h3>Min-heap</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Здесь <b>top()</b> вернет <b>2</b>, потому что это минимальный элемент.
+                </p>
+
+                <div class="note">
+                    На экзамене или олимпиаде важно понимать ручную реализацию через массив,
+                    но в обычных задачах часто можно использовать <b>priority_queue</b>.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Время</th>
+                    </tr>
+
+                    <tr>
+                        <td>push</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>pop</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>top</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>size</td>
+                        <td>O(1)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

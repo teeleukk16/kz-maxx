@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хеш строки | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="string_hash.html">RU</a>
+                    <a class="lang" href="string_hash_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Хеш строки</h1>
+            <p>Полиномиальный хеш строки через P = 13331, unsigned long long, prefix hash и сравнение подстрок за O(1)</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое хеш строки?</h2>
+
+                <p>
+                    <b>Хеш строки</b> — это число, которое получается из строки.
+                    Идея такая: вместо того чтобы каждый раз сравнивать строки посимвольно,
+                    мы сравниваем их хеши.
+                </p>
+
+                <div class="scheme">
+                    строка → число<br>
+                    одинаковые строки → одинаковый хеш<br>
+                    разные строки → почти всегда разные хеши
+                </div>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">"abc" → какое-то число
+"abd" → другое число</code></pre>
+
+                <div class="note">
+                    Хеши могут совпасть у разных строк. Это называется коллизия.
+                    Но на практике при хорошем хеше шанс маленький.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Зачем нужен хеш строки?</h2>
+
+                <p>
+                    Хеширование строк используется, когда нужно быстро сравнивать подстроки.
+                </p>
+
+                <div class="scheme">
+                    сравнить две подстроки за O(1)<br>
+                    найти одинаковые подстроки<br>
+                    найти pattern в text<br>
+                    проверить палиндром<br>
+                    решать задачи на строки быстрее
+                </div>
+
+                <p>
+                    Без хеша сравнение двух подстрок длины <b>len</b> занимает <b>O(len)</b>.
+                    С хешем можно сравнивать за <b>O(1)</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Идея полиномиального хеша</h2>
+
+                <p>
+                    Строку можно представить как число в системе счисления с основанием <b>P</b>.
+                </p>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">s = "abc"</code></pre>
+
+                <p>
+                    Тогда хеш можно представить так:
+                </p>
+
+                <pre><code class="language-none">hash = a * P^2 + b * P^1 + c * P^0</code></pre>
+
+                <p>
+                    В коде обычно считаем слева направо:
+                </p>
+
+                <pre><code class="language-none">hash = hash * P + value(s[i])</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Почему P = 13331?</h2>
+
+                <p>
+                    <b>P</b> — это база хеша.
+                    Часто берут большое нечетное число.
+                </p>
+
+                <pre><code class="language-cpp">const ull P = 13331;</code></pre>
+
+                <p>
+                    Значение <b>13331</b> часто используют в строковых хешах.
+                    Оно достаточно большое и хорошо работает на практике.
+                </p>
+
+                <div class="note">
+                    Можно встретить и другие базы: 31, 37, 911382323, 1000003.
+                    Но если ты хочешь простой ULL-хеш, P = 13331 — нормальный вариант.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Что такое ULL?</h2>
+
+                <p>
+                    <b>ULL</b> — это сокращение для:
+                </p>
+
+                <pre><code class="language-cpp">unsigned long long</code></pre>
+
+                <p>
+                    В C++ удобно написать:
+                </p>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;</code></pre>
+
+                <p>
+                    Тогда можно писать коротко:
+                </p>
+
+                <pre><code class="language-cpp">ull x = 0;</code></pre>
+
+                <div class="note">
+                    unsigned long long хранит числа от 0 до 2^64 - 1.
+                    Если число переполняется, C++ автоматически берет остаток по 2^64.
+                    Поэтому отдельный mod можно не писать.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Главная формула</h2>
+
+                <p>
+                    Будем считать prefix hash:
+                </p>
+
+                <pre><code class="language-none">h[0] = 0
+h[i + 1] = h[i] * P + value(s[i])</code></pre>
+
+                <p>
+                    Где:
+                </p>
+
+                <div class="scheme">
+                    h[i] — хеш первых i символов<br>
+                    P — база, например 13331<br>
+                    value(s[i]) — числовое значение символа
+                </div>
+
+                <p>
+                    Для символа можно брать:
+                </p>
+
+                <pre><code class="language-cpp">(unsigned char)s[i] + 1</code></pre>
+
+                <p>
+                    <b>+1</b> нужен, чтобы символ не давал значение 0.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Степени P</h2>
+
+                <p>
+                    Чтобы быстро получать хеш подстроки, заранее считаем степени <b>P</b>.
+                </p>
+
+                <pre><code class="language-none">pw[0] = 1
+pw[i + 1] = pw[i] * P</code></pre>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-none">pw[i] = P^i</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код построения prefix hash</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+const ull P = 13331;
+
+vector&lt;ull&gt; h;
+vector&lt;ull&gt; pw;
+
+void build(string s) {
+    int n = s.size();
+
+    h.assign(n + 1, 0);
+    pw.assign(n + 1, 1);
+
+    for (int i = 0; i &lt; n; i++) {
+        pw[i + 1] = pw[i] * P;
+        h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Хеш подстроки</h2>
+
+                <p>
+                    Пусть нужно получить хеш подстроки:
+                </p>
+
+                <pre><code class="language-none">s[l...r-1]</code></pre>
+
+                <p>
+                    То есть <b>l</b> включительно, <b>r</b> не включительно.
+                </p>
+
+                <p>
+                    Формула:
+                </p>
+
+                <pre><code class="language-none">get(l, r) = h[r] - h[l] * P^(r-l)</code></pre>
+
+                <p>
+                    Через массив степеней:
+                </p>
+
+                <pre><code class="language-cpp">ull get(int l, int r) {
+    return h[r] - h[l] * pw[r - l];
+}</code></pre>
+
+                <div class="note">
+                    Формат [l, r) очень удобный:
+                    l включается, r не включается.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Почему формула работает?</h2>
+
+                <p>
+                    <b>h[r]</b> — это хеш первых <b>r</b> символов.
+                </p>
+
+                <p>
+                    В нем есть:
+                </p>
+
+                <pre><code class="language-none">s[0...l-1] + s[l...r-1]</code></pre>
+
+                <p>
+                    Чтобы убрать левую часть <b>s[0...l-1]</b>, нужно умножить <b>h[l]</b>
+                    на нужную степень <b>P</b> и вычесть.
+                </p>
+
+                <div class="scheme">
+                    h[r] содержит prefix до r<br>
+                    h[l] содержит prefix до l<br>
+                    h[l] * P^(r-l) выравнивает степени<br>
+                    разность оставляет только s[l...r-1]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Полный класс StringHash</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+
+                <div class="note">
+                    get(l, r) возвращает хеш подстроки s[l...r-1].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как сравнить две подстроки?</h2>
+
+                <p>
+                    Если есть строка <b>s</b>, можно сравнить две ее подстроки:
+                </p>
+
+                <pre><code class="language-none">s[l1...r1-1]
+s[l2...r2-1]</code></pre>
+
+                <p>
+                    Если их длины равны и хеши равны, считаем, что подстроки равны.
+                </p>
+
+                <pre><code class="language-cpp">bool equal_substrings(StringHash &amp;hs, int l1, int r1, int l2, int r2) {
+    if (r1 - l1 != r2 - l2) {
+        return false;
+    }
+
+    return hs.get(l1, r1) == hs.get(l2, r2);
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример сравнения подстрок</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <p>
+                    Подстроки:
+                </p>
+
+                <pre><code class="language-none">s[0...3) = aba
+s[4...7) = aba</code></pre>
+
+                <p>
+                    Их хеши равны, значит подстроки одинаковые.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Полная программа: сравнение подстрок</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    StringHash hs(s);
+
+    int l1, r1, l2, r2;
+    cin &gt;&gt; l1 &gt;&gt; r1 &gt;&gt; l2 &gt;&gt; r2;
+
+    if (r1 - l1 == r2 - l2 &amp;&amp; hs.get(l1, r1) == hs.get(l2, r2)) {
+        cout &lt;&lt; "YES";
+    } else {
+        cout &lt;&lt; "NO";
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">abacaba
+0 3 4 7</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">YES</code></pre>
+
+                <p>
+                    Потому что:
+                </p>
+
+                <pre><code class="language-none">s[0...3) = aba
+s[4...7) = aba</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Если хочешь [l, r] включительно</h2>
+
+                <p>
+                    Иногда удобнее использовать формат:
+                </p>
+
+                <pre><code class="language-none">s[l...r]</code></pre>
+
+                <p>
+                    Тогда функция будет такой:
+                </p>
+
+                <pre><code class="language-cpp">ull get_inclusive(int l, int r) {
+    return h[r + 1] - h[l] * pw[r - l + 1];
+}</code></pre>
+
+                <div class="note">
+                    Главное — не смешивать форматы.
+                    Либо везде [l, r), либо везде [l, r].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Поиск pattern в text через хеш</h2>
+
+                <p>
+                    Нужно найти все позиции, где <b>pattern</b> встречается в <b>text</b>.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    считаем хеш pattern<br>
+                    считаем хеш text<br>
+                    перебираем все подстроки text длины m<br>
+                    сравниваем их хеш с хешем pattern
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код поиска pattern</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    int m = pattern.size();
+    int n = text.size();
+
+    StringHash hp(pattern);
+    StringHash ht(text);
+
+    ull need = hp.get(0, m);
+
+    vector&lt;int&gt; ans;
+
+    for (int i = 0; i + m &lt;= n; i++) {
+        if (ht.get(i, i + m) == need) {
+            ans.push_back(i);
+        }
+    }
+
+    return ans;
+}</code></pre>
+
+                <p>
+                    Время работы:
+                </p>
+
+                <div class="scheme">
+                    O(n + m)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Полная программа поиска pattern</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using ull = unsigned long long;
+
+struct StringHash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    StringHash() {}
+
+    StringHash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            pw[i + 1] = pw[i] * P;
+            h[i + 1] = h[i] * P + (unsigned char)s[i] + 1;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};
+
+vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    int m = pattern.size();
+    int n = text.size();
+
+    StringHash hp(pattern);
+    StringHash ht(text);
+
+    ull need = hp.get(0, m);
+
+    vector&lt;int&gt; ans;
+
+    for (int i = 0; i + m &lt;= n; i++) {
+        if (ht.get(i, i + m) == need) {
+            ans.push_back(i);
+        }
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    vector&lt;int&gt; ans = find_occurrences(pattern, text);
+
+    for (int pos : ans) {
+        cout &lt;&lt; pos &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример поиска pattern</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">aba
+abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Хеш для маленьких латинских букв</h2>
+
+                <p>
+                    Если строка состоит только из <b>a...z</b>, можно брать:
+                </p>
+
+                <pre><code class="language-cpp">s[i] - 'a' + 1</code></pre>
+
+                <p>
+                    Тогда код построения будет:
+                </p>
+
+                <pre><code class="language-cpp">h[i + 1] = h[i] * P + (s[i] - 'a' + 1);</code></pre>
+
+                <div class="note">
+                    Но универсальнее использовать (unsigned char)s[i] + 1.
+                    Тогда код работает не только для маленьких английских букв.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Хеш палиндрома</h2>
+
+                <p>
+                    Хеш можно использовать для проверки, является ли подстрока палиндромом.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    считаем hash обычной строки<br>
+                    считаем hash перевернутой строки<br>
+                    подстрока палиндром, если ее hash равен hash обратной подстроки
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код проверки палиндрома</h2>
+
+                <pre><code class="language-cpp">bool is_palindrome(string s, int l, int r) {
+    int n = s.size();
+
+    string t = s;
+    reverse(t.begin(), t.end());
+
+    StringHash hs(s);
+    StringHash ht(t);
+
+    int rl = n - r;
+    int rr = n - l;
+
+    return hs.get(l, r) == ht.get(rl, rr);
+}</code></pre>
+
+                <div class="note">
+                    Здесь используется формат [l, r).
+                    Например, вся строка — это [0, n).
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Двойной хеш</h2>
+
+                <p>
+                    Один ULL-хеш обычно работает хорошо, но теоретически коллизии возможны.
+                    Чтобы уменьшить шанс коллизии, можно использовать два разных хеша.
+                </p>
+
+                <div class="scheme">
+                    hash1 с P1<br>
+                    hash2 с P2<br>
+                    строки равны, если равны оба хеша
+                </div>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-cpp">const ull P1 = 13331;
+const ull P2 = 1000003;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Простой двойной ULL-хеш</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct DoubleHash {
+    static const ull P1 = 13331;
+    static const ull P2 = 1000003;
+
+    vector&lt;ull&gt; h1;
+    vector&lt;ull&gt; h2;
+    vector&lt;ull&gt; p1;
+    vector&lt;ull&gt; p2;
+
+    DoubleHash(const string &amp;s) {
+        int n = s.size();
+
+        h1.assign(n + 1, 0);
+        h2.assign(n + 1, 0);
+        p1.assign(n + 1, 1);
+        p2.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            p1[i + 1] = p1[i] * P1;
+            p2[i + 1] = p2[i] * P2;
+
+            h1[i + 1] = h1[i] * P1 + x;
+            h2[i + 1] = h2[i] * P2 + x;
+        }
+    }
+
+    pair&lt;ull, ull&gt; get(int l, int r) {
+        ull x = h1[r] - h1[l] * p1[r - l];
+        ull y = h2[r] - h2[l] * p2[r - l];
+
+        return {x, y};
+    }
+};</code></pre>
+
+                <div class="note">
+                    Для обычных олимпиадных задач часто хватает одного ULL-хеша,
+                    но двойной хеш безопаснее.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Хеш с mod или ULL?</h2>
+
+                <table>
+                    <tr>
+                        <th>Вариант</th>
+                        <th>Как работает</th>
+                        <th>Плюс</th>
+                    </tr>
+
+                    <tr>
+                        <td>ULL</td>
+                        <td>переполнение по 2^64</td>
+                        <td>простой и быстрый</td>
+                    </tr>
+
+                    <tr>
+                        <td>mod</td>
+                        <td>берем остаток по простому модулю</td>
+                        <td>более контролируемый</td>
+                    </tr>
+
+                    <tr>
+                        <td>double hash</td>
+                        <td>два независимых хеша</td>
+                        <td>меньше шанс коллизии</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Твой основной шаблон P = 13331 + ULL</h2>
+
+                <p>
+                    Вот этот вариант можно просто запомнить и использовать:
+                </p>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+struct Hash {
+    static const ull P = 13331;
+
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    Hash() {}
+
+    Hash(const string &amp;s) {
+        build(s);
+    }
+
+    void build(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            h[i + 1] = h[i] * P + x;
+            pw[i + 1] = pw[i] * P;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как этим пользоваться?</h2>
+
+                <pre><code class="language-cpp">string s;
+cin &gt;&gt; s;
+
+Hash hs(s);
+
+ull x = hs.get(0, 3);
+ull y = hs.get(4, 7);
+
+if (x == y) {
+    cout &lt;&lt; "same";
+} else {
+    cout &lt;&lt; "different";
+}</code></pre>
+
+                <p>
+                    Если:
+                </p>
+
+                <pre><code class="language-none">s = abacaba</code></pre>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-none">get(0, 3) = hash("aba")
+get(4, 7) = hash("aba")</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Построить хеш строки</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Получить хеш подстроки</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Сравнить две подстроки</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Найти pattern в text</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Когда использовать string hash?</h2>
+
+                <div class="scheme">
+                    нужно много раз сравнивать подстроки<br>
+                    нужно искать одинаковые подстроки<br>
+                    нужно быстро найти pattern в text<br>
+                    нужно проверять палиндромы<br>
+                    нужно получить O(1) для запроса подстроки
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Путать формат <b>[l, r)</b> и <b>[l, r]</b></li>
+                    <li>Забыть посчитать <b>pw</b></li>
+                    <li>Использовать <b>int</b> вместо <b>unsigned long long</b></li>
+                    <li>Забыть, что хеши могут иметь коллизии</li>
+                    <li>Сравнивать подстроки разной длины только по хешу</li>
+                    <li>Брать символ как 0, например <b>s[i] - 'a'</b>, где для <b>a</b> будет 0</li>
+                    <li>Смешивать разные базы P для одной строки</li>
+                    <li>В get написать неправильную степень <b>pw[r - l]</b></li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон</h2>
+
+                <pre><code class="language-cpp">using ull = unsigned long long;
+
+const ull P = 13331;
+
+struct Hash {
+    vector&lt;ull&gt; h;
+    vector&lt;ull&gt; pw;
+
+    Hash(const string &amp;s) {
+        int n = s.size();
+
+        h.assign(n + 1, 0);
+        pw.assign(n + 1, 1);
+
+        for (int i = 0; i &lt; n; i++) {
+            ull x = (unsigned char)s[i] + 1;
+
+            h[i + 1] = h[i] * P + x;
+            pw[i + 1] = pw[i] * P;
+        }
+    }
+
+    ull get(int l, int r) {
+        return h[r] - h[l] * pw[r - l];
+    }
+};</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Главное запомнить</h2>
+
+                <div class="scheme">
+                    using ull = unsigned long long<br>
+                    P = 13331<br>
+                    h[i + 1] = h[i] * P + value(s[i])<br>
+                    pw[i + 1] = pw[i] * P<br>
+                    get(l, r) = h[r] - h[l] * pw[r-l]<br>
+                    get(l, r) дает hash строки s[l...r-1]
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

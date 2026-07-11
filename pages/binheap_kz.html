@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Queue | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="binheap.html">RU</a>
+                    <a class="lang active" href="binheap_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Priority Queue</h1>
+            <p>Очередь с приоритетом: max-heap, min-heap, pair, custom cmp</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Түсіндіру</h2>
+
+                <p>
+                    <b>Priority Queue</b>, яғни <b>очередь с приоритетом</b> —
+                    бұл структура данных.
+                    Мұнда бірінші болып ерте келген элемент емес,
+                    приоритеті жоғары элемент шығады.
+                </p>
+
+                <div class="scheme">
+                    обычная очередь:<br>
+                    кім бірінші келді → сол бірінші шығады<br><br>
+                    priority queue:<br>
+                    кімнің priority жоғары → сол бірінші шығады
+                </div>
+
+                <p>
+                    C++ ішінде дайын структура бар:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;int&gt; q;</code></pre>
+
+                <p>
+                    Ішінде <b>priority_queue</b> көбіне <b>binary heap</b> арқылы жұмыс істейді.
+                    Яғни бұл дайын куча сияқты.
+                </p>
+
+                <div class="note">
+                    C++ ішінде <b>priority_queue</b> по умолчанию <b>max-heap</b>.
+                    Яғни ең үлкен элемент жоғарыда тұрады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі операциялар</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Не істейді</th>
+                        <th>Уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push(x)</b></td>
+                        <td><b>x</b> элементін қосады</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top()</b></td>
+                        <td>ең жоғары priority бар элементті қайтарады</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop()</b></td>
+                        <td>жоғарғы элементті өшіреді</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>size()</b></td>
+                        <td>очередь размерін қайтарады</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>empty()</b></td>
+                        <td>очередь бос па, жоқ па тексереді</td>
+                        <td>O(1)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Max-heap</h2>
+
+                <p>
+                    <b>priority_queue&lt;int&gt;</b> по умолчанию <b>max-heap</b> болып жұмыс істейді.
+                    Ең үлкен сан әрқашан жоғарыда тұрады.
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;int&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Жауап:
+                </p>
+
+                <pre><code class="language-none">7</code></pre>
+
+                <div class="scheme">
+                    қостық: 5, 2, 7<br>
+                    ең үлкен элемент = 7<br>
+                    q.top() = 7
+                </div>
+
+                <h3>pop мысалы</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;int&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top() &lt;&lt; '\n';
+
+q.pop();
+
+cout &lt;&lt; q.top() &lt;&lt; '\n';</code></pre>
+
+                <p>
+                    Шығару:
+                </p>
+
+                <pre><code class="language-none">7
+5</code></pre>
+
+                <p>
+                    Бірінші жоғарыда <b>7</b> тұрды.
+                    <b>pop()</b> жасағаннан кейін <b>7</b> өшеді,
+                    сосын жоғарыда <b>5</b> тұрады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Min-heap</h2>
+
+                <p>
+                    Егер жоғарыда ең кіші элемент тұру керек болса, былай жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; q;</code></pre>
+
+                <p>
+                    Бұл <b>min-heap</b> болады.
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Жауап:
+                </p>
+
+                <pre><code class="language-none">2</code></pre>
+
+                <div class="scheme">
+                    қостық: 5, 2, 7<br>
+                    ең кіші элемент = 2<br>
+                    q.top() = 2
+                </div>
+
+                <div class="note">
+                    Егер есепте әрқашан минимум алу керек болса,
+                    көбіне <b>min-heap</b> керек.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: min-heap</h2>
+
+                <p>
+                    Командаларды орындау керек.
+                    Біз <b>min-heap</b> қолданамыз.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push x</b></td>
+                        <td><b>x</b> санын қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top</b></td>
+                        <td>ең кіші элементті шығарады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop</b></td>
+                        <td>ең кіші элементті өшіреді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>size</b></td>
+                        <td>очередь размерін шығарады</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">9
+push 5
+push 2
+push 7
+top
+pop
+top
+push 1
+top
+size</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2
+5
+1
+3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Min-heap толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; q;
+
+    int n;
+    cin &gt;&gt; n;
+
+    while (n--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "push") {
+            int x;
+            cin &gt;&gt; x;
+
+            q.push(x);
+        } else if (op == "top") {
+            cout &lt;&lt; q.top() &lt;&lt; '\n';
+        } else if (op == "pop") {
+            q.pop();
+        } else if (op == "size") {
+            cout &lt;&lt; q.size() &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>pair үшін priority_queue</h2>
+
+                <p>
+                    Кейбір есептерде бір ғана сан емес, екі мән сақтау керек болады.
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    {priority, vertex}<br>
+                    {distance, vertex}<br>
+                    {score, id}
+                </div>
+
+                <p>
+                    Ол үшін <b>pair</b> қолданамыз:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;pair&lt;int, int&gt;&gt; q;</code></pre>
+
+                <p>
+                    Pair қалай салыстырылады?
+                </p>
+
+                <ul>
+                    <li>бірінші <b>first</b> салыстырылады</li>
+                    <li>егер <b>first</b> тең болса, <b>second</b> салыстырылады</li>
+                </ul>
+
+                <h3>Max-heap pair мысалы</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;pair&lt;int, int&gt;&gt; q;
+
+q.push({5, 1});
+q.push({10, 2});
+q.push({7, 3});
+
+cout &lt;&lt; q.top().first &lt;&lt; ' ' &lt;&lt; q.top().second;</code></pre>
+
+                <p>
+                    Жауап:
+                </p>
+
+                <pre><code class="language-none">10 2</code></pre>
+
+                <div class="scheme">
+                    pair-лар: {5, 1}, {10, 2}, {7, 3}<br>
+                    ең үлкен first = 10<br>
+                    top = {10, 2}
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Min-heap үшін pair</h2>
+
+                <p>
+                    Егер ең кіші pair жоғарыда тұру керек болса, былай жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;pair&lt;int, int&gt;, vector&lt;pair&lt;int, int&gt;&gt;, greater&lt;pair&lt;int, int&gt;&gt;&gt; q;</code></pre>
+
+                <h3>Мысал</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;pair&lt;int, int&gt;, vector&lt;pair&lt;int, int&gt;&gt;, greater&lt;pair&lt;int, int&gt;&gt;&gt; q;
+
+q.push({5, 1});
+q.push({10, 2});
+q.push({7, 3});
+
+cout &lt;&lt; q.top().first &lt;&lt; ' ' &lt;&lt; q.top().second;</code></pre>
+
+                <p>
+                    Жауап:
+                </p>
+
+                <pre><code class="language-none">5 1</code></pre>
+
+                <div class="note">
+                    Мұндай жазу Дейкстра алгоритмінде жиі қолданылады:
+                    <b>{distance, vertex}</b>.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: задачаларды priority бойынша алу</h2>
+
+                <p>
+                    Бізде бірнеше задача бар.
+                    Әр задачада:
+                </p>
+
+                <ul>
+                    <li><b>priority</b> — важность</li>
+                    <li><b>id</b> — задачаның нөмірі</li>
+                </ul>
+
+                <p>
+                    Әрқашан priority ең үлкен задачаны алу керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">7
+add 10 1
+add 5 2
+add 20 3
+top
+pop
+top
+size</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">20 3
+10 1
+2</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Pair арқылы реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    priority_queue&lt;pair&lt;int, int&gt;&gt; q;
+
+    int n;
+    cin &gt;&gt; n;
+
+    while (n--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "add") {
+            int priority, id;
+            cin &gt;&gt; priority &gt;&gt; id;
+
+            q.push({priority, id});
+        } else if (op == "top") {
+            cout &lt;&lt; q.top().first &lt;&lt; ' ' &lt;&lt; q.top().second &lt;&lt; '\n';
+        } else if (op == "pop") {
+            q.pop();
+        } else if (op == "size") {
+            cout &lt;&lt; q.size() &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+
+                <h3>Қалай жұмыс істейді?</h3>
+
+                <div class="scheme">
+                    add 10 1 → priority 10, id 1<br>
+                    add 5 2 → priority 5, id 2<br>
+                    add 20 3 → priority 20, id 3
+                </div>
+
+                <p>
+                    Бұл <b>max-heap</b>, сондықтан жоғарыда priority ең үлкен элемент тұрады.
+                </p>
+
+                <div class="scheme">
+                    top = {20, 3}
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Өзіміздің sorting rule</h2>
+
+                <p>
+                    Кейде өзіміздің салыстыру ережесін жазу керек болады.
+                    Ол үшін <b>cmp</b> структурасын жазамыз.
+                </p>
+
+                <p>
+                    Мысалы, time ең кіші задача жоғарыда тұрсын.
+                </p>
+
+                <pre><code class="language-cpp">struct Task {
+    int time;
+    int id;
+};
+
+struct cmp {
+    bool operator()(Task a, Task b) {
+        return a.time &gt; b.time;
+    }
+};
+
+priority_queue&lt;Task, vector&lt;Task&gt;, cmp&gt; q;</code></pre>
+
+                <p>
+                    Бұл жерде <b>time</b> ең кіші Task жоғарыда болады.
+                </p>
+
+                <h3>Толық кішкентай мысал</h3>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Task {
+    int time;
+    int id;
+};
+
+struct cmp {
+    bool operator()(Task a, Task b) {
+        return a.time &gt; b.time;
+    }
+};
+
+int main() {
+    priority_queue&lt;Task, vector&lt;Task&gt;, cmp&gt; q;
+
+    q.push({10, 1});
+    q.push({5, 2});
+    q.push({20, 3});
+
+    cout &lt;&lt; q.top().time &lt;&lt; ' ' &lt;&lt; q.top().id;
+
+    return 0;
+}</code></pre>
+
+                <p>
+                    Жауап:
+                </p>
+
+                <pre><code class="language-none">5 2</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Priority Queue қайда қолданылады?</h2>
+
+                <ul>
+                    <li>Дейкстра алгоритмі</li>
+                    <li>Жадные алгоритмы</li>
+                    <li>Расписание есептері</li>
+                    <li>Event simulation</li>
+                    <li>k ең үлкен немесе k ең кіші элемент табу</li>
+                </ul>
+
+                <div class="note">
+                    Егер есепте әрқашан тез minimum немесе maximum алу керек болса,
+                    <b>priority_queue</b> туралы ойлануға болады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td>push</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>pop</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>top</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>size</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>empty</td>
+                        <td>O(1)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

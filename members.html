@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Участники | kz-maxx</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <div class="top-left">
+                <h1 class="logo">
+                    <a href="website.html">kz<span>-</span>maxx</a>
+                </h1>
+
+                <div class="header-contacts">
+                    <a href="https://codeforces.com/profile/Teeleu" target="_blank">📊 Codeforces</a>
+                    <a href="https://t.me/+qaJOFXS6IlYyMjIy" target="_blank">✈️ Telegram</a>
+                </div>
+            </div>
+
+            <div class="top-menu">
+                <div class="langs">
+                    <a class="lang active" href="members.html">RU</a>
+                    <a class="lang" href="members_kz.html">KZ</a>
+                </div>
+
+                <a class="top-btn" href="website.html">Главная</a>
+                <a class="top-btn" href="chat.html">Чат</a>
+                <a class="top-btn" href="login.html">Вход</a>
+                <a class="top-btn blue" href="register.html">Регистрация</a>
+            </div>
+        </header>
+
+        <section class="members-head">
+            <div>
+                <h1>Участники</h1>
+                <p>Список всех зарегистрированных пользователей сайта</p>
+            </div>
+
+            <div class="members-count">
+                <b id="membersCount">0</b>
+                <span>участников</span>
+            </div>
+        </section>
+
+        <main class="members-page">
+            <div id="membersLoading" class="members-loading">
+                Загрузка участников...
+            </div>
+
+            <div id="membersList" class="members-list"></div>
+            <button id="loadMoreMembersBtn" class="load-more-btn">
+            Показать ещё
+            </button>
+
+            <p id="membersEmpty" class="members-empty">
+                Пока нет зарегистрированных участников
+            </p>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://jelwhsfcjyqlaxomipam.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_cefK5xE4WT4fltCdlsfV_A_BwlEJKbZ";
+
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const membersList = document.getElementById("membersList");
+        const membersCount = document.getElementById("membersCount");
+        const membersLoading = document.getElementById("membersLoading");
+        const membersEmpty = document.getElementById("membersEmpty");
+
+        const colors = [
+            "#2563eb",
+            "#dc2626",
+            "#16a34a",
+            "#9333ea",
+            "#ea580c",
+            "#0891b2",
+            "#be123c",
+            "#4f46e5",
+            "#059669",
+            "#ca8a04",
+            "#7c3aed",
+            "#db2777",
+            "#0f766e",
+            "#1d4ed8",
+            "#b45309"
+        ];
+
+        function getColorByText(text) {
+            let h = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                h = (h * 31 + text.charCodeAt(i)) >>> 0;
+            }
+
+            return colors[h % colors.length];
+        }
+
+        function getFirstLetter(name) {
+            if (!name || name.trim() === "") {
+                return "?";
+            }
+
+            return name.trim()[0].toUpperCase();
+        }
+
+        function formatDate(dateText) {
+            if (!dateText) {
+                return "";
+            }
+
+            const d = new Date(dateText);
+
+            return d.toLocaleDateString("ru-RU", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+            });
+        }
+
+        function renderMembers(members) {
+            membersList.innerHTML = "";
+            membersCount.textContent = members.length;
+
+            if (members.length === 0) {
+                membersEmpty.style.display = "block";
+                return;
+            }
+
+            membersEmpty.style.display = "none";
+
+            members.forEach(member => {
+                const name = member.name || "Участник";
+                const color = getColorByText(member.id || name);
+
+                const card = document.createElement("div");
+                card.className = "member-card";
+
+                const avatar = document.createElement("div");
+                avatar.className = "member-avatar";
+                avatar.style.background = color;
+                avatar.textContent = getFirstLetter(name);
+
+                const info = document.createElement("div");
+                info.className = "member-info";
+
+                const nickname = document.createElement("b");
+                nickname.className = "member-name";
+                nickname.style.color = color;
+                nickname.textContent = name;
+
+                const date = document.createElement("span");
+                date.className = "member-date";
+                date.textContent = "на сайте с " + formatDate(member.created_at);
+
+                info.appendChild(nickname);
+                info.appendChild(date);
+
+                card.appendChild(avatar);
+                card.appendChild(info);
+
+                membersList.appendChild(card);
+            });
+        }
+
+        let membersPage = 0;
+const membersLimit = 50;
+let allMembers = [];
+
+const loadMoreMembersBtn = document.getElementById("loadMoreMembersBtn");
+
+async function loadMembers(reset = false) {
+    if (reset) {
+        membersPage = 0;
+        allMembers = [];
+        membersList.innerHTML = "";
+    }
+
+    membersLoading.style.display = "block";
+
+    const from = membersPage * membersLimit;
+    const to = from + membersLimit - 1;
+
+    const result = await db
+        .from("profiles")
+        .select("id, name, created_at", { count: "exact" })
+        .order("created_at", { ascending: true })
+        .range(from, to);
+
+    membersLoading.style.display = "none";
+
+    if (result.error) {
+        console.log(result.error);
+
+        membersList.innerHTML = `
+            <div class="members-error">
+                Ошибка загрузки участников
+            </div>
+        `;
+
+        return;
+    }
+
+    const newMembers = result.data || [];
+
+    allMembers = allMembers.concat(newMembers);
+
+    membersCount.textContent = result.count || allMembers.length;
+
+    renderMembers(allMembers);
+
+    membersPage++;
+
+    if (allMembers.length >= result.count) {
+        loadMoreMembersBtn.style.display = "none";
+    } else {
+        loadMoreMembersBtn.style.display = "block";
+    }
+}
+
+function subscribeMembers() {
+    db.channel("profiles_realtime")
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "profiles"
+            },
+            () => {
+                loadMembers(true);
+            }
+        )
+        .subscribe();
+}
+
+loadMoreMembersBtn.addEventListener("click", () => {
+    loadMembers(false);
+});
+
+loadMembers(true);
+subscribeMembers();
+    </script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

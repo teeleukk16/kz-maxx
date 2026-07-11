@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мосттар және articulation points | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="bridges.html">RU</a>
+                    <a class="lang active" href="bridges_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Мосттар және articulation points</h1>
+            <p>DFS, tin, low, bridge, cut point, неориентированный граф</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Мост деген не?</h2>
+
+                <p>
+                    <b>Мост</b> — неориентированный графтағы ребро.
+                    Егер осы реброны алып тастасақ, графтағы компоненттер саны көбейеді.
+                </p>
+
+                <p>
+                    Жеңіл түсіндірме:
+                </p>
+
+                <div class="scheme">
+                    бір реброны өшіреміз<br>
+                    егер граф бірнеше бөлікке бөлініп кетсе<br>
+                    онда бұл ребро — мост
+                </div>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    1 -- 2 -- 3<br>
+                    2--3 ребросы мост болады
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Точка сочленения деген не?</h2>
+
+                <p>
+                    <b>Точка сочленения</b> немесе <b>articulation point</b> —
+                    графтағы вершина.
+                    Егер осы вершинасын алып тастасақ, компоненттер саны көбейеді.
+                </p>
+
+                <p>
+                    Жеңіл түсіндірме:
+                </p>
+
+                <div class="scheme">
+                    бір вершина өшіріледі<br>
+                    егер граф бірнеше бөлікке бөлінсе<br>
+                    онда бұл вершина — точка сочленения
+                </div>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    1 -- 2 -- 3<br>
+                    2 вершинасы точка сочленения болады
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қай жерде қолданылады?</h2>
+
+                <ul>
+                    <li>графтағы слабое место табу</li>
+                    <li>жолдар мен көпірлер жүйесінде</li>
+                    <li>компьютерлік network анализінде</li>
+                    <li>байланыс графтарында</li>
+                    <li>компоненттермен жұмыс істегенде</li>
+                    <li>DFS тақырыбындағы олимпиадалық задачаларда</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі идея</h2>
+
+                <p>
+                    Мосттар мен точка сочленения табу үшін DFS қолданылады.
+                    Әр вершина үшін екі мән сақтаймыз:
+                </p>
+
+                <ul>
+                    <li><b>tin[v]</b> — v вершинасына бірінші кірген уақыт</li>
+                    <li><b>low[v]</b> — v немесе оның поддеревосынан жетуге болатын ең кіші tin</li>
+                </ul>
+
+                <pre><code class="language-cpp">int tin[N];
+int low[N];
+int timer;</code></pre>
+
+                <div class="note">
+                    tin және low арқылы біз поддерево жоғарыға қайтып шыға ала ма, жоқ па — соны түсінеміз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>tin деген не?</h2>
+
+                <p>
+                    <b>tin[v]</b> — DFS бірінші рет <b>v</b> вершинасына кірген уақыт.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    dfs(1) → tin[1] = 0<br>
+                    dfs(2) → tin[2] = 1<br>
+                    dfs(3) → tin[3] = 2
+                </div>
+
+                <pre><code class="language-cpp">tin[v] = timer;
+low[v] = timer;
+timer++;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>low деген не?</h2>
+
+                <p>
+                    <b>low[v]</b> — v вершинасынан немесе оның DFS поддеревосынан
+                    жетуге болатын ең ерте кірген вершина уақыты.
+                </p>
+
+                <p>
+                    low мына жерлер арқылы жаңаруы мүмкін:
+                </p>
+
+                <ul>
+                    <li>v-ның өзінің tin мәні арқылы</li>
+                    <li>v-ның child вершинасының low мәні арқылы</li>
+                    <li>обратное ребро арқылы</li>
+                </ul>
+
+                <div class="note">
+                    Егер child поддеревосы v-дан жоғарыға шыға алмаса,
+                    онда v мен child арасындағы ребро мост болуы мүмкін.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>tin және low үшін DFS</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, v);
+            low[v] = min(low[v], low[to]);
+        }
+    }
+}</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <ul>
+                    <li><b>v</b> — қазіргі вершина</li>
+                    <li><b>p</b> — DFS бойынша parent</li>
+                    <li><b>to</b> — көрші вершина</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Мост шарты</h2>
+
+                <p>
+                    DFS-та <b>v</b> вершинасынан <b>to</b> child вершинасына өттік делік.
+                    Сонда <b>v--to</b> ребросы мост болады, егер:
+                </p>
+
+                <pre><code class="language-cpp">low[to] &gt; tin[v]</code></pre>
+
+                <p>
+                    Мағынасы:
+                </p>
+
+                <div class="scheme">
+                    low[to] &gt; tin[v]<br>
+                    to поддеревосынан v-ға немесе v-дан жоғарыға жол жоқ<br>
+                    демек v--to жалғыз байланыс<br>
+                    сондықтан бұл ребро — мост
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: барлық мостты табу</h2>
+
+                <p>
+                    Неориентированный граф берілген.
+                    Барлық мосттарды шығару керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5 5
+1 2
+2 3
+3 1
+3 4
+4 5</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">3 4
+4 5</code></pre>
+
+                <p>
+                    Мұнда <b>3--4</b> және <b>4--5</b> ребролары мост.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Мосттарды табу толық коды</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+vector&lt;int&gt; g[N];
+bool used[N];
+int tin[N];
+int low[N];
+int timer = 0;
+
+void dfs(int v, int p) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, v);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt; tin[v]) {
+                cout &lt;&lt; v &lt;&lt; ' ' &lt;&lt; to &lt;&lt; '\n';
+            }
+        }
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m;
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (!used[i]) {
+            dfs(i, -1);
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Маңызды момент: бірнеше бірдей ребро</h2>
+
+                <p>
+                    Егер екі вершина арасында бірнеше ребро болса,
+                    жай ғана <b>to == p</b> тексеруі қате жауап беруі мүмкін.
+                </p>
+
+                <p>
+                    Дұрыс жол — әр реброға id беру.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;pair&lt;int, int&gt;&gt; g[N];</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <ul>
+                    <li><b>first</b> — көрші вершина</li>
+                    <li><b>second</b> — реброның номері</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Мосттарды id арқылы табу</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int parentEdge) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    for (auto edge : g[v]) {
+        int to = edge.first;
+        int id = edge.second;
+
+        if (id == parentEdge) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, id);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt; tin[v]) {
+                bridges.push_back(id);
+            }
+        }
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Мосттар id-пен толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+vector&lt;pair&lt;int, int&gt;&gt; g[N];
+bool used[N];
+int tin[N];
+int low[N];
+int timer = 0;
+vector&lt;int&gt; bridges;
+
+void dfs(int v, int parentEdge) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    for (auto edge : g[v]) {
+        int to = edge.first;
+        int id = edge.second;
+
+        if (id == parentEdge) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, id);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt; tin[v]) {
+                bridges.push_back(id);
+            }
+        }
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m;
+
+    vector&lt;pair&lt;int, int&gt;&gt; edges(m + 1);
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        edges[i] = {a, b};
+
+        g[a].push_back({b, i});
+        g[b].push_back({a, i});
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (!used[i]) {
+            dfs(i, -1);
+        }
+    }
+
+    sort(bridges.begin(), bridges.end());
+
+    for (int id : bridges) {
+        cout &lt;&lt; edges[id].first &lt;&lt; ' ' &lt;&lt; edges[id].second &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Точка сочленения шарты</h2>
+
+                <p>
+                    DFS-та <b>v</b> вершинасынан <b>to</b> child вершинасына өттік делік.
+                    <b>v</b> точка сочленения болуы мүмкін, егер:
+                </p>
+
+                <pre><code class="language-cpp">low[to] &gt;= tin[v]</code></pre>
+
+                <p>
+                    Мағынасы:
+                </p>
+
+                <div class="scheme">
+                    low[to] &gt;= tin[v]<br>
+                    to поддеревосы v-дан жоғарыға шыға алмайды<br>
+                    v өшсе, to поддеревосы бөлініп кетеді
+                </div>
+
+                <div class="note">
+                    Мостта шарт &gt;, ал точка сочлененияда шарт &gt;=.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>DFS root үшін ерекше жағдай</h2>
+
+                <p>
+                    DFS root үшін бөлек шарт бар.
+                </p>
+
+                <p>
+                    Root точка сочленения болады, егер оның DFS tree ішінде child саны 1-ден көп болса.
+                </p>
+
+                <pre><code class="language-cpp">if (p == -1 &amp;&amp; children &gt; 1) {
+    isCut[v] = true;
+}</code></pre>
+
+                <div class="note">
+                    Егер root-тың тек бір child-ы болса, root өшсе де компонент саны көбеймейді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: articulation points табу</h2>
+
+                <p>
+                    Неориентированный граф берілген.
+                    Барлық точка сочленения шығару керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5 5
+1 2
+2 3
+3 1
+3 4
+4 5</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">3 4</code></pre>
+
+                <p>
+                    Мұнда <b>3</b> және <b>4</b> articulation point болады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Точка сочленения толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+vector&lt;int&gt; g[N];
+bool used[N];
+bool isCut[N];
+int tin[N];
+int low[N];
+int timer = 0;
+
+void dfs(int v, int p) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    int children = 0;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, v);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt;= tin[v] &amp;&amp; p != -1) {
+                isCut[v] = true;
+            }
+
+            children++;
+        }
+    }
+
+    if (p == -1 &amp;&amp; children &gt; 1) {
+        isCut[v] = true;
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m;
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (!used[i]) {
+            dfs(i, -1);
+        }
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (isCut[i]) {
+            cout &lt;&lt; i &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Мост пен articulation point бірге</h2>
+
+                <p>
+                    Бір DFS ішінде екеуін де табуға болады.
+                </p>
+
+                <p>
+                    Негізгі шарттар:
+                </p>
+
+                <div class="scheme">
+                    мост: low[to] &gt; tin[v]<br>
+                    articulation point: low[to] &gt;= tin[v]
+                </div>
+
+                <p>
+                    Айырмашылық:
+                </p>
+
+                <ul>
+                    <li><b>&gt;</b> — мост үшін</li>
+                    <li><b>&gt;=</b> — articulation point үшін</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Мост және articulation point бірге толық код</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+vector&lt;int&gt; g[N];
+bool used[N];
+bool isCut[N];
+int tin[N];
+int low[N];
+int timer = 0;
+vector&lt;pair&lt;int, int&gt;&gt; bridges;
+
+void dfs(int v, int p) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    int children = 0;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, v);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt; tin[v]) {
+                bridges.push_back({v, to});
+            }
+
+            if (low[to] &gt;= tin[v] &amp;&amp; p != -1) {
+                isCut[v] = true;
+            }
+
+            children++;
+        }
+    }
+
+    if (p == -1 &amp;&amp; children &gt; 1) {
+        isCut[v] = true;
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m;
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (!used[i]) {
+            dfs(i, -1);
+        }
+    }
+
+    cout &lt;&lt; "Bridges:\n";
+
+    for (auto e : bridges) {
+        cout &lt;&lt; e.first &lt;&lt; ' ' &lt;&lt; e.second &lt;&lt; '\n';
+    }
+
+    cout &lt;&lt; "Cut points:\n";
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (isCut[i]) {
+            cout &lt;&lt; i &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Шарттарды қалай есте сақтау?</h2>
+
+                <table>
+                    <tr>
+                        <th>Не іздейміз?</th>
+                        <th>Шарт</th>
+                        <th>Мағынасы</th>
+                    </tr>
+
+                    <tr>
+                        <td>Мост</td>
+                        <td>low[to] &gt; tin[v]</td>
+                        <td>to поддеревосынан v-ға немесе жоғарыға жол жоқ</td>
+                    </tr>
+
+                    <tr>
+                        <td>Точка сочленения</td>
+                        <td>low[to] &gt;= tin[v]</td>
+                        <td>v өшсе, to поддеревосы бөлінеді</td>
+                    </tr>
+
+                    <tr>
+                        <td>DFS root</td>
+                        <td>children &gt; 1</td>
+                        <td>root өшсе, бірнеше бөлік пайда болады</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>DFS-ты барлық компоненттен бастамау</li>
+                    <li><b>&gt;</b> және <b>&gt;=</b> шарттарын шатастыру</li>
+                    <li>DFS root үшін бөлек жағдайды ұмыту</li>
+                    <li>Кратные ребра бар кезде жай <b>to == p</b> қолдану</li>
+                    <li>Child DFS-тен кейін <b>low[v]</b> жаңартуды ұмыту</li>
+                    <li>Обратное ребро арқылы <b>low[v]</b> жаңартуды ұмыту</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Не істейміз?</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Мост табу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Articulation point табу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Екеуін бірге табу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    DFS әр вершина мен әр реброны бірнеше рет қана қарайды.
+                    Сондықтан уақыт күрделілігі O(n + m).
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    used[v] = true;
+    tin[v] = low[v] = timer++;
+
+    int children = 0;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        if (used[to]) {
+            low[v] = min(low[v], tin[to]);
+        } else {
+            dfs(to, v);
+            low[v] = min(low[v], low[to]);
+
+            if (low[to] &gt; tin[v]) {
+                cout &lt;&lt; "bridge " &lt;&lt; v &lt;&lt; ' ' &lt;&lt; to &lt;&lt; '\n';
+            }
+
+            if (low[to] &gt;= tin[v] &amp;&amp; p != -1) {
+                isCut[v] = true;
+            }
+
+            children++;
+        }
+    }
+
+    if (p == -1 &amp;&amp; children &gt; 1) {
+        isCut[v] = true;
+    }
+}</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

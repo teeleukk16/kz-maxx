@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эратосфен решетосы | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="sieve.html">RU</a>
+                    <a class="lang active" href="sieve_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Эратосфен решетосы</h1>
+            <p>n-ге дейінгі барлық жай сандарды тез табатын алгоритм</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Жай сан деген не?</h2>
+
+                <p>
+                    <b>Жай сан</b> — 1-ден үлкен және тек <b>1</b>-ге және өзіне ғана бөлінетін сан.
+                </p>
+
+                <p>
+                    Жай сандар мысалы:
+                </p>
+
+                <pre><code class="language-none">2 3 5 7 11 13 17 19</code></pre>
+
+                <p>
+                    Мысалы, <b>7</b> жай сан, себебі ол тек <b>1</b> және <b>7</b>-ге бөлінеді.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Құрама сан деген не?</h2>
+
+                <p>
+                    <b>Құрама сан</b> — 1-ден үлкен және 1 мен өзінен басқа бөлгіші бар сан.
+                </p>
+
+                <p>
+                    Құрама сандар мысалы:
+                </p>
+
+                <pre><code class="language-none">4 6 8 9 10 12 14 15</code></pre>
+
+                <p>
+                    Мысалы, <b>12</b> құрама сан, себебі ол мына сандарға бөлінеді:
+                </p>
+
+                <pre><code class="language-none">1 2 3 4 6 12</code></pre>
+
+                <div class="note">
+                    1 саны жай сан да емес, құрама сан да емес.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача</h2>
+
+                <p>
+                    <b>n</b> саны берілген.
+                    <b>1</b>-ден <b>n</b>-ге дейінгі барлық жай сандарды табу керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">20</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2 3 5 7 11 13 17 19</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Баяу әдіс</h2>
+
+                <p>
+                    Әр санды жеке-жеке тексеруге болады: жай ма, жай емес пе.
+                </p>
+
+                <p>
+                    <b>x</b> санын тексеру:
+                </p>
+
+                <pre><code class="language-cpp">bool is_prime(int x) {
+    if (x &lt; 2) {
+        return false;
+    }
+
+    for (int d = 2; d * d &lt;= x; d++) {
+        if (x % d == 0) {
+            return false;
+        }
+    }
+
+    return true;
+}</code></pre>
+
+                <p>
+                    Егер барлық санды 1-ден n-ге дейін осылай тексерсек:
+                </p>
+
+                <div class="scheme">
+                    O(n√n)
+                </div>
+
+                <div class="note">
+                    n үлкен болса, бұл метод баяу болуы мүмкін.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Эратосфен решетосының идеясы</h2>
+
+                <p>
+                    Әр санды бөлек тексермейміз.
+                    Оның орнына құрама сандарды белгілеп шығамыз.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    1. Басында барлық санды жай деп ойлаймыз<br>
+                    2. Бірінші жай сан p аламыз<br>
+                    3. p-ның барлық кратный сандарын құрама деп белгілейміз<br>
+                    4. Келесі белгіленбеген санға өтеміз
+                </div>
+
+                <p>
+                    Мысалы, егер <b>p = 2</b>, онда белгілейміз:
+                </p>
+
+                <pre><code class="language-none">4 6 8 10 12 14 16 ...</code></pre>
+
+                <p>
+                    Егер <b>p = 3</b>, онда белгілейміз:
+                </p>
+
+                <pre><code class="language-none">6 9 12 15 18 21 ...</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Не сақтаймыз?</h2>
+
+                <p>
+                    Массив құрамыз:
+                </p>
+
+                <pre><code class="language-cpp">isPrime[i]</code></pre>
+
+                <p>
+                    Мағынасы:
+                </p>
+
+                <ul>
+                    <li><b>true</b> — i саны әзірше жай деп саналады</li>
+                    <li><b>false</b> — i саны құрама</li>
+                </ul>
+
+                <p>
+                    Басында барлық санды жай деп қоямыз:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;bool&gt; isPrime(n + 1, true);</code></pre>
+
+                <p>
+                    Бірақ 0 және 1 жай сан емес:
+                </p>
+
+                <pre><code class="language-cpp">isPrime[0] = false;
+isPrime[1] = false;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі цикл</h2>
+
+                <p>
+                    <b>p</b> санын перебор жасаймыз.
+                    Егер ол әлі жай болса, оның кратный сандарын белгілейміз.
+                </p>
+
+                <pre><code class="language-cpp">for (int p = 2; p * p &lt;= n; p++) {
+    if (isPrime[p]) {
+        for (int x = p * p; x &lt;= n; x += p) {
+            isPrime[x] = false;
+        }
+    }
+}</code></pre>
+
+                <div class="note">
+                    Ішкі цикл p * p-дан басталады.
+                    Себебі одан кіші кратный сандар бұрын белгіленіп кеткен.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге p * p-дан бастаймыз?</h2>
+
+                <p>
+                    Мысалы, <b>p = 5</b>.
+                    5-тің кратный сандары:
+                </p>
+
+                <pre><code class="language-none">10 15 20 25 30 35 ...</code></pre>
+
+                <p>
+                    Бірақ:
+                </p>
+
+                <ul>
+                    <li>10 санын 2 белгілеп қойған</li>
+                    <li>15 санын 3 белгілеп қойған</li>
+                    <li>20 санын 2 белгілеп қойған</li>
+                </ul>
+
+                <p>
+                    5 үшін нақты басталатын бірінші жаңа сан:
+                </p>
+
+                <pre><code class="language-none">25 = 5 * 5</code></pre>
+
+                <div class="scheme">
+                    сондықтан p * p-дан бастаймыз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге сыртқы цикл sqrt(n)-ге дейін?</h2>
+
+                <p>
+                    Егер <b>x</b> құрама сан болса, оның бір бөлгіші міндетті түрде <b>sqrt(x)</b>-тен аспайды.
+                </p>
+
+                <p>
+                    Сондықтан <b>n</b>-ге дейінгі барлық құрама санды белгілеу үшін
+                    <b>p</b>-ны тек <b>sqrt(n)</b>-ге дейін қарау жеткілікті.
+                </p>
+
+                <pre><code class="language-cpp">p * p &lt;= n</code></pre>
+
+                <p>
+                    Осыдан кейін белгіленбей қалған сандар жай болады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Эратосфен решетосының толық реализациясы</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;bool&gt; isPrime(n + 1, true);
+
+    if (n &gt;= 0) {
+        isPrime[0] = false;
+    }
+
+    if (n &gt;= 1) {
+        isPrime[1] = false;
+    }
+
+    for (int p = 2; p * p &lt;= n; p++) {
+        if (isPrime[p]) {
+            for (int x = p * p; x &lt;= n; x += p) {
+                isPrime[x] = false;
+            }
+        }
+    }
+
+    for (int i = 2; i &lt;= n; i++) {
+        if (isPrime[i]) {
+            cout &lt;&lt; i &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">30</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2 3 5 7 11 13 17 19 23 29</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Решето қолмен қалай жұмыс істейді?</h2>
+
+                <p>
+                    <b>n = 20</b> болсын.
+                </p>
+
+                <p>
+                    Басында:
+                </p>
+
+                <pre><code class="language-none">2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20</code></pre>
+
+                <p>
+                    <b>2</b>-ні аламыз, кратный сандарын белгілейміз:
+                </p>
+
+                <pre><code class="language-none">4 6 8 10 12 14 16 18 20</code></pre>
+
+                <p>
+                    <b>3</b>-ті аламыз, кратный сандарын белгілейміз:
+                </p>
+
+                <pre><code class="language-none">9 15</code></pre>
+
+                <p>
+                    <b>5</b>-ке келгенде:
+                    <b>5 * 5 = 25</b>, ол 20-дан үлкен.
+                </p>
+
+                <p>
+                    Қалған жай сандар:
+                </p>
+
+                <pre><code class="language-none">2 3 5 7 11 13 17 19</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Жай сандар санын табу коды</h2>
+
+                <p>
+                    Кейде жай сандарды шығармай, тек санын табу керек.
+                </p>
+
+                <pre><code class="language-cpp">int cnt = 0;
+
+for (int i = 2; i &lt;= n; i++) {
+    if (isPrime[i]) {
+        cnt++;
+    }
+}
+
+cout &lt;&lt; cnt;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық код: n-ге дейін қанша жай сан бар?</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;bool&gt; isPrime(n + 1, true);
+
+    if (n &gt;= 0) {
+        isPrime[0] = false;
+    }
+
+    if (n &gt;= 1) {
+        isPrime[1] = false;
+    }
+
+    for (int p = 2; p * p &lt;= n; p++) {
+        if (isPrime[p]) {
+            for (int x = p * p; x &lt;= n; x += p) {
+                isPrime[x] = false;
+            }
+        }
+    }
+
+    int cnt = 0;
+
+    for (int i = 2; i &lt;= n; i++) {
+        if (isPrime[i]) {
+            cnt++;
+        }
+    }
+
+    cout &lt;&lt; cnt;
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Жай сандарды vector ішіне сақтау</h2>
+
+                <p>
+                    Көбіне барлық жай сандарды массивке сақтап алу ыңғайлы:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; primes;
+
+for (int i = 2; i &lt;= n; i++) {
+    if (isPrime[i]) {
+        primes.push_back(i);
+    }
+}</code></pre>
+
+                <p>
+                    Кейін <b>primes</b> басқа задачаларда қолданылады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>sieve функциясы</h2>
+
+                <p>
+                    Решетоны бөлек функцияға шығарған ыңғайлы.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; sieve(int n) {
+    vector&lt;bool&gt; isPrime(n + 1, true);
+    vector&lt;int&gt; primes;
+
+    if (n &gt;= 0) {
+        isPrime[0] = false;
+    }
+
+    if (n &gt;= 1) {
+        isPrime[1] = false;
+    }
+
+    for (int p = 2; p * p &lt;= n; p++) {
+        if (isPrime[p]) {
+            for (int x = p * p; x &lt;= n; x += p) {
+                isPrime[x] = false;
+            }
+        }
+    }
+
+    for (int i = 2; i &lt;= n; i++) {
+        if (isPrime[i]) {
+            primes.push_back(i);
+        }
+    }
+
+    return primes;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>long long-пен қауіпсіз вариант</h2>
+
+                <p>
+                    Егер <b>n</b> үлкен болса, <b>p * p</b> int ішінде overflow беруі мүмкін.
+                </p>
+
+                <p>
+                    Сондықтан қауіпсіз жазу:
+                </p>
+
+                <pre><code class="language-cpp">1LL * p * p &lt;= n</code></pre>
+
+                <p>
+                    Ішкі циклдің стартын да былай жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">for (long long x = 1LL * p * p; x &lt;= n; x += p)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қауіпсіз реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;bool&gt; isPrime(n + 1, true);
+
+    if (n &gt;= 0) {
+        isPrime[0] = false;
+    }
+
+    if (n &gt;= 1) {
+        isPrime[1] = false;
+    }
+
+    for (int p = 2; 1LL * p * p &lt;= n; p++) {
+        if (isPrime[p]) {
+            for (long long x = 1LL * p * p; x &lt;= n; x += p) {
+                isPrime[x] = false;
+            }
+        }
+    }
+
+    for (int i = 2; i &lt;= n; i++) {
+        if (isPrime[i]) {
+            cout &lt;&lt; i &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Smallest Prime Factor</h2>
+
+                <p>
+                    Кейде сан жай ма емес пе ғана емес,
+                    сандарды тез простые множители-ге жіктеу керек болады.
+                </p>
+
+                <p>
+                    Онда мына массивті санаймыз:
+                </p>
+
+                <pre><code class="language-cpp">spf[x]</code></pre>
+
+                <p>
+                    <b>spf[x]</b> — smallest prime factor,
+                    яғни <b>x</b> санының ең кіші жай бөлгіші.
+                </p>
+
+                <div class="scheme">
+                    spf[12] = 2<br>
+                    spf[15] = 3<br>
+                    spf[17] = 17
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>SPF коды</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000000;
+
+int spf[N + 1];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    for (int i = 0; i &lt;= N; i++) {
+        spf[i] = i;
+    }
+
+    for (int p = 2; p * p &lt;= N; p++) {
+        if (spf[p] == p) {
+            for (int x = p * p; x &lt;= N; x += p) {
+                if (spf[x] == x) {
+                    spf[x] = p;
+                }
+            }
+        }
+    }
+
+    int x;
+    cin &gt;&gt; x;
+
+    while (x &gt; 1) {
+        cout &lt;&lt; spf[x] &lt;&lt; ' ';
+        x /= spf[x];
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>SPF мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">60</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2 2 3 5</code></pre>
+
+                <p>
+                    Себебі:
+                </p>
+
+                <pre><code class="language-none">60 = 2 * 2 * 3 * 5</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Көп query үшін решето</h2>
+
+                <p>
+                    Кейде көп запрос болады:
+                    әр сан жай ма, жоқ па тексеру керек.
+                </p>
+
+                <p>
+                    Онда решетоны бір рет жасап аламыз,
+                    кейін әр query-ге O(1) жауап береміз.
+                </p>
+
+                <pre><code class="language-cpp">if (isPrime[x]) {
+    cout &lt;&lt; "YES";
+} else {
+    cout &lt;&lt; "NO";
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Query-мен толық код</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1000000;
+
+bool isPrime[N + 1];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    for (int i = 0; i &lt;= N; i++) {
+        isPrime[i] = true;
+    }
+
+    isPrime[0] = false;
+    isPrime[1] = false;
+
+    for (int p = 2; p * p &lt;= N; p++) {
+        if (isPrime[p]) {
+            for (int x = p * p; x &lt;= N; x += p) {
+                isPrime[x] = false;
+            }
+        }
+    }
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        int x;
+        cin &gt;&gt; x;
+
+        if (isPrime[x]) {
+            cout &lt;&lt; "YES\n";
+        } else {
+            cout &lt;&lt; "NO\n";
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Әр санды бөлек тексеру</td>
+                        <td>O(n√n)</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Эратосфен решетосы</td>
+                        <td>O(n log log n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Решетодан кейін query answer</td>
+                        <td>O(1)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    n-ге дейін көп жай сан керек болса, решето өте жылдам жұмыс істейді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Решетоны қашан қолданамыз?</h2>
+
+                <div class="scheme">
+                    1. n-ге дейін барлық жай сан керек<br>
+                    2. isPrime[x] query-леріне тез жауап беру керек<br>
+                    3. Көп санды множительдерге жіктеу керек<br>
+                    4. n-ге дейін жай сандар санын табу керек<br>
+                    5. primes list-ін басқа задачада қолдану керек
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>1 санын жай сан деп ойлау</li>
+                    <li><b>isPrime[0] = false</b> қоюды ұмыту</li>
+                    <li><b>isPrime[1] = false</b> қоюды ұмыту</li>
+                    <li>Ішкі циклді <b>p * p</b> орнына <b>2 * p</b>-дан бастау</li>
+                    <li><b>p * p</b> ішінде overflow алу</li>
+                    <li>Тек бір кішкентай сан тексеру керек кезде решето қолдану</li>
+                    <li>Массив size-ын тым кішкентай жасау</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">vector&lt;bool&gt; isPrime(n + 1, true);
+
+if (n &gt;= 0) {
+    isPrime[0] = false;
+}
+
+if (n &gt;= 1) {
+    isPrime[1] = false;
+}
+
+for (int p = 2; 1LL * p * p &lt;= n; p++) {
+    if (isPrime[p]) {
+        for (long long x = 1LL * p * p; x &lt;= n; x += p) {
+            isPrime[x] = false;
+        }
+    }
+}</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>
