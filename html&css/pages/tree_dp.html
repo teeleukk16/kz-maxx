@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP на дереве | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="tree_dp.html">RU</a>
+                    <a class="lang" href="tree_dp_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>DP на дереве</h1>
+            <p>Динамическое программирование по поддеревьям через DFS</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое DP на дереве?</h2>
+
+                <p>
+                    <b>DP на дереве</b> — это динамическое программирование, где состояние считается
+                    для каждой вершины дерева.
+                </p>
+
+                <p>
+                    Обычно мы запускаем <b>DFS</b> и считаем ответ для поддерева каждой вершины.
+                </p>
+
+                <div class="scheme">
+                    сначала считаем ответы для детей<br>
+                    потом через них считаем ответ для родителя
+                </div>
+
+                <div class="note">
+                    Главное правило: чтобы посчитать dp[v], нужно сначала посчитать dp для всех детей v.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Что такое дерево?</h2>
+
+                <p>
+                    <b>Дерево</b> — это связный граф без циклов.
+                </p>
+
+                <p>
+                    Если в дереве <b>n</b> вершин, то ребер всегда <b>n - 1</b>.
+                </p>
+
+                <div class="scheme">
+                    дерево = связный граф + нет циклов<br>
+                    количество ребер = n - 1
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Корень дерева</h2>
+
+                <p>
+                    Чтобы делать DP на дереве, дерево часто подвешивают за корень.
+                </p>
+
+                <p>
+                    Обычно выбирают вершину <b>1</b> как корень:
+                </p>
+
+                <pre><code class="language-cpp">dfs(1, 0);</code></pre>
+
+                <p>
+                    Тогда у каждой вершины появляются:
+                </p>
+
+                <ul>
+                    <li><b>parent</b> — родитель</li>
+                    <li><b>children</b> — дети</li>
+                    <li><b>subtree</b> — поддерево вершины</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Базовый DFS на дереве</h2>
+
+                <p>
+                    В дереве нет циклов, но если хранить неориентированные ребра,
+                    нужно не возвращаться в родителя.
+                </p>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+    }
+}</code></pre>
+
+                <p>
+                    Здесь:
+                </p>
+
+                <ul>
+                    <li><b>v</b> — текущая вершина</li>
+                    <li><b>p</b> — родитель вершины v</li>
+                    <li><b>to</b> — сосед вершины v</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Главная схема DP на дереве</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    // базовое значение dp[v]
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        // обновляем dp[v] через dp[to]
+    }
+}</code></pre>
+
+                <div class="note">
+                    Это самая важная идея:
+                    сначала dfs(to), потом используем dp[to].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: размер поддерева</h2>
+
+                <p>
+                    Для каждой вершины нужно найти размер ее поддерева.
+                </p>
+
+                <p>
+                    Состояние:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] = размер поддерева вершины v</code></pre>
+
+                <p>
+                    Сначала сама вершина уже дает размер 1:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] = 1;</code></pre>
+
+                <p>
+                    Потом добавляем размеры всех детей:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] += dp[to];</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: размер поддерева</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+int dp[N];
+
+void dfs(int v, int p) {
+    dp[v] = 1;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+        dp[v] += dp[to];
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    dfs(1, 0);
+
+    for (int i = 1; i &lt;= n; i++) {
+        cout &lt;&lt; dp[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример для размера поддерева</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5
+1 2
+1 3
+3 4
+3 5</code></pre>
+
+                <p>
+                    Если корень 1, дерево выглядит так:
+                </p>
+
+                <div class="scheme">
+                    1<br>
+                    ├── 2<br>
+                    └── 3<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── 4<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── 5
+                </div>
+
+                <p>
+                    Размеры поддеревьев:
+                </p>
+
+                <div class="scheme">
+                    dp[1] = 5<br>
+                    dp[2] = 1<br>
+                    dp[3] = 3<br>
+                    dp[4] = 1<br>
+                    dp[5] = 1
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: максимальная сумма независимых вершин</h2>
+
+                <p>
+                    Дано дерево. У каждой вершины есть вес <b>w[v]</b>.
+                    Нужно выбрать вершины с максимальной суммой весов так, чтобы
+                    никакие две выбранные вершины не были соседями.
+                </p>
+
+                <p>
+                    Это называется <b>Maximum Independent Set on Tree</b>.
+                </p>
+
+                <div class="scheme">
+                    если выбрали вершину v<br>
+                    то нельзя выбрать ее детей
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Состояния для независимого множества</h2>
+
+                <p>
+                    Для каждой вершины будем хранить два значения:
+                </p>
+
+                <pre><code class="language-cpp">dp[v][0]
+dp[v][1]</code></pre>
+
+                <ul>
+                    <li><b>dp[v][0]</b> — лучший ответ в поддереве v, если v не выбрана</li>
+                    <li><b>dp[v][1]</b> — лучший ответ в поддереве v, если v выбрана</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Переход</h2>
+
+                <p>
+                    Если вершина <b>v</b> выбрана, то детей выбирать нельзя:
+                </p>
+
+                <pre><code class="language-cpp">dp[v][1] += dp[to][0];</code></pre>
+
+                <p>
+                    Если вершина <b>v</b> не выбрана, то каждый ребенок может быть выбран или не выбран:
+                </p>
+
+                <pre><code class="language-cpp">dp[v][0] += max(dp[to][0], dp[to][1]);</code></pre>
+
+                <p>
+                    Начальное значение:
+                </p>
+
+                <pre><code class="language-cpp">dp[v][1] = w[v];
+dp[v][0] = 0;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: максимальная сумма независимых вершин</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+long long w[N];
+long long dp[N][2];
+
+void dfs(int v, int p) {
+    dp[v][0] = 0;
+    dp[v][1] = w[v];
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        dp[v][0] += max(dp[to][0], dp[to][1]);
+        dp[v][1] += dp[to][0];
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; w[i];
+    }
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    dfs(1, 0);
+
+    cout &lt;&lt; max(dp[1][0], dp[1][1]);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5
+10 1 5 7 8
+1 2
+1 3
+3 4
+3 5</code></pre>
+
+                <p>
+                    Можно выбрать вершины:
+                </p>
+
+                <div class="scheme">
+                    1, 4, 5<br>
+                    сумма = 10 + 7 + 8 = 25
+                </div>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">25</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 3: минимальное вершинное покрытие дерева</h2>
+
+                <p>
+                    Нужно выбрать минимальное количество вершин так, чтобы каждое ребро
+                    имело хотя бы один выбранный конец.
+                </p>
+
+                <p>
+                    Это называется <b>Minimum Vertex Cover on Tree</b>.
+                </p>
+
+                <div class="scheme">
+                    для каждого ребра a--b<br>
+                    нужно выбрать a или b
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Состояния для vertex cover</h2>
+
+                <pre><code class="language-cpp">dp[v][0]
+dp[v][1]</code></pre>
+
+                <ul>
+                    <li><b>dp[v][0]</b> — минимум в поддереве v, если v не выбрана</li>
+                    <li><b>dp[v][1]</b> — минимум в поддереве v, если v выбрана</li>
+                </ul>
+
+                <p>
+                    Если <b>v</b> не выбрана, то все дети обязательно должны быть выбраны.
+                </p>
+
+                <pre><code class="language-cpp">dp[v][0] += dp[to][1];</code></pre>
+
+                <p>
+                    Если <b>v</b> выбрана, то ребенок может быть выбран или не выбран.
+                </p>
+
+                <pre><code class="language-cpp">dp[v][1] += min(dp[to][0], dp[to][1]);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: минимальное вершинное покрытие</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+int dp[N][2];
+
+void dfs(int v, int p) {
+    dp[v][0] = 0;
+    dp[v][1] = 1;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        dp[v][0] += dp[to][1];
+        dp[v][1] += min(dp[to][0], dp[to][1]);
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    dfs(1, 0);
+
+    cout &lt;&lt; min(dp[1][0], dp[1][1]);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 4: высота поддерева</h2>
+
+                <p>
+                    Нужно для каждой вершины найти высоту ее поддерева.
+                </p>
+
+                <p>
+                    Состояние:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] = высота поддерева v</code></pre>
+
+                <p>
+                    Если у вершины нет детей, ее высота равна 1.
+                </p>
+
+                <p>
+                    Иначе:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] = max(dp[to] + 1)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: высота поддерева</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+int dp[N];
+
+void dfs(int v, int p) {
+    dp[v] = 1;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        dp[v] = max(dp[v], dp[to] + 1);
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    dfs(1, 0);
+
+    for (int i = 1; i &lt;= n; i++) {
+        cout &lt;&lt; dp[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 5: диаметр дерева через DP</h2>
+
+                <p>
+                    <b>Диаметр дерева</b> — это максимальное расстояние между двумя вершинами.
+                </p>
+
+                <p>
+                    Его можно искать через DP на дереве.
+                </p>
+
+                <p>
+                    Для каждой вершины храним две самые большие высоты среди ее детей.
+                </p>
+
+                <div class="scheme">
+                    путь может идти через вершину v<br>
+                    из одного поддерева в другое поддерево
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Идея диаметра</h2>
+
+                <p>
+                    Пусть <b>best1</b> и <b>best2</b> — две максимальные глубины от детей.
+                </p>
+
+                <p>
+                    Тогда возможный диаметр через <b>v</b>:
+                </p>
+
+                <pre><code class="language-cpp">best1 + best2</code></pre>
+
+                <p>
+                    А высота для родителя:
+                </p>
+
+                <pre><code class="language-cpp">dp[v] = best1 + 1;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: диаметр дерева</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+int dp[N];
+int ans = 0;
+
+void dfs(int v, int p) {
+    int best1 = 0;
+    int best2 = 0;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        int cur = dp[to] + 1;
+
+        if (cur &gt; best1) {
+            best2 = best1;
+            best1 = cur;
+        } else if (cur &gt; best2) {
+            best2 = cur;
+        }
+    }
+
+    dp[v] = best1;
+    ans = max(ans, best1 + best2);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    dfs(1, 0);
+
+    cout &lt;&lt; ans;
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Этот код считает диаметр в количестве ребер.
+                    Если нужно количество вершин, ответ будет ans + 1.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный метод в DP на дереве</h2>
+
+                <p>
+                    Почти все DP на дереве пишется рекурсивно.
+                </p>
+
+                <p>
+                    Мы запускаем DFS:
+                </p>
+
+                <pre><code class="language-cpp">dfs(v, parent)</code></pre>
+
+                <p>
+                    И внутри DFS считаем <b>dp[v]</b>.
+                </p>
+
+                <p>
+                    Это удобно, потому что дерево само задает порядок:
+                </p>
+
+                <div class="scheme">
+                    листы считаются первыми<br>
+                    их родители после них<br>
+                    корень считается последним
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как конвертировать в итеративный метод?</h2>
+
+                <p>
+                    Иногда рекурсию нужно заменить на итеративный DFS, чтобы избежать stack overflow.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    1. Сначала получаем порядок обхода вершин<br>
+                    2. Потом идем по этому порядку с конца<br>
+                    3. Тогда дети будут обработаны раньше родителей
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Итеративный порядок для DP</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; order;
+vector&lt;int&gt; parent(n + 1, 0);
+
+stack&lt;int&gt; st;
+st.push(1);
+parent[1] = -1;
+
+while (!st.empty()) {
+    int v = st.top();
+    st.pop();
+
+    order.push_back(v);
+
+    for (int to : g[v]) {
+        if (to == parent[v]) {
+            continue;
+        }
+
+        parent[to] = v;
+        st.push(to);
+    }
+}
+
+reverse(order.begin(), order.end());</code></pre>
+
+                <p>
+                    После <b>reverse</b> сначала идут дети, потом родители.
+                    Это как DFS postorder.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Итеративный DP для размера поддерева</h2>
+
+                <pre><code class="language-cpp">for (int v : order) {
+    dp[v] = 1;
+
+    for (int to : g[v]) {
+        if (to == parent[v]) {
+            continue;
+        }
+
+        dp[v] += dp[to];
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная итеративная реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+vector&lt;int&gt; g[N];
+int parent[N];
+int dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n - 1; i++) {
+        int a, b;
+        cin &gt;&gt; a &gt;&gt; b;
+
+        g[a].push_back(b);
+        g[b].push_back(a);
+    }
+
+    vector&lt;int&gt; order;
+    stack&lt;int&gt; st;
+
+    st.push(1);
+    parent[1] = -1;
+
+    while (!st.empty()) {
+        int v = st.top();
+        st.pop();
+
+        order.push_back(v);
+
+        for (int to : g[v]) {
+            if (to == parent[v]) {
+                continue;
+            }
+
+            parent[to] = v;
+            st.push(to);
+        }
+    }
+
+    reverse(order.begin(), order.end());
+
+    for (int v : order) {
+        dp[v] = 1;
+
+        for (int to : g[v]) {
+            if (to == parent[v]) {
+                continue;
+            }
+
+            dp[v] += dp[to];
+        }
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        cout &lt;&lt; dp[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как придумывать DP на дереве?</h2>
+
+                <p>
+                    Обычно нужно ответить на вопросы:
+                </p>
+
+                <div class="scheme">
+                    1. Что означает dp[v]?<br>
+                    2. Нужны ли состояния 0/1?<br>
+                    3. Что происходит, если вершина v выбрана?<br>
+                    4. Что происходит, если вершина v не выбрана?<br>
+                    5. Как объединить ответы детей?<br>
+                    6. Где лежит ответ: в dp[1] или max/min из dp[1]?
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Типичные состояния</h2>
+
+                <table>
+                    <tr>
+                        <th>Состояние</th>
+                        <th>Что означает</th>
+                    </tr>
+
+                    <tr>
+                        <td>dp[v]</td>
+                        <td>ответ для поддерева v</td>
+                    </tr>
+
+                    <tr>
+                        <td>dp[v][0]</td>
+                        <td>ответ, если v не выбрана</td>
+                    </tr>
+
+                    <tr>
+                        <td>dp[v][1]</td>
+                        <td>ответ, если v выбрана</td>
+                    </tr>
+
+                    <tr>
+                        <td>subtree[v]</td>
+                        <td>размер поддерева v</td>
+                    </tr>
+
+                    <tr>
+                        <td>height[v]</td>
+                        <td>высота поддерева v</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Не передать родителя в DFS</li>
+                    <li>Зайти обратно в родителя и получить бесконечную рекурсию</li>
+                    <li>Обновлять dp[v] до dfs(to)</li>
+                    <li>Забыть базовое значение dp[v]</li>
+                    <li>Перепутать dp[v][0] и dp[v][1]</li>
+                    <li>Взять ответ только dp[1][1], хотя нужен max или min</li>
+                    <li>Получить stack overflow на большом дереве</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Размер поддерева</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Independent Set</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Vertex Cover</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Диаметр</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Обычно DP на дереве работает за O(n), потому что DFS проходит каждую вершину и каждое ребро один раз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон DP на дереве</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    // base dp[v]
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        // update dp[v] using dp[to]
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон dp[v][0/1]</h2>
+
+                <pre><code class="language-cpp">void dfs(int v, int p) {
+    dp[v][0] = base0;
+    dp[v][1] = base1;
+
+    for (int to : g[v]) {
+        if (to == p) {
+            continue;
+        }
+
+        dfs(to, v);
+
+        dp[v][0] += transition_when_v_not_taken;
+        dp[v][1] += transition_when_v_taken;
+    }
+}</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

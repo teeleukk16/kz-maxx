@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КМП алгоритмі | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="kmp.html">RU</a>
+                    <a class="lang active" href="kmp_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>КМП алгоритмі</h1>
+            <p>Префикс-функция арқылы pattern-ді text ішінде O(n + m) уақытта іздеу</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>КМП не істейді?</h2>
+
+                <p>
+                    <b>КМП</b> — Кнут-Моррис-Пратт алгоритмі.
+                    Ол <b>pattern</b> строкасының <b>text</b> ішінде барлық кездесетін позицияларын табады.
+                </p>
+
+                <div class="scheme">
+                    pattern — не іздейміз<br>
+                    text — қай жерден іздейміз<br>
+                    answer — pattern кездесетін позициялар
+                </div>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">pattern = aba
+text = abacaba</code></pre>
+
+                <p>
+                    <b>aba</b> строкасы <b>abacaba</b> ішінде мына позицияларда кездеседі:
+                </p>
+
+                <pre><code class="language-none">0 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Наивный поиск</h2>
+
+                <p>
+                    Ең қарапайым әдіс — <b>pattern</b>-ді <b>text</b>-тің әр позициясына қойып көру.
+                </p>
+
+                <pre><code class="language-cpp">for (int i = 0; i + m &lt;= n; i++) {
+    bool ok = true;
+
+    for (int j = 0; j &lt; m; j++) {
+        if (text[i + j] != pattern[j]) {
+            ok = false;
+            break;
+        }
+    }
+
+    if (ok) {
+        cout &lt;&lt; i &lt;&lt; ' ';
+    }
+}</code></pre>
+
+                <p>
+                    Бірақ бұл әдістің уақыты:
+                </p>
+
+                <div class="scheme">
+                    O(n * m)
+                </div>
+
+                <p>
+                    Егер string үлкен болса, бұл баяу болады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>КМП идеясы</h2>
+
+                <p>
+                    КМП қате болған сайын салыстыруды басынан бастамайды.
+                    Ол <b>pattern</b>-нің қандай бөлігі уже совпало екенін қолданады.
+                </p>
+
+                <p>
+                    Ол үшін қолданылады:
+                </p>
+
+                <pre><code class="language-none">префикс-функция</code></pre>
+
+                <div class="scheme">
+                    егер совпадение бұзылса<br>
+                    толық артқа қайтпаймыз<br>
+                    кішірек совпавший prefix-ке откат жасаймыз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Префикс және суффикс</h2>
+
+                <p>
+                    <b>Префикс</b> — string басынан басталатын бөлік.
+                </p>
+
+                <pre><code class="language-none">abcde
+
+префикстер:
+a
+ab
+abc
+abcd
+abcde</code></pre>
+
+                <p>
+                    <b>Суффикс</b> — string соңында аяқталатын бөлік.
+                </p>
+
+                <pre><code class="language-none">abcde
+
+суффикстер:
+e
+de
+cde
+bcde
+abcde</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Префикс-функция деген не?</h2>
+
+                <p>
+                    <b>pi[i]</b> — <b>s[0...i]</b> строкасының ең ұзын собственный prefix ұзындығы,
+                    ол осы строканың suffix-іне тең болуы керек.
+                </p>
+
+                <div class="scheme">
+                    s[0...i] аламыз<br>
+                    ең ұзын prefix іздейміз<br>
+                    ол suffix-ке тең<br>
+                    бірақ толық string-тің өзі емес
+                </div>
+
+                <p>
+                    Мысал:
+                </p>
+
+                <pre><code class="language-none">s = ababa
+
+pi = 0 0 1 2 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Префикс-функция коды</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>КМП prefix function-ды қалай қолданады?</h2>
+
+                <p>
+                    <b>pattern</b>-ді <b>text</b> ішінде табу үшін жаңа string құрамыз:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    <b>#</b> — separator.
+                    Ол <b>pattern</b> және <b>text</b> ішінде кездеспеуі керек.
+                </p>
+
+                <p>
+                    Кейін осы жаңа string үшін prefix function санаймыз.
+                </p>
+
+                <div class="scheme">
+                    егер pi[i] == pattern.size()<br>
+                    демек pattern толық совпало<br>
+                    бір occurrence табылды
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>КМП үшін string мысалы</h2>
+
+                <p>
+                    Болсын:
+                </p>
+
+                <pre><code class="language-none">pattern = aba
+text = abacaba</code></pre>
+
+                <p>
+                    Онда құрамыз:
+                </p>
+
+                <pre><code class="language-none">s = aba#abacaba</code></pre>
+
+                <p>
+                    Кейін бүкіл <b>s</b> үшін prefix function санаймыз.
+                </p>
+
+                <p>
+                    Егер бір жерде <b>pi[i] = 3</b> болса,
+                    онда <b>aba</b> осы позицияда аяқталды деген сөз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Позиция формуласы</h2>
+
+                <p>
+                    Болсын:
+                </p>
+
+                <pre><code class="language-none">m = pattern.size()</code></pre>
+
+                <p>
+                    Егер жалпы string <b>s = pattern + "#" + text</b> ішінде
+                    <b>i</b> позициясында:
+                </p>
+
+                <pre><code class="language-none">pi[i] = m</code></pre>
+
+                <p>
+                    Онда <b>text</b> ішіндегі басталу позициясы:
+                </p>
+
+                <pre><code class="language-none">pos = i - 2 * m</code></pre>
+
+                <div class="note">
+                    Бұл кодта позициялар 0-indexed.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге pos = i - 2 * m?</h2>
+
+                <p>
+                    Жалпы string былай тұрады:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    Text-тің алдында:
+                </p>
+
+                <pre><code class="language-none">m символ pattern
+1 символ #
+барлығы m + 1 символ</code></pre>
+
+                <p>
+                    Егер ұзындығы <b>m</b> совпадение <b>i</b> позициясында аяқталса,
+                    оның жалпы string ішіндегі басы:
+                </p>
+
+                <pre><code class="language-none">i - m + 1</code></pre>
+
+                <p>
+                    Text ішіндегі позицияға өту үшін <b>m + 1</b> азайтамыз:
+                </p>
+
+                <pre><code class="language-none">(i - m + 1) - (m + 1) = i - 2 * m</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>КМП коды</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    int m = pattern.size();
+
+    for (int i = 0; i &lt; (int)s.size(); i++) {
+        if (pi[i] == m) {
+            int pos = i - 2 * m;
+
+            cout &lt;&lt; pos &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">aba
+abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Мысалды разбор</h2>
+
+                <p>
+                    Іздейміз:
+                </p>
+
+                <pre><code class="language-none">aba</code></pre>
+
+                <p>
+                    Мына string ішінде:
+                </p>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <p>
+                    Қолмен тексерсек:
+                </p>
+
+                <pre><code class="language-none">позиция 0: aba совпало
+позиция 1: bac совпало емес
+позиция 2: aca совпало емес
+позиция 3: cab совпало емес
+позиция 4: aba совпало</code></pre>
+
+                <p>
+                    Answer:
+                </p>
+
+                <pre><code class="language-none">0 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>find_occurrences функциясы</h2>
+
+                <p>
+                    Барлық позицияларды қайтаратын бөлек функция жасау ыңғайлы.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+    vector&lt;int&gt; ans;
+
+    int m = pattern.size();
+
+    for (int i = 0; i &lt; (int)s.size(); i++) {
+        if (pi[i] == m) {
+            ans.push_back(i - 2 * m);
+        }
+    }
+
+    return ans;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Функциямен толық программа</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+vector&lt;int&gt; find_occurrences(string pattern, string text) {
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+    vector&lt;int&gt; ans;
+
+    int m = pattern.size();
+
+    for (int i = 0; i &lt; (int)s.size(); i++) {
+        if (pi[i] == m) {
+            ans.push_back(i - 2 * m);
+        }
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    vector&lt;int&gt; ans = find_occurrences(pattern, text);
+
+    for (int pos : ans) {
+        cout &lt;&lt; pos &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Тек бірінші occurrence іздеу</h2>
+
+                <p>
+                    Кейде тек бірінші позиция керек.
+                    Егер occurrence жоқ болса, <b>-1</b> қайтарамыз.
+                </p>
+
+                <pre><code class="language-cpp">int find_first(string pattern, string text) {
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    int m = pattern.size();
+
+    for (int i = 0; i &lt; (int)s.size(); i++) {
+        if (pi[i] == m) {
+            return i - 2 * m;
+        }
+    }
+
+    return -1;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>pattern text ішінде бар ма?</h2>
+
+                <p>
+                    Егер тек substring бар-жоғын білу керек болса:
+                </p>
+
+                <pre><code class="language-cpp">bool contains(string pattern, string text) {
+    return find_first(pattern, text) != -1;
+}</code></pre>
+
+                <p>
+                    Бұл да жұмыс істейді:
+                </p>
+
+                <div class="scheme">
+                    O(n + m)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>КМП үлкен string жасамай</h2>
+
+                <p>
+                    <b>pattern + "#" + text</b> құрмай-ақ іздеуге болады.
+                    Алдымен prefix function тек <b>pattern</b> үшін саналады.
+                </p>
+
+                <p>
+                    Кейін <b>text</b> бойынша жүріп,
+                    қазіргі совпадение ұзындығын <b>j</b> ұстаймыз.
+                </p>
+
+                <div class="scheme">
+                    j — pattern-нің қанша символы қазір совпало<br>
+                    егер text[i] == pattern[j], j өседі<br>
+                    егер j == m, occurrence табылды
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код: КМП склейкасыз</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; kmp_search(string pattern, string text) {
+    vector&lt;int&gt; pi = prefix_function(pattern);
+    vector&lt;int&gt; ans;
+
+    int n = text.size();
+    int m = pattern.size();
+
+    int j = 0;
+
+    for (int i = 0; i &lt; n; i++) {
+        while (j &gt; 0 &amp;&amp; text[i] != pattern[j]) {
+            j = pi[j - 1];
+        }
+
+        if (text[i] == pattern[j]) {
+            j++;
+        }
+
+        if (j == m) {
+            ans.push_back(i - m + 1);
+            j = pi[j - 1];
+        }
+    }
+
+    return ans;
+}</code></pre>
+
+                <div class="note">
+                    Бұл вариант қосымша үлкен string құрғың келмесе ыңғайлы.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Толық код: КМП склейкасыз</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+vector&lt;int&gt; kmp_search(string pattern, string text) {
+    vector&lt;int&gt; pi = prefix_function(pattern);
+    vector&lt;int&gt; ans;
+
+    int n = text.size();
+    int m = pattern.size();
+
+    int j = 0;
+
+    for (int i = 0; i &lt; n; i++) {
+        while (j &gt; 0 &amp;&amp; text[i] != pattern[j]) {
+            j = pi[j - 1];
+        }
+
+        if (text[i] == pattern[j]) {
+            j++;
+        }
+
+        if (j == m) {
+            ans.push_back(i - m + 1);
+            j = pi[j - 1];
+        }
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    vector&lt;int&gt; ans = kmp_search(pattern, text);
+
+    for (int pos : ans) {
+        cout &lt;&lt; pos &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Неге occurrence табылғаннан кейін откат жасаймыз?</h2>
+
+                <p>
+                    <b>j == m</b> болғанда pattern толық табылды.
+                    Бірақ келесі occurrence қазіргі occurrence-пен пересекаться етуі мүмкін.
+                </p>
+
+                <p>
+                    Сондықтан жай ғана <b>j = 0</b> жасау дұрыс емес.
+                    Дұрысы:
+                </p>
+
+                <pre><code class="language-cpp">j = pi[j - 1];</code></pre>
+
+                <p>
+                    Осылай пересекающиеся occurrence-тер де табылады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Пересекающиеся occurrence мысалы</h2>
+
+                <p>
+                    Болсын:
+                </p>
+
+                <pre><code class="language-none">pattern = aaa
+text = aaaaa</code></pre>
+
+                <p>
+                    Occurrence-тер:
+                </p>
+
+                <pre><code class="language-none">0 1 2</code></pre>
+
+                <p>
+                    Олар бір-бірімен пересекаются:
+                </p>
+
+                <pre><code class="language-none">aaa..
+.aaa.
+..aaa</code></pre>
+
+                <div class="note">
+                    Сондықтан pattern табылғаннан кейін pi арқылы откат жасаймыз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>КМП арқылы occurrence санын санау</h2>
+
+                <p>
+                    Егер позициялар емес, тек саны керек болса:
+                </p>
+
+                <pre><code class="language-cpp">int count_occurrences(string pattern, string text) {
+    vector&lt;int&gt; ans = kmp_search(pattern, text);
+
+    return ans.size();
+}</code></pre>
+
+                <p>
+                    Немесе цикл ішінде counter-ды бірден арттыруға болады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: тек occurrence саны</h2>
+
+                <pre><code class="language-cpp">int count_occurrences(string pattern, string text) {
+    vector&lt;int&gt; pi = prefix_function(pattern);
+
+    int n = text.size();
+    int m = pattern.size();
+
+    int j = 0;
+    int cnt = 0;
+
+    for (int i = 0; i &lt; n; i++) {
+        while (j &gt; 0 &amp;&amp; text[i] != pattern[j]) {
+            j = pi[j - 1];
+        }
+
+        if (text[i] == pattern[j]) {
+            j++;
+        }
+
+        if (j == m) {
+            cnt++;
+            j = pi[j - 1];
+        }
+    }
+
+    return cnt;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Наивный поиск пен КМП салыстыру</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Уақыт</th>
+                        <th>Идея</th>
+                    </tr>
+
+                    <tr>
+                        <td>Наивный поиск</td>
+                        <td>O(n * m)</td>
+                        <td>әр позицияны басынан тексереміз</td>
+                    </tr>
+
+                    <tr>
+                        <td>КМП</td>
+                        <td>O(n + m)</td>
+                        <td>prefix function және откат қолданамыз</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>КМП қашан қолданылады?</h2>
+
+                <div class="scheme">
+                    pattern-ді text ішінде табу керек<br>
+                    pattern-нің барлық позициясын табу керек<br>
+                    occurrence санын санау керек<br>
+                    string үлкен<br>
+                    guaranteed O(n + m) керек
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Бөлік</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>prefix_function(pattern)</td>
+                        <td>O(m)</td>
+                        <td>O(m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>text ішінде іздеу</td>
+                        <td>O(n)</td>
+                        <td>O(1), answer-ден басқа</td>
+                    </tr>
+
+                    <tr>
+                        <td>толық КМП</td>
+                        <td>O(n + m)</td>
+                        <td>O(m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>склейкамен вариант</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>Позициялар көбіне 0-indexed екенін ұмыту</li>
+                    <li>pattern немесе text ішінде кездесетін separator таңдау</li>
+                    <li><b>i - 2 * m</b> формуласынан қателесу</li>
+                    <li>Occurrence табылғаннан кейін <b>j = 0</b> жасап, пересечения жоғалту</li>
+                    <li>Prefix function ішінде <b>while</b> орнына <b>if</b> жазу</li>
+                    <li>while ішінде <b>j &gt; 0</b> шартын ұмыту</li>
+                    <li>pattern бос болған кезде <b>pattern[j]</b> қолдану</li>
+                    <li><b>n</b> text ұзындығы және <b>m</b> pattern ұзындығын шатастыру</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа prefix function шаблоны</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа КМП шаблоны</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; kmp_search(string pattern, string text) {
+    vector&lt;int&gt; pi = prefix_function(pattern);
+    vector&lt;int&gt; ans;
+
+    int n = text.size();
+    int m = pattern.size();
+
+    int j = 0;
+
+    for (int i = 0; i &lt; n; i++) {
+        while (j &gt; 0 &amp;&amp; text[i] != pattern[j]) {
+            j = pi[j - 1];
+        }
+
+        if (text[i] == pattern[j]) {
+            j++;
+        }
+
+        if (j == m) {
+            ans.push_back(i - m + 1);
+            j = pi[j - 1];
+        }
+    }
+
+    return ans;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ең бастысы</h2>
+
+                <div class="scheme">
+                    КМП pattern-ді text ішінде іздейді<br>
+                    O(n + m) уақытта жұмыс істейді<br>
+                    prefix function қолданады<br>
+                    j қазіргі совпадение ұзындығын көрсетеді<br>
+                    қате болса → j = pi[j - 1]<br>
+                    occurrence табылса да откат жасаймыз
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCS | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="lcs.html">RU</a>
+                    <a class="lang" href="lcs_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Наибольшая общая подпоследовательность</h1>
+            <p>LCS: динамическое программирование по двум строкам</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое LCS?</h2>
+
+                <p>
+                    <b>LCS</b> — это <b>Longest Common Subsequence</b>.
+                    По-русски: <b>наибольшая общая подпоследовательность</b>.
+                </p>
+
+                <p>
+                    Даны две строки.
+                    Нужно найти самую длинную подпоследовательность,
+                    которая встречается и в первой строке, и во второй строке.
+                </p>
+
+                <div class="note">
+                    Подпоследовательность — это не обязательно подряд.
+                    Можно пропускать символы, но нельзя менять порядок.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Пример</h2>
+
+                <p>
+                    Даны строки:
+                </p>
+
+                <pre><code class="language-none">s = "abcde"
+t = "ace"</code></pre>
+
+                <p>
+                    Общая подпоследовательность:
+                </p>
+
+                <pre><code class="language-none">ace</code></pre>
+
+                <p>
+                    Ответ:
+                </p>
+
+                <pre><code class="language-none">3</code></pre>
+
+                <p>
+                    Потому что длина строки <b>"ace"</b> равна 3.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Подпоследовательность и подстрока</h2>
+
+                <table>
+                    <tr>
+                        <th>Термин</th>
+                        <th>Что значит</th>
+                        <th>Пример</th>
+                    </tr>
+
+                    <tr>
+                        <td>Подпоследовательность</td>
+                        <td>можно пропускать символы</td>
+                        <td>"ace" из "abcde"</td>
+                    </tr>
+
+                    <tr>
+                        <td>Подстрока</td>
+                        <td>символы идут подряд</td>
+                        <td>"bcd" из "abcde"</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    LCS — это именно подпоследовательность, а не подстрока.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Главная идея DP</h2>
+
+                <p>
+                    Пусть:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][j]</code></pre>
+
+                <p>
+                    Это длина LCS для первых <b>i</b> символов строки <b>s</b>
+                    и первых <b>j</b> символов строки <b>t</b>.
+                </p>
+
+                <div class="scheme">
+                    dp[i][j] = ответ для s[0..i-1] и t[0..j-1]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Почему индексы i и j?</h2>
+
+                <p>
+                    У нас две строки, поэтому состояние зависит от двух параметров:
+                </p>
+
+                <ul>
+                    <li><b>i</b> — сколько символов взяли из первой строки</li>
+                    <li><b>j</b> — сколько символов взяли из второй строки</li>
+                </ul>
+
+                <pre><code class="language-none">s = abcde
+t = ace
+
+dp[3][2] = ответ для "abc" и "ac"</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Базовые значения</h2>
+
+                <p>
+                    Если одна из строк пустая, общая подпоследовательность имеет длину 0.
+                </p>
+
+                <pre><code class="language-cpp">dp[0][j] = 0;
+dp[i][0] = 0;</code></pre>
+
+                <p>
+                    В C++ глобальный массив автоматически заполнен нулями.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Переход DP</h2>
+
+                <p>
+                    Смотрим последние символы:
+                </p>
+
+                <pre><code class="language-cpp">s[i - 1]
+t[j - 1]</code></pre>
+
+                <p>
+                    Если они равны, значит этот символ можно добавить в ответ:
+                </p>
+
+                <pre><code class="language-cpp">if (s[i - 1] == t[j - 1]) {
+    dp[i][j] = dp[i - 1][j - 1] + 1;
+}</code></pre>
+
+                <p>
+                    Если они разные, то пробуем убрать один символ:
+                </p>
+
+                <pre><code class="language-cpp">else {
+    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Формула целиком</h2>
+
+                <pre><code class="language-cpp">if (s[i - 1] == t[j - 1]) {
+    dp[i][j] = dp[i - 1][j - 1] + 1;
+} else {
+    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+}</code></pre>
+
+                <div class="scheme">
+                    символы равны → берем этот символ<br>
+                    символы разные → выбираем лучший из двух вариантов
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: найти длину LCS</h2>
+
+                <p>
+                    Даны две строки <b>s</b> и <b>t</b>.
+                    Нужно найти длину их наибольшей общей подпоследовательности.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">abcde
+ace</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация длины LCS</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    cout &lt;&lt; dp[n][m];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как читать dp[n][m]?</h2>
+
+                <p>
+                    Если:
+                </p>
+
+                <pre><code class="language-cpp">n = s.size();
+m = t.size();</code></pre>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-cpp">dp[n][m]</code></pre>
+
+                <p>
+                    Это ответ для всей строки <b>s</b> и всей строки <b>t</b>.
+                </p>
+
+                <div class="scheme">
+                    dp[n][m] = длина LCS двух полных строк
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Пример руками</h2>
+
+                <p>
+                    Пусть:
+                </p>
+
+                <pre><code class="language-none">s = "abc"
+t = "ac"</code></pre>
+
+                <p>
+                    Ответ должен быть:
+                </p>
+
+                <pre><code class="language-none">2</code></pre>
+
+                <p>
+                    Потому что общая подпоследовательность — <b>"ac"</b>.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Состояние</th>
+                        <th>Смысл</th>
+                    </tr>
+
+                    <tr>
+                        <td>dp[1][1]</td>
+                        <td>LCS("a", "a") = 1</td>
+                    </tr>
+
+                    <tr>
+                        <td>dp[2][1]</td>
+                        <td>LCS("ab", "a") = 1</td>
+                    </tr>
+
+                    <tr>
+                        <td>dp[3][2]</td>
+                        <td>LCS("abc", "ac") = 2</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный метод</h2>
+
+                <p>
+                    Эту задачу можно сначала понять через рекурсию.
+                </p>
+
+                <p>
+                    Пусть:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j)</code></pre>
+
+                <p>
+                    Это длина LCS для первых <b>i</b> символов строки <b>s</b>
+                    и первых <b>j</b> символов строки <b>t</b>.
+                </p>
+
+                <p>
+                    Если <b>i == 0</b> или <b>j == 0</b>, ответ 0.
+                </p>
+
+                <pre><code class="language-cpp">if (i == 0 || j == 0) {
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный переход</h2>
+
+                <p>
+                    Если последние символы равны:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j) = solve(i - 1, j - 1) + 1</code></pre>
+
+                <p>
+                    Если последние символы разные:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j) = max(solve(i - 1, j), solve(i, j - 1))</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия + мемоизация</h2>
+
+                <pre><code class="language-cpp">int solve(int i, int j) {
+    if (i == 0 || j == 0) {
+        return 0;
+    }
+
+    if (dp[i][j] != -1) {
+        return dp[i][j];
+    }
+
+    if (s[i - 1] == t[j - 1]) {
+        dp[i][j] = solve(i - 1, j - 1) + 1;
+    } else {
+        dp[i][j] = max(solve(i - 1, j), solve(i, j - 1));
+    }
+
+    return dp[i][j];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная рекурсивная реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int solve(int i, int j) {
+    if (i == 0 || j == 0) {
+        return 0;
+    }
+
+    if (dp[i][j] != -1) {
+        return dp[i][j];
+    }
+
+    if (s[i - 1] == t[j - 1]) {
+        dp[i][j] = solve(i - 1, j - 1) + 1;
+    } else {
+        dp[i][j] = max(solve(i - 1, j), solve(i, j - 1));
+    }
+
+    return dp[i][j];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    memset(dp, -1, sizeof(dp));
+
+    cout &lt;&lt; solve(s.size(), t.size());
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия → итеративный DP</h2>
+
+                <table>
+                    <tr>
+                        <th>Рекурсия</th>
+                        <th>Итеративный DP</th>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i, j)</td>
+                        <td>dp[i][j]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i - 1, j - 1)</td>
+                        <td>dp[i - 1][j - 1]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i - 1, j)</td>
+                        <td>dp[i - 1][j]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i, j - 1)</td>
+                        <td>dp[i][j - 1]</td>
+                    </tr>
+
+                    <tr>
+                        <td>base case</td>
+                        <td>нулевая строка и нулевой столбец</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Восстановление самой LCS</h2>
+
+                <p>
+                    Иногда нужно вывести не только длину, но и саму подпоследовательность.
+                </p>
+
+                <p>
+                    После заполнения <b>dp</b> идем назад из состояния:
+                </p>
+
+                <pre><code class="language-cpp">i = n;
+j = m;</code></pre>
+
+                <p>
+                    Если символы равны, значит этот символ входит в ответ:
+                </p>
+
+                <pre><code class="language-cpp">if (s[i - 1] == t[j - 1]) {
+    answer.push_back(s[i - 1]);
+    i--;
+    j--;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Если символы разные</h2>
+
+                <p>
+                    Если символы разные, идем туда, где значение <b>dp</b> больше.
+                </p>
+
+                <pre><code class="language-cpp">if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+    i--;
+} else {
+    j--;
+}</code></pre>
+
+                <p>
+                    В конце ответ будет собран с конца, поэтому надо сделать:
+                </p>
+
+                <pre><code class="language-cpp">reverse(answer.begin(), answer.end());</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код восстановления LCS</h2>
+
+                <pre><code class="language-cpp">string answer;
+
+int i = n;
+int j = m;
+
+while (i &gt; 0 &amp;&amp; j &gt; 0) {
+    if (s[i - 1] == t[j - 1]) {
+        answer.push_back(s[i - 1]);
+        i--;
+        j--;
+    } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+        i--;
+    } else {
+        j--;
+    }
+}
+
+reverse(answer.begin(), answer.end());</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация с восстановлением</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    string answer;
+
+    int i = n;
+    int j = m;
+
+    while (i &gt; 0 &amp;&amp; j &gt; 0) {
+        if (s[i - 1] == t[j - 1]) {
+            answer.push_back(s[i - 1]);
+            i--;
+            j--;
+        } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+
+    reverse(answer.begin(), answer.end());
+
+    cout &lt;&lt; dp[n][m] &lt;&lt; '\n';
+    cout &lt;&lt; answer;
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример с восстановлением</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">abac
+cab</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2
+ab</code></pre>
+
+                <p>
+                    Возможен и другой правильный ответ, если LCS несколько.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Оптимизация памяти</h2>
+
+                <p>
+                    Если нужна только длина LCS, можно хранить не весь массив <b>dp[n][m]</b>,
+                    а только две строки.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prev(m + 1);
+vector&lt;int&gt; cur(m + 1);</code></pre>
+
+                <p>
+                    Потому что <b>dp[i][j]</b> зависит только от:
+                </p>
+
+                <ul>
+                    <li><b>dp[i - 1][j - 1]</b></li>
+                    <li><b>dp[i - 1][j]</b></li>
+                    <li><b>dp[i][j - 1]</b></li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Реализация с памятью O(m)</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    vector&lt;int&gt; prev(m + 1, 0);
+    vector&lt;int&gt; cur(m + 1, 0);
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                cur[j] = prev[j - 1] + 1;
+            } else {
+                cur[j] = max(prev[j], cur[j - 1]);
+            }
+        }
+
+        prev = cur;
+    }
+
+    cout &lt;&lt; prev[m];
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Если нужно восстановить саму подпоследовательность,
+                    обычно удобнее хранить полный dp[n][m].
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>LCS и LIS</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Что дано</th>
+                        <th>Что ищем</th>
+                    </tr>
+
+                    <tr>
+                        <td>LIS</td>
+                        <td>один массив</td>
+                        <td>самую длинную возрастающую подпоследовательность</td>
+                    </tr>
+
+                    <tr>
+                        <td>LCS</td>
+                        <td>две строки или два массива</td>
+                        <td>самую длинную общую подпоследовательность</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Путать подпоследовательность и подстроку</li>
+                    <li>Забыть, что можно пропускать символы</li>
+                    <li>Писать <b>s[i]</b> вместо <b>s[i - 1]</b></li>
+                    <li>Писать <b>t[j]</b> вместо <b>t[j - 1]</b></li>
+                    <li>Неправильно заполнить нулевую строку и нулевой столбец</li>
+                    <li>При восстановлении забыть сделать <b>reverse</b></li>
+                    <li>Думать, что LCS всегда единственная</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + мемоизация</td>
+                        <td>O(nm)</td>
+                        <td>O(nm)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Итеративный DP</td>
+                        <td>O(nm)</td>
+                        <td>O(nm)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Оптимизация памяти</td>
+                        <td>O(nm)</td>
+                        <td>O(m)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Здесь n — длина первой строки, m — длина второй строки.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как думать на задачах LCS?</h2>
+
+                <div class="scheme">
+                    1. Есть две строки или два массива<br>
+                    2. Нужно найти общую подпоследовательность<br>
+                    3. Состояние dp[i][j]<br>
+                    4. Если символы равны — берем их<br>
+                    5. Если разные — берем максимум из двух вариантов<br>
+                    6. Ответ лежит в dp[n][m]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон</h2>
+
+                <pre><code class="language-cpp">for (int i = 1; i &lt;= n; i++) {
+    for (int j = 1; j &lt;= m; j++) {
+        if (s[i - 1] == t[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1] + 1;
+        } else {
+            dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+}
+
+cout &lt;&lt; dp[n][m];</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

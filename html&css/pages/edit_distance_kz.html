@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редакционное расстояние | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="edit_distance.html">RU</a>
+                    <a class="lang active" href="edit_distance_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Редакционное расстояние</h1>
+            <p>Levenshtein Distance: екі строка, insert, delete, replace</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Редакционное расстояние деген не?</h2>
+
+                <p>
+                    <b>Редакционное расстояние</b> — бір строканы екінші строкаға айналдыру үшін
+                    керек минималды операция саны.
+                </p>
+
+                <p>
+                    Көбіне 3 операция рұқсат:
+                </p>
+
+                <ul>
+                    <li><b>insert</b> — символ қосу</li>
+                    <li><b>delete</b> — символ өшіру</li>
+                    <li><b>replace</b> — бір символды басқа символға ауыстыру</li>
+                </ul>
+
+                <div class="note">
+                    Бұл алгоритм <b>Levenshtein Distance</b> деп те аталады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қарапайым мысал</h2>
+
+                <p>
+                    Мына строканы:
+                </p>
+
+                <pre><code class="language-none">cat</code></pre>
+
+                <p>
+                    мына строкаға айналдыру керек:
+                </p>
+
+                <pre><code class="language-none">cut</code></pre>
+
+                <p>
+                    Тек <b>a</b> символын <b>u</b> символына ауыстырамыз.
+                </p>
+
+                <div class="scheme">
+                    cat → cut<br>
+                    replace a to u<br>
+                    answer = 1
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Тағы бір мысал</h2>
+
+                <p>
+                    Мына строканы:
+                </p>
+
+                <pre><code class="language-none">kitten</code></pre>
+
+                <p>
+                    мына строкаға айналдыру керек:
+                </p>
+
+                <pre><code class="language-none">sitting</code></pre>
+
+                <p>
+                    Бір вариант:
+                </p>
+
+                <div class="scheme">
+                    kitten → sitten<br>
+                    sitten → sittin<br>
+                    sittin → sitting
+                </div>
+
+                <p>
+                    Барлығы 3 операция.
+                </p>
+
+                <pre><code class="language-none">answer = 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қай жерде қолданылады?</h2>
+
+                <ul>
+                    <li>сөздегі қателерді түзету</li>
+                    <li>ұқсас строкаларды табу</li>
+                    <li>автозамена</li>
+                    <li>мәтіндерді салыстыру</li>
+                    <li>биоинформатика</li>
+                    <li>search алгоритмдері</li>
+                    <li>DP по строкам задачалары</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>DP негізгі идеясы</h2>
+
+                <p>
+                    Бізде екі строка бар:
+                </p>
+
+                <pre><code class="language-cpp">string s, t;</code></pre>
+
+                <p>
+                    State ойлаймыз:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][j]</code></pre>
+
+                <p>
+                    <b>dp[i][j]</b> — бірінші строканың алғашқы <b>i</b> символын
+                    екінші строканың алғашқы <b>j</b> символына айналдыру үшін керек
+                    минималды операция саны.
+                </p>
+
+                <div class="scheme">
+                    dp[i][j] = distance between s[0..i-1] and t[0..j-1]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге екі индекс керек?</h2>
+
+                <p>
+                    Себебі біз екі строканы салыстырамыз.
+                </p>
+
+                <ul>
+                    <li><b>i</b> — бірінші строкадан қанша символ алдық</li>
+                    <li><b>j</b> — екінші строкадан қанша символ алдық</li>
+                </ul>
+
+                <pre><code class="language-none">s = horse
+t = ros
+
+dp[3][2] = distance between "hor" and "ro"</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Базалық мәндер</h2>
+
+                <p>
+                    Егер бірінші строка бос болса, ал екінші строкада <b>j</b> символ болса,
+                    барлық <b>j</b> символды қосу керек.
+                </p>
+
+                <pre><code class="language-cpp">dp[0][j] = j;</code></pre>
+
+                <p>
+                    Егер екінші строка бос болса, ал бірінші строкада <b>i</b> символ болса,
+                    барлық <b>i</b> символды өшіру керек.
+                </p>
+
+                <pre><code class="language-cpp">dp[i][0] = i;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>DP переход</h2>
+
+                <p>
+                    Қазіргі префикстердің соңғы символдарын қараймыз:
+                </p>
+
+                <pre><code class="language-cpp">s[i - 1]
+t[j - 1]</code></pre>
+
+                <p>
+                    Егер олар тең болса, ештеңе істемейміз:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][j] = dp[i - 1][j - 1];</code></pre>
+
+                <p>
+                    Егер әртүрлі болса, 3 операцияның минимумын аламыз:
+                </p>
+
+                <ul>
+                    <li>delete</li>
+                    <li>insert</li>
+                    <li>replace</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Үш операция</h2>
+
+                <p>
+                    <b>Delete</b> — бірінші строкадан символ өшіру:
+                </p>
+
+                <pre><code class="language-cpp">dp[i - 1][j] + 1</code></pre>
+
+                <p>
+                    <b>Insert</b> — бірінші строкаға символ қосу:
+                </p>
+
+                <pre><code class="language-cpp">dp[i][j - 1] + 1</code></pre>
+
+                <p>
+                    <b>Replace</b> — символды ауыстыру:
+                </p>
+
+                <pre><code class="language-cpp">dp[i - 1][j - 1] + 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Формула толық</h2>
+
+                <pre><code class="language-cpp">if (s[i - 1] == t[j - 1]) {
+    dp[i][j] = dp[i - 1][j - 1];
+} else {
+    dp[i][j] = min({
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + 1
+    });
+}</code></pre>
+
+                <div class="scheme">
+                    символдар тең → операция керек емес<br>
+                    символдар әртүрлі → delete, insert, replace ішінен minimum
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: редакционное расстояние табу</h2>
+
+                <p>
+                    Екі строка <b>s</b> және <b>t</b> берілген.
+                    <b>s</b>-ті <b>t</b>-ға айналдыру үшін минималды операция санын табу керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">horse
+ros</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    for (int i = 0; i &lt;= n; i++) {
+        dp[i][0] = i;
+    }
+
+    for (int j = 0; j &lt;= m; j++) {
+        dp[0][j] = j;
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = min({
+                    dp[i - 1][j] + 1,
+                    dp[i][j - 1] + 1,
+                    dp[i - 1][j - 1] + 1
+                });
+            }
+        }
+    }
+
+    cout &lt;&lt; dp[n][m];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>dp[n][m] қалай оқылады?</h2>
+
+                <p>
+                    Егер:
+                </p>
+
+                <pre><code class="language-cpp">n = s.size();
+m = t.size();</code></pre>
+
+                <p>
+                    Онда:
+                </p>
+
+                <pre><code class="language-cpp">dp[n][m]</code></pre>
+
+                <p>
+                    Бұл толық <b>s</b> строкасын толық <b>t</b> строкасына айналдыру үшін
+                    керек минималды операция саны.
+                </p>
+
+                <div class="scheme">
+                    dp[n][m] = minimum operations<br>
+                    to transform s into t
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қолмен түсіну мысалы</h2>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">s = "cat"
+t = "cut"</code></pre>
+
+                <table>
+                    <tr>
+                        <th>Позиция</th>
+                        <th>s</th>
+                        <th>t</th>
+                        <th>Не істейміз?</th>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>c</td>
+                        <td>c</td>
+                        <td>бірдей</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>a</td>
+                        <td>u</td>
+                        <td>replace</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>t</td>
+                        <td>t</td>
+                        <td>бірдей</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Барлығы 1 операция керек.
+                </p>
+
+                <pre><code class="language-none">answer = 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный метод</h2>
+
+                <p>
+                    Бұл задачаны алдымен рекурсия арқылы түсінуге болады.
+                </p>
+
+                <p>
+                    Функция:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j)</code></pre>
+
+                <p>
+                    Бұл алғашқы <b>i</b> символды <b>s</b>-тен алып,
+                    алғашқы <b>j</b> символды <b>t</b>-ға айналдыру үшін
+                    керек minimum operation саны.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный базалық жағдайлар</h2>
+
+                <p>
+                    Егер <b>i == 0</b>, бірінші строка бос.
+                    Екінші строканың <b>j</b> символын қосу керек.
+                </p>
+
+                <pre><code class="language-cpp">if (i == 0) {
+    return j;
+}</code></pre>
+
+                <p>
+                    Егер <b>j == 0</b>, екінші строка бос.
+                    Бірінші строканың <b>i</b> символын өшіру керек.
+                </p>
+
+                <pre><code class="language-cpp">if (j == 0) {
+    return i;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный переход</h2>
+
+                <p>
+                    Егер соңғы символдар тең болса:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j) = solve(i - 1, j - 1)</code></pre>
+
+                <p>
+                    Егер әртүрлі болса:
+                </p>
+
+                <pre><code class="language-cpp">solve(i, j) = 1 + min(
+    solve(i - 1, j),
+    solve(i, j - 1),
+    solve(i - 1, j - 1)
+)</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия + memoization</h2>
+
+                <pre><code class="language-cpp">int solve(int i, int j) {
+    if (i == 0) {
+        return j;
+    }
+
+    if (j == 0) {
+        return i;
+    }
+
+    if (dp[i][j] != -1) {
+        return dp[i][j];
+    }
+
+    if (s[i - 1] == t[j - 1]) {
+        dp[i][j] = solve(i - 1, j - 1);
+    } else {
+        dp[i][j] = 1 + min({
+            solve(i - 1, j),
+            solve(i, j - 1),
+            solve(i - 1, j - 1)
+        });
+    }
+
+    return dp[i][j];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int solve(int i, int j) {
+    if (i == 0) {
+        return j;
+    }
+
+    if (j == 0) {
+        return i;
+    }
+
+    if (dp[i][j] != -1) {
+        return dp[i][j];
+    }
+
+    if (s[i - 1] == t[j - 1]) {
+        dp[i][j] = solve(i - 1, j - 1);
+    } else {
+        dp[i][j] = 1 + min({
+            solve(i - 1, j),
+            solve(i, j - 1),
+            solve(i - 1, j - 1)
+        });
+    }
+
+    return dp[i][j];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    memset(dp, -1, sizeof(dp));
+
+    cout &lt;&lt; solve(s.size(), t.size());
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия → итеративный DP</h2>
+
+                <table>
+                    <tr>
+                        <th>Рекурсия</th>
+                        <th>Итеративный DP</th>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i, j)</td>
+                        <td>dp[i][j]</td>
+                    </tr>
+
+                    <tr>
+                        <td>if (i == 0) return j</td>
+                        <td>dp[0][j] = j</td>
+                    </tr>
+
+                    <tr>
+                        <td>if (j == 0) return i</td>
+                        <td>dp[i][0] = i</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i - 1, j)</td>
+                        <td>dp[i - 1][j]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i, j - 1)</td>
+                        <td>dp[i][j - 1]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i - 1, j - 1)</td>
+                        <td>dp[i - 1][j - 1]</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Операцияларды қалпына келтіру</h2>
+
+                <p>
+                    Кейде тек операция санын емес, нақты қандай операциялар жасалғанын шығару керек.
+                </p>
+
+                <p>
+                    <b>dp</b> толғаннан кейін артқа қарай жүреміз:
+                </p>
+
+                <pre><code class="language-cpp">i = n;
+j = m;</code></pre>
+
+                <p>
+                    Егер символдар тең болса, жай ғана артқа өтеміз:
+                </p>
+
+                <pre><code class="language-cpp">if (s[i - 1] == t[j - 1]) {
+    i--;
+    j--;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Операцияны қалай білеміз?</h2>
+
+                <p>
+                    Егер мән <b>dp[i - 1][j] + 1</b> арқылы келсе,
+                    онда <b>delete</b> операциясы болған.
+                </p>
+
+                <pre><code class="language-cpp">if (dp[i][j] == dp[i - 1][j] + 1) {
+    // delete s[i - 1]
+}</code></pre>
+
+                <p>
+                    Егер мән <b>dp[i][j - 1] + 1</b> арқылы келсе,
+                    онда <b>insert</b> операциясы болған.
+                </p>
+
+                <pre><code class="language-cpp">if (dp[i][j] == dp[i][j - 1] + 1) {
+    // insert t[j - 1]
+}</code></pre>
+
+                <p>
+                    Егер мән <b>dp[i - 1][j - 1] + 1</b> арқылы келсе,
+                    онда <b>replace</b> операциясы болған.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Операцияларды қалпына келтіру коды</h2>
+
+                <pre><code class="language-cpp">vector&lt;string&gt; ops;
+
+int i = n;
+int j = m;
+
+while (i &gt; 0 || j &gt; 0) {
+    if (i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; s[i - 1] == t[j - 1]) {
+        i--;
+        j--;
+    } else if (i &gt; 0 &amp;&amp; dp[i][j] == dp[i - 1][j] + 1) {
+        ops.push_back("delete");
+        i--;
+    } else if (j &gt; 0 &amp;&amp; dp[i][j] == dp[i][j - 1] + 1) {
+        ops.push_back("insert");
+        j--;
+    } else {
+        ops.push_back("replace");
+        i--;
+        j--;
+    }
+}
+
+reverse(ops.begin(), ops.end());</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Операциялармен толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+string s, t;
+int dp[N][N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    for (int i = 0; i &lt;= n; i++) {
+        dp[i][0] = i;
+    }
+
+    for (int j = 0; j &lt;= m; j++) {
+        dp[0][j] = j;
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = min({
+                    dp[i - 1][j] + 1,
+                    dp[i][j - 1] + 1,
+                    dp[i - 1][j - 1] + 1
+                });
+            }
+        }
+    }
+
+    cout &lt;&lt; dp[n][m] &lt;&lt; '\n';
+
+    vector&lt;string&gt; ops;
+
+    int i = n;
+    int j = m;
+
+    while (i &gt; 0 || j &gt; 0) {
+        if (i &gt; 0 &amp;&amp; j &gt; 0 &amp;&amp; s[i - 1] == t[j - 1]) {
+            i--;
+            j--;
+        } else if (i &gt; 0 &amp;&amp; dp[i][j] == dp[i - 1][j] + 1) {
+            ops.push_back("delete " + string(1, s[i - 1]));
+            i--;
+        } else if (j &gt; 0 &amp;&amp; dp[i][j] == dp[i][j - 1] + 1) {
+            ops.push_back("insert " + string(1, t[j - 1]));
+            j--;
+        } else {
+            ops.push_back("replace " + string(1, s[i - 1]) + " to " + string(1, t[j - 1]));
+            i--;
+            j--;
+        }
+    }
+
+    reverse(ops.begin(), ops.end());
+
+    for (string op : ops) {
+        cout &lt;&lt; op &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Memory optimization</h2>
+
+                <p>
+                    Егер тек distance керек болса, толық таблица сақтамай,
+                    тек екі строка сақтауға болады:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prev(m + 1);
+vector&lt;int&gt; cur(m + 1);</code></pre>
+
+                <p>
+                    Себебі <b>dp[i][j]</b> тек мына мәндерге байланысты:
+                </p>
+
+                <ul>
+                    <li><b>dp[i - 1][j]</b></li>
+                    <li><b>dp[i][j - 1]</b></li>
+                    <li><b>dp[i - 1][j - 1]</b></li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>O(m) памятьпен реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s, t;
+    cin &gt;&gt; s &gt;&gt; t;
+
+    int n = s.size();
+    int m = t.size();
+
+    vector&lt;int&gt; prev(m + 1);
+    vector&lt;int&gt; cur(m + 1);
+
+    for (int j = 0; j &lt;= m; j++) {
+        prev[j] = j;
+    }
+
+    for (int i = 1; i &lt;= n; i++) {
+        cur[0] = i;
+
+        for (int j = 1; j &lt;= m; j++) {
+            if (s[i - 1] == t[j - 1]) {
+                cur[j] = prev[j - 1];
+            } else {
+                cur[j] = min({
+                    prev[j] + 1,
+                    cur[j - 1] + 1,
+                    prev[j - 1] + 1
+                });
+            }
+        }
+
+        prev = cur;
+    }
+
+    cout &lt;&lt; prev[m];
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Егер операцияларды қалпына келтіру керек болса,
+                    толық dp[n][m] сақтау ыңғайлы.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>LCS-пен байланысы</h2>
+
+                <p>
+                    Редакционное расстояние LCS-ке ұқсайды.
+                    Екеуі де екі строкамен жұмыс істейді және <b>dp[i][j]</b> state қолданады.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Не іздейміз?</th>
+                        <th>State</th>
+                    </tr>
+
+                    <tr>
+                        <td>LCS</td>
+                        <td>ең ұзын ортақ подпоследовательность</td>
+                        <td>dp[i][j]</td>
+                    </tr>
+
+                    <tr>
+                        <td>Edit Distance</td>
+                        <td>минималды операция саны</td>
+                        <td>dp[i][j]</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li><b>dp[0][j]</b> инициализациясын ұмыту</li>
+                    <li><b>dp[i][0]</b> инициализациясын ұмыту</li>
+                    <li><b>s[i]</b> орнына дұрыс <b>s[i - 1]</b> қолданбау</li>
+                    <li><b>t[j]</b> орнына дұрыс <b>t[j - 1]</b> қолданбау</li>
+                    <li>Операция кезінде <b>+1</b> қосуды ұмыту</li>
+                    <li>Қалпына келтіруде insert пен delete шатастыру</li>
+                    <li>Символдар тең болса да <b>+1</b> қосу</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + memoization</td>
+                        <td>O(nm)</td>
+                        <td>O(nm)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Итеративный DP</td>
+                        <td>O(nm)</td>
+                        <td>O(nm)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Memory optimization</td>
+                        <td>O(nm)</td>
+                        <td>O(m)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Мұнда n — бірінші строка ұзындығы, m — екінші строка ұзындығы.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задачада қалай ойлау керек?</h2>
+
+                <div class="scheme">
+                    1. Екі строка бар<br>
+                    2. Бір строканы екіншісіне айналдыру керек<br>
+                    3. State: dp[i][j]<br>
+                    4. Символдар тең болса — ештеңе істемейміз<br>
+                    5. Символдар әртүрлі болса — delete, insert, replace<br>
+                    6. Answer dp[n][m] ішінде
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">for (int i = 0; i &lt;= n; i++) {
+    dp[i][0] = i;
+}
+
+for (int j = 0; j &lt;= m; j++) {
+    dp[0][j] = j;
+}
+
+for (int i = 1; i &lt;= n; i++) {
+    for (int j = 1; j &lt;= m; j++) {
+        if (s[i - 1] == t[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1];
+        } else {
+            dp[i][j] = min({
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+                dp[i - 1][j - 1] + 1
+            });
+        }
+    }
+}
+
+cout &lt;&lt; dp[n][m];</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Префикс-функция | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="prefix_function.html">RU</a>
+                    <a class="lang active" href="prefix_function_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Префикс-функция</h1>
+            <p>String алгоритмі: border, substring search, KMP және O(n) жұмыс</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Префикс деген не?</h2>
+
+                <p>
+                    <b>Префикс</b> — строканың басынан басталатын бөлігі.
+                </p>
+
+                <p>
+                    Мысалы, строка:
+                </p>
+
+                <pre><code class="language-none">abcde</code></pre>
+
+                <p>
+                    Оның префикстері:
+                </p>
+
+                <pre><code class="language-none">a
+ab
+abc
+abcd
+abcde</code></pre>
+
+                <div class="note">
+                    Бос строканы да кейде префикс деп санайды,
+                    бірақ prefix function ішінде көбіне бос емес префикстер қаралады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Суффикс деген не?</h2>
+
+                <p>
+                    <b>Суффикс</b> — строканың соңынан аяқталатын бөлігі.
+                </p>
+
+                <p>
+                    Мысалы, строка:
+                </p>
+
+                <pre><code class="language-none">abcde</code></pre>
+
+                <p>
+                    Оның суффикстері:
+                </p>
+
+                <pre><code class="language-none">e
+de
+cde
+bcde
+abcde</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Префикс-функция деген не?</h2>
+
+                <p>
+                    <b>Префикс-функция</b> — <b>s</b> строкасы үшін <b>pi</b> массиві.
+                </p>
+
+                <p>
+                    <b>pi[i]</b> — <b>s[0...i]</b> строкасының ең ұзын собственный префиксінің ұзындығы,
+                    ол осы строканың суффиксіне де тең болуы керек.
+                </p>
+
+                <div class="scheme">
+                    s[0...i] подстрокасын аламыз<br>
+                    ең ұзын prefix іздейміз<br>
+                    ол suffix-ке тең болуы керек<br>
+                    бірақ бүкіл строканың өзі болмауы керек
+                </div>
+
+                <div class="note">
+                    Собственный префикс — бүкіл строкаға тең емес префикс.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қарапайым мысал</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">ababa</code></pre>
+
+                <p>
+                    Толық <b>ababa</b> строкасын қарастырайық.
+                </p>
+
+                <p>
+                    Оның префикстері:
+                </p>
+
+                <pre><code class="language-none">a
+ab
+aba
+abab
+ababa</code></pre>
+
+                <p>
+                    Оның суффикстері:
+                </p>
+
+                <pre><code class="language-none">a
+ba
+aba
+baba
+ababa</code></pre>
+
+                <p>
+                    Ең ұзын собственный префикс, suffix-ке тең:
+                </p>
+
+                <pre><code class="language-none">aba</code></pre>
+
+                <p>
+                    Сондықтан соңғы позиция үшін:
+                </p>
+
+                <pre><code class="language-none">pi[4] = 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>pi массивінің мысалы</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">ababa</code></pre>
+
+                <p>
+                    Префикс-функция:
+                </p>
+
+                <pre><code class="language-none">s:  a b a b a
+i:  0 1 2 3 4
+pi: 0 0 1 2 3</code></pre>
+
+                <p>
+                    Түсіндіру:
+                </p>
+
+                <ul>
+                    <li><b>pi[0] = 0</b>, бір әріпте собственный бос емес prefix жоқ</li>
+                    <li><b>pi[1] = 0</b>, строка <b>ab</b>, совпадение жоқ</li>
+                    <li><b>pi[2] = 1</b>, строка <b>aba</b>, <b>a</b> совпадает</li>
+                    <li><b>pi[3] = 2</b>, строка <b>abab</b>, <b>ab</b> совпадает</li>
+                    <li><b>pi[4] = 3</b>, строка <b>ababa</b>, <b>aba</b> совпадает</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Тағы бір мысал</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">aaaaa</code></pre>
+
+                <p>
+                    Префикс-функция:
+                </p>
+
+                <pre><code class="language-none">s:  a a a a a
+i:  0 1 2 3 4
+pi: 0 1 2 3 4</code></pre>
+
+                <p>
+                    Себебі әр келесі символ совпадение-ді жалғастырады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Алгоритм идеясы</h2>
+
+                <p>
+                    <b>pi[i]</b> мәнін санағымыз келеді.
+                    Алдыңғы позиция үшін мән белгілі болсын:
+                </p>
+
+                <pre><code class="language-cpp">j = pi[i - 1]</code></pre>
+
+                <p>
+                    Бұл <b>s[0...i-1]</b> строкасында ұзындығы <b>j</b> совпавший prefix бар деген сөз.
+                </p>
+
+                <p>
+                    Енді <b>s[i]</b> символын қосамыз.
+                </p>
+
+                <div class="scheme">
+                    егер s[i] == s[j], онда совпадение ұзарады<br>
+                    егер s[i] != s[j], онда кішірек prefix-ке откат жасаймыз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Откат деген не?</h2>
+
+                <p>
+                    Егер символдар сәйкес келмесе, тексеруді нөлден бастамаймыз.
+                    Біз бұрын есептелген <b>pi</b> мәндерін қолданамыз.
+                </p>
+
+                <p>
+                    Басында:
+                </p>
+
+                <pre><code class="language-cpp">j = pi[i - 1]</code></pre>
+
+                <p>
+                    Егер <b>s[i] != s[j]</b>, онда:
+                </p>
+
+                <pre><code class="language-cpp">j = pi[j - 1]</code></pre>
+
+                <p>
+                    Бұл келесі кішірек border-ге өтеміз деген сөз.
+                </p>
+
+                <div class="note">
+                    Дәл осы откаттар алгоритмді жылдам етеді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Префикс-функцияның негізгі коды</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық программа</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    for (int x : pi) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Input / Output</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">ababa</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 0 1 2 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Алгоритм жұмысының разборы</h2>
+
+                <p>
+                    Болсын:
+                </p>
+
+                <pre><code class="language-none">s = ababa</code></pre>
+
+                <p>
+                    Строка бойынша жүреміз:
+                </p>
+
+                <pre><code class="language-none">i = 1, s[i] = b
+j = pi[0] = 0
+s[1] != s[0]
+pi[1] = 0
+
+i = 2, s[i] = a
+j = pi[1] = 0
+s[2] == s[0]
+pi[2] = 1
+
+i = 3, s[i] = b
+j = pi[2] = 1
+s[3] == s[1]
+pi[3] = 2
+
+i = 4, s[i] = a
+j = pi[3] = 2
+s[4] == s[2]
+pi[4] = 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Откат бар күрделірек мысал</h2>
+
+                <p>
+                    Строка:
+                </p>
+
+                <pre><code class="language-none">abacaba</code></pre>
+
+                <p>
+                    Префикс-функция:
+                </p>
+
+                <pre><code class="language-none">s:  a b a c a b a
+i:  0 1 2 3 4 5 6
+pi: 0 0 1 0 1 2 3</code></pre>
+
+                <p>
+                    <b>i = 3</b> позициясында <b>c</b> символы <b>aba</b> prefix-ін жалғастырмайды,
+                    сондықтан алгоритм откат жасайды.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Неге алгоритм O(n)?</h2>
+
+                <p>
+                    Ішінде while бар, бірақ ол суммарно O(n²) болмайды.
+                </p>
+
+                <p>
+                    <b>j</b> айнымалысы әр қадамда тек 1-ге ғана өсе алады,
+                    ал откат кезінде pi мәндері бойынша азаяды.
+                </p>
+
+                <div class="scheme">
+                    бүкіл алгоритм бойынша j ең көбі n рет өседі<br>
+                    және ең көбі n рет азаяды<br>
+                    сондықтан жалпы уақыт O(n)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Prefix function не үшін керек?</h2>
+
+                <p>
+                    Prefix function string algorithms ішінде көп қолданылады.
+                </p>
+
+                <div class="scheme">
+                    1. substring іздеу<br>
+                    2. KMP алгоритмі<br>
+                    3. pattern-нің text ішіндегі барлық occurrence табу<br>
+                    4. string period табу<br>
+                    5. string border-лерімен жұмыс
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>KMP арқылы substring іздеу</h2>
+
+                <p>
+                    <b>pattern</b> строкасының <b>text</b> ішіндегі барлық occurrence-тарын табу керек.
+                </p>
+
+                <p>
+                    Жаңа строка құрамыз:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    <b>#</b> символы екі строкада да кездеспеуі керек.
+                </p>
+
+                <p>
+                    Егер бір позицияда <b>pi</b> мәні pattern ұзындығына тең болса,
+                    онда pattern осы позицияда аяқталды деген сөз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>KMP коды</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string pattern, text;
+
+    cin &gt;&gt; pattern &gt;&gt; text;
+
+    string s = pattern + "#" + text;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    int m = pattern.size();
+
+    for (int i = 0; i &lt; (int)s.size(); i++) {
+        if (pi[i] == m) {
+            int pos = i - 2 * m;
+
+            cout &lt;&lt; pos &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Мұнда позициялар 0-indexed болып шығарылады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>KMP мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">aba
+abacaba</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 4</code></pre>
+
+                <p>
+                    Себебі <b>aba</b> строкасы <b>abacaba</b> ішінде мына позицияларда кездеседі:
+                </p>
+
+                <pre><code class="language-none">0 және 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Неге позиция i - 2 * m?</h2>
+
+                <p>
+                    Біз строка құрамыз:
+                </p>
+
+                <pre><code class="language-none">pattern + "#" + text</code></pre>
+
+                <p>
+                    Pattern ұзындығы <b>m</b>.
+                    Text-тің алдында:
+                </p>
+
+                <pre><code class="language-none">m символ pattern + 1 символ #</code></pre>
+
+                <p>
+                    Егер жалпы строкада <b>i</b> позициясында ұзындығы <b>m</b> совпадение табылса,
+                    онда text ішіндегі басталу позициясы:
+                </p>
+
+                <pre><code class="language-none">i - 2 * m</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Строканың border-і</h2>
+
+                <p>
+                    <b>Border</b> — строканың бір уақытта prefix және suffix болатын бөлігі,
+                    бірақ ол бүкіл строканың өзіне тең болмауы керек.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">s = ababa</code></pre>
+
+                <p>
+                    Border-лері:
+                </p>
+
+                <pre><code class="language-none">a
+aba</code></pre>
+
+                <p>
+                    Ең ұзын border ұзындығы:
+                </p>
+
+                <pre><code class="language-none">pi[n - 1]</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Барлық border-лерді табу</h2>
+
+                <p>
+                    Бастаймыз:
+                </p>
+
+                <pre><code class="language-cpp">k = pi[n - 1]</code></pre>
+
+                <p>
+                    Кейін әр қадамда өтеміз:
+                </p>
+
+                <pre><code class="language-cpp">k = pi[k - 1]</code></pre>
+
+                <p>
+                    Осылай барлық border ұзындықтарын табамыз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: string барлық border-лері</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    vector&lt;int&gt; borders;
+
+    int k = pi[(int)s.size() - 1];
+
+    while (k &gt; 0) {
+        borders.push_back(k);
+        k = pi[k - 1];
+    }
+
+    reverse(borders.begin(), borders.end());
+
+    for (int x : borders) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Border мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">ababa</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">1 3</code></pre>
+
+                <p>
+                    Бұл border ұзындықтары:
+                </p>
+
+                <pre><code class="language-none">a
+aba</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Строка периоды</h2>
+
+                <p>
+                    <b>Period</b> — строканы толық құрайтын қайталанатын block ұзындығы.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <pre><code class="language-none">ababab</code></pre>
+
+                <p>
+                    Оның периоды:
+                </p>
+
+                <pre><code class="language-none">2</code></pre>
+
+                <p>
+                    Себебі:
+                </p>
+
+                <pre><code class="language-none">ab ab ab</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Минимальный period prefix function арқылы</h2>
+
+                <p>
+                    Болсын:
+                </p>
+
+                <pre><code class="language-cpp">n = s.size()
+k = pi[n - 1]</code></pre>
+
+                <p>
+                    Минимальный period-қа кандидат:
+                </p>
+
+                <pre><code class="language-cpp">period = n - k</code></pre>
+
+                <p>
+                    Егер <b>n % period == 0</b>, онда бұл шын period.
+                    Әйтпесе минимальный period <b>n</b>-ге тең.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: string минимальный period</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    int n = s.size();
+
+    vector&lt;int&gt; pi = prefix_function(s);
+
+    int period = n - pi[n - 1];
+
+    if (n % period == 0) {
+        cout &lt;&lt; period;
+    } else {
+        cout &lt;&lt; n;
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Period мысалы</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">ababab</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2</code></pre>
+
+                <p>
+                    Строка қайталанудан тұрады:
+                </p>
+
+                <pre><code class="language-none">ab ab ab</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Әр prefix қанша рет кездеседі?</h2>
+
+                <p>
+                    Кейде әр prefix строка ішінде неше рет кездесетінін табу керек.
+                </p>
+
+                <p>
+                    Алдымен prefix function санаймыз.
+                    Кейін әр <b>pi[i]</b> мәні сәйкес prefix counter-ын арттырады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Код: prefix occurrence саны</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; count_prefixes(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi = prefix_function(s);
+    vector&lt;int&gt; cnt(n + 1);
+
+    for (int i = 0; i &lt; n; i++) {
+        cnt[pi[i]]++;
+    }
+
+    for (int i = n; i &gt; 0; i--) {
+        cnt[pi[i - 1]] += cnt[i];
+    }
+
+    for (int i = 0; i &lt;= n; i++) {
+        cnt[i]++;
+    }
+
+    return cnt;
+}</code></pre>
+
+                <div class="note">
+                    cnt[len] — ұзындығы len prefix строка ішінде қанша рет кездесетінін көрсетеді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Префикс-функция</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Pattern-ді text ішінде іздеу</td>
+                        <td>O(n + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Барлық border табу</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Минимальный period</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Prefix function қашан қолданылады?</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Не қолданамыз?</th>
+                    </tr>
+
+                    <tr>
+                        <td>Pattern-ді text ішінде табу</td>
+                        <td>KMP</td>
+                    </tr>
+
+                    <tr>
+                        <td>Барлық border табу</td>
+                        <td>pi[n - 1], кейін откаттар</td>
+                    </tr>
+
+                    <tr>
+                        <td>Минимальный period табу</td>
+                        <td>n - pi[n - 1]</td>
+                    </tr>
+
+                    <tr>
+                        <td>Prefix және suffix совпадение-терімен жұмыс</td>
+                        <td>prefix function</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li>Префикс пен суффиксті шатастыру</li>
+                    <li>pi[i] бүкіл string үшін емес, s[0...i] үшін саналатынын ұмыту</li>
+                    <li>pi[0] әрқашан 0 екенін ұмыту</li>
+                    <li>while орнына if жазып, тек бір откат жасау</li>
+                    <li>while ішінде <b>j &gt; 0</b> шартын ұмыту</li>
+                    <li>KMP ішінде строкаларда кездесетін separator таңдау</li>
+                    <li>KMP позиция индексінен қателесу</li>
+                    <li>0-indexed және 1-indexed позицияларды шатастыру</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; prefix_function(string s) {
+    int n = s.size();
+
+    vector&lt;int&gt; pi(n);
+
+    for (int i = 1; i &lt; n; i++) {
+        int j = pi[i - 1];
+
+        while (j &gt; 0 &amp;&amp; s[i] != s[j]) {
+            j = pi[j - 1];
+        }
+
+        if (s[i] == s[j]) {
+            j++;
+        }
+
+        pi[i] = j;
+    }
+
+    return pi;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ең бастысы</h2>
+
+                <div class="scheme">
+                    pi[i] = ең ұзын prefix ұзындығы<br>
+                    ол s[0...i] suffix-іне тең<br>
+                    символдар тең болса → j++<br>
+                    тең болмаса → j = pi[j - 1]<br>
+                    prefix function O(n) жұмыс істейді<br>
+                    KMP pattern-ді text ішінде O(n + m) уақытта іздейді
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

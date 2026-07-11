@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="dijkstra.html">RU</a>
+                    <a class="lang active" href="dijkstra_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Дейкстра алгоритмі</h1>
+            <p>Весы теріс емес графта қысқа жолдарды табу</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Дейкстра алгоритмі деген не?</h2>
+
+                <p>
+                    <b>Дейкстра алгоритмі</b> — бір start вершинадан барлық басқа вершинаға дейінгі
+                    ең қысқа расстояние табатын алгоритм.
+                </p>
+
+                <p>
+                    Бұл алгоритм реброларда вес болған кезде қолданылады.
+                    Бірақ барлық вес <b>теріс емес</b> болуы керек.
+                </p>
+
+                <div class="note">
+                    Егер графта negative edge болса, обычный Дейкстра жарамайды.
+                    Ондай кезде Bellman-Ford алгоритмі керек.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қай жерде қолданылады?</h2>
+
+                <ul>
+                    <li>бір вершинадан барлық вершинаға shortest distance табу</li>
+                    <li>екі вершина арасындағы shortest path табу</li>
+                    <li>реброларында вес бар графтарда</li>
+                    <li>карта, жол, маршрут задачаларында</li>
+                    <li>минималды стоимость табу керек болса</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі идея</h2>
+
+                <p>
+                    Біз <b>dist</b> массивін сақтаймыз.
+                </p>
+
+                <pre><code class="language-cpp">dist[v]</code></pre>
+
+                <p>
+                    Бұл start вершинадан <b>v</b> вершинасына дейінгі ең қысқа расстояние.
+                </p>
+
+                <p>
+                    Басында:
+                </p>
+
+                <div class="scheme">
+                    dist[start] = 0<br>
+                    dist[қалғандары] = INF
+                </div>
+
+                <p>
+                    Кейін біз расстояниелерді біртіндеп жақсартамыз.
+                </p>
+
+                <div class="scheme">
+                    егер dist[v] + ребро весі &lt; dist[to]<br>
+                    онда жақсырақ путь таптық<br>
+                    dist[to] жаңартамыз
+                </div>
+
+                <pre><code class="language-cpp">if (dist[v] + w &lt; dist[to]) {
+    dist[to] = dist[v] + w;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Relaxation деген не?</h2>
+
+                <p>
+                    <b>Relaxation</b> — бір вершинаға дейінгі distance-ты жақсарту әрекеті.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    dist[v] = 5<br>
+                    v → to ребросының весі 3<br>
+                    онда to-ға v арқылы бару: 5 + 3 = 8
+                </div>
+
+                <p>
+                    Егер бұрын:
+                </p>
+
+                <div class="scheme">
+                    dist[to] = 15
+                </div>
+
+                <p>
+                    Жаңа жол жақсырақ:
+                </p>
+
+                <div class="scheme">
+                    8 &lt; 15<br>
+                    dist[to] = 8
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Неге priority_queue керек?</h2>
+
+                <p>
+                    Әр қадамда біз ең кіші distance бар вершина алуымыз керек.
+                </p>
+
+                <p>
+                    Ол үшін C++ ішінде:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue</code></pre>
+
+                <p>
+                    Бірақ C++-тағы обычный <b>priority_queue</b> — max-heap.
+                    Ал бізге min-heap керек. Сондықтан былай жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; q;</code></pre>
+
+                <p>
+                    Queue ішіне pair саламыз:
+                </p>
+
+                <div class="scheme">
+                    {distance, вершина}
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Граф мысалы</h2>
+
+                <p>
+                    Мынадай граф болсын:
+                </p>
+
+                <div class="scheme">
+                    1 --5-- 2<br>
+                    1 --2-- 3<br>
+                    3 --1-- 2<br>
+                    2 --3-- 4<br>
+                    3 --7-- 4
+                </div>
+
+                <p>
+                    Start вершина: <b>1</b>.
+                </p>
+
+                <p>
+                    Ең қысқа distance:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Вершина</th>
+                        <th>1-ден distance</th>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>0</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>6</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Неге 2-ге distance 3?
+                </p>
+
+                <div class="scheme">
+                    1 → 3 → 2<br>
+                    2 + 1 = 3
+                </div>
+
+                <p>
+                    Неге 4-ке distance 6?
+                </p>
+
+                <div class="scheme">
+                    1 → 3 → 2 → 4<br>
+                    2 + 1 + 3 = 6
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Граф структурасы</h2>
+
+                <p>
+                    Реброда вес болғандықтан, adjacency list ішінде pair сақтаймыз:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;pair&lt;int, int&gt;&gt; g[N];</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <ul>
+                    <li><b>first</b> — қай вершинаға барамыз</li>
+                    <li><b>second</b> — реброның весі</li>
+                </ul>
+
+                <p>
+                    Мысалы, ребро:
+                </p>
+
+                <div class="scheme">
+                    1 --5-- 2
+                </div>
+
+                <p>
+                    Онда былай қосамыз:
+                </p>
+
+                <pre><code class="language-cpp">g[1].push_back({2, 5});
+g[2].push_back({1, 5});</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Базалық Дейкстра функциясы</h2>
+
+                <pre><code class="language-cpp">void dijkstra(int start) {
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; q;
+
+    dist[start] = 0;
+    q.push({0, start});
+
+    while (!q.empty()) {
+        long long d = q.top().first;
+        int v = q.top().second;
+        q.pop();
+
+        if (d != dist[v]) {
+            continue;
+        }
+
+        for (auto edge : g[v]) {
+            int to = edge.first;
+            int w = edge.second;
+
+            if (dist[v] + w &lt; dist[to]) {
+                dist[to] = dist[v] + w;
+                q.push({dist[to], to});
+            }
+        }
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>if (d != dist[v]) не үшін керек?</h2>
+
+                <p>
+                    <b>priority_queue</b> ішінде ескі информация қалып қоюы мүмкін.
+                </p>
+
+                <p>
+                    Мысалы, алдымен 2 вершинасына distance 10 таптық.
+                    Кейін жақсырақ жол тауып, distance 3 болды.
+                </p>
+
+                <div class="scheme">
+                    Queue ішінде болуы мүмкін:<br>
+                    {10, 2}<br>
+                    {3, 2}
+                </div>
+
+                <p>
+                    Егер біз ескі <b>{10, 2}</b> pair-ды алсақ, ол енді керек емес.
+                    Сондықтан оны өткізіп жібереміз.
+                </p>
+
+                <pre><code class="language-cpp">if (d != dist[v]) {
+    continue;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: бір вершинадан distance</h2>
+
+                <p>
+                    Неориентированный weighted graph берілген.
+                    <b>s</b> вершинасынан барлық вершинаға дейінгі shortest distance табу керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">4 5 1
+1 2 5
+1 3 2
+3 2 1
+2 4 3
+3 4 7</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">0 3 2 6</code></pre>
+
+                <p>
+                    Формат:
+                </p>
+
+                <div class="scheme">
+                    n m s<br>
+                    a b w<br>
+                    a b w<br>
+                    ...
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+const long long INF = 4e18;
+
+int n, m, s;
+vector&lt;pair&lt;int, int&gt;&gt; g[N];
+long long dist[N];
+
+void dijkstra(int start) {
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; q;
+
+    dist[start] = 0;
+    q.push({0, start});
+
+    while (!q.empty()) {
+        long long d = q.top().first;
+        int v = q.top().second;
+        q.pop();
+
+        if (d != dist[v]) {
+            continue;
+        }
+
+        for (auto edge : g[v]) {
+            int to = edge.first;
+            int w = edge.second;
+
+            if (dist[v] + w &lt; dist[to]) {
+                dist[to] = dist[v] + w;
+                q.push({dist[to], to});
+            }
+        }
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; s;
+
+    for (int i = 1; i &lt;= n; i++) {
+        dist[i] = INF;
+    }
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b, w;
+        cin &gt;&gt; a &gt;&gt; b &gt;&gt; w;
+
+        g[a].push_back({b, w});
+        g[b].push_back({a, w});
+    }
+
+    dijkstra(s);
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (dist[i] == INF) {
+            cout &lt;&lt; -1 &lt;&lt; ' ';
+        } else {
+            cout &lt;&lt; dist[i] &lt;&lt; ' ';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Shortest path қалпына келтіру</h2>
+
+                <p>
+                    Егер тек distance емес, жолдың өзін шығару керек болса,
+                    <b>p</b> массиві керек.
+                </p>
+
+                <pre><code class="language-cpp">int p[N];</code></pre>
+
+                <p>
+                    Біз <b>to</b> вершинасына distance жақсартқанда, қайдан келгенімізді сақтаймыз:
+                </p>
+
+                <pre><code class="language-cpp">p[to] = v;</code></pre>
+
+                <p>
+                    Бұл дегеніміз:
+                </p>
+
+                <div class="scheme">
+                    to вершинасына v вершинасынан келдік
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Path қалай қалпына келеді?</h2>
+
+                <p>
+                    Finish вершинадан бастап parent арқылы артқа жүреміз.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; path;
+
+for (int v = finish; v != -1; v = p[v]) {
+    path.push_back(v);
+}
+
+reverse(path.begin(), path.end());</code></pre>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    path: 1 → 3 → 2 → 4<br>
+                    p[4] = 2<br>
+                    p[2] = 3<br>
+                    p[3] = 1<br>
+                    p[1] = -1
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: shortest path шығару</h2>
+
+                <p>
+                    Граф, start <b>s</b> және finish <b>t</b> берілген.
+                    <b>s</b>-тен <b>t</b>-ға дейінгі shortest path шығару керек.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">4 5 1 4
+1 2 5
+1 3 2
+3 2 1
+2 4 3
+3 4 7</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">1 3 2 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Path-пен толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+const long long INF = 4e18;
+
+int n, m, s, t;
+vector&lt;pair&lt;int, int&gt;&gt; g[N];
+long long dist[N];
+int p[N];
+
+void dijkstra(int start) {
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; q;
+
+    dist[start] = 0;
+    q.push({0, start});
+
+    while (!q.empty()) {
+        long long d = q.top().first;
+        int v = q.top().second;
+        q.pop();
+
+        if (d != dist[v]) {
+            continue;
+        }
+
+        for (auto edge : g[v]) {
+            int to = edge.first;
+            int w = edge.second;
+
+            if (dist[v] + w &lt; dist[to]) {
+                dist[to] = dist[v] + w;
+                p[to] = v;
+                q.push({dist[to], to});
+            }
+        }
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; s &gt;&gt; t;
+
+    for (int i = 1; i &lt;= n; i++) {
+        dist[i] = INF;
+        p[i] = -1;
+    }
+
+    for (int i = 1; i &lt;= m; i++) {
+        int a, b, w;
+        cin &gt;&gt; a &gt;&gt; b &gt;&gt; w;
+
+        g[a].push_back({b, w});
+        g[b].push_back({a, w});
+    }
+
+    dijkstra(s);
+
+    if (dist[t] == INF) {
+        cout &lt;&lt; -1;
+        return 0;
+    }
+
+    vector&lt;int&gt; path;
+
+    for (int v = t; v != -1; v = p[v]) {
+        path.push_back(v);
+    }
+
+    reverse(path.begin(), path.end());
+
+    for (int x : path) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Ориентированный граф</h2>
+
+                <p>
+                    Егер граф ориентированный болса, ребро тек бір жаққа жүреді.
+                </p>
+
+                <p>
+                    Ребро:
+                </p>
+
+                <div class="scheme">
+                    a → b весі w
+                </div>
+
+                <p>
+                    Онда тек былай қосамыз:
+                </p>
+
+                <pre><code class="language-cpp">g[a].push_back({b, w});</code></pre>
+
+                <p>
+                    Ал мынау керек емес:
+                </p>
+
+                <pre><code class="language-cpp">g[b].push_back({a, w});</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Dijkstra vs BFS</h2>
+
+                <table>
+                    <tr>
+                        <th>Алгоритм</th>
+                        <th>Граф</th>
+                        <th>Не табады</th>
+                    </tr>
+
+                    <tr>
+                        <td>BFS</td>
+                        <td>невзвешенный</td>
+                        <td>ребро саны бойынша shortest path</td>
+                    </tr>
+
+                    <tr>
+                        <td>Dijkstra</td>
+                        <td>weighted, вес теріс емес</td>
+                        <td>вес суммасы бойынша shortest path</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Егер барлық вес 1 болса, BFS қолдануға болады.
+                    Егер вес әртүрлі болса, Дейкстра керек.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Дейкстраны қашан қолдануға болмайды?</h2>
+
+                <p>
+                    Егер графта negative weight болса, ordinary Дейкстраны қолдануға болмайды.
+                </p>
+
+                <div class="scheme">
+                    1 → 2 вес 5<br>
+                    1 → 3 вес 2<br>
+                    3 → 2 вес -10
+                </div>
+
+                <p>
+                    Negative edge алгоритм логикасын бұзуы мүмкін.
+                </p>
+
+                <div class="note">
+                    Negative edges үшін Bellman-Ford қолдан.
+                    Барлық жұп вершина үшін Floyd-Warshall қолдануға болады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Реализация</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>priority_queue</td>
+                        <td>O((n + m) log n)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+
+                    <tr>
+                        <td>обычный массив</td>
+                        <td>O(n² + m)</td>
+                        <td>O(n + m)</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Олимпиадалық задачаларда көбіне
+                    <b>priority_queue</b> арқылы реализация қолданылады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">const long long INF = 4e18;
+
+vector&lt;pair&lt;int, int&gt;&gt; g[N];
+long long dist[N];
+
+void dijkstra(int s) {
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;, greater&lt;pair&lt;long long, int&gt;&gt;&gt; q;
+
+    dist[s] = 0;
+    q.push({0, s});
+
+    while (!q.empty()) {
+        auto cur = q.top();
+        q.pop();
+
+        long long d = cur.first;
+        int v = cur.second;
+
+        if (d != dist[v]) {
+            continue;
+        }
+
+        for (auto edge : g[v]) {
+            int to = edge.first;
+            int w = edge.second;
+
+            if (dist[v] + w &lt; dist[to]) {
+                dist[to] = dist[v] + w;
+                q.push({dist[to], to});
+            }
+        }
+    }
+}</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

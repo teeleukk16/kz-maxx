@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Двусвязный список | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="list2.html">RU</a>
+                    <a class="lang" href="list2_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Двусвязный список</h1>
+            <p>Объяснение, пример задачи и строгая реализация на массивах</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Объяснение</h2>
+
+                <p>
+                    Двусвязный список — это список, где каждый элемент знает
+                    не только следующий элемент, но и предыдущий.
+                </p>
+
+                <div class="scheme">
+                    начало ⇄ 10 ⇄ 20 ⇄ 30 ⇄ конец
+                </div>
+
+                <p>
+                    В односвязном списке у элемента есть только ссылка вперед.
+                    В двусвязном списке у элемента есть две связи:
+                </p>
+
+                <ul>
+                    <li><b>pre[i]</b> — предыдущий элемент</li>
+                    <li><b>nxt[i]</b> — следующий элемент</li>
+                </ul>
+
+                <p>
+                    Благодаря этому можно быстро вставлять элемент слева или справа
+                    от известного элемента. Также можно быстро удалять известный элемент.
+                </p>
+
+                <div class="note">
+                    Иногда его случайно называют двумерным списком.
+                    Но правильное название в алгоритмах — <b>двусвязный список</b>.
+                </div>
+
+                <h3>Что храним в массивах?</h3>
+
+                <ul>
+                    <li><b>val[i]</b> — значение элемента с индексом <b>i</b></li>
+                    <li><b>pre[i]</b> — индекс предыдущего элемента</li>
+                    <li><b>nxt[i]</b> — индекс следующего элемента</li>
+                    <li><b>idx</b> — индекс свободной ячейки для нового элемента</li>
+                </ul>
+
+                <h3>Фиктивные вершины</h3>
+
+                <p>
+                    Чтобы код был проще, мы создаем две специальные вершины:
+                </p>
+
+                <ul>
+                    <li><b>0</b> — левая граница списка</li>
+                    <li><b>1</b> — правая граница списка</li>
+                </ul>
+
+                <div class="scheme">
+                    0 ⇄ элементы списка ⇄ 1
+                </div>
+
+                <p>
+                    Настоящие элементы начинаются с индекса <b>2</b>.
+                </p>
+
+                <div class="note">
+                    Если список пустой, то сразу после 0 идет 1.
+                    То есть <b>nxt[0] = 1</b> и <b>pre[1] = 0</b>.
+                </div>
+
+                <h3>Пример хранения</h3>
+
+                <p>
+                    Пусть список такой:
+                </p>
+
+                <div class="scheme">
+                    10 ⇄ 20 ⇄ 30
+                </div>
+
+                <p>
+                    В массивах это может выглядеть так:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>i</th>
+                        <th>val[i]</th>
+                        <th>pre[i]</th>
+                        <th>nxt[i]</th>
+                    </tr>
+
+                    <tr>
+                        <td>0</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>10</td>
+                        <td>0</td>
+                        <td>3</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>20</td>
+                        <td>2</td>
+                        <td>4</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>30</td>
+                        <td>3</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>-</td>
+                        <td>4</td>
+                        <td>-</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Пример задачи для реализации</h2>
+
+                <p>
+                    Дан пустой двусвязный список. Нужно обработать несколько команд.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>L x</b></td>
+                        <td>Вставить число <b>x</b> в начало списка</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>R x</b></td>
+                        <td>Вставить число <b>x</b> в конец списка</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>D k</b></td>
+                        <td>Удалить <b>k-й добавленный элемент</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>IL k x</b></td>
+                        <td>Вставить <b>x</b> слева от <b>k-го добавленного элемента</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>IR k x</b></td>
+                        <td>Вставить <b>x</b> справа от <b>k-го добавленного элемента</b></td>
+                    </tr>
+                </table>
+
+                <h3>Вход</h3>
+
+                <pre><code class="language-none">7
+L 10
+R 20
+IR 1 15
+IL 2 17
+D 3
+L 5
+R 30</code></pre>
+
+                <h3>Выход</h3>
+
+                <pre><code class="language-none">5 10 17 20 30</code></pre>
+
+                <div class="note">
+                    Первый настоящий элемент получает индекс <b>2</b>.
+                    Поэтому <b>k-й добавленный элемент</b> в массиве имеет индекс <b>k + 1</b>.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int val[N];
+int pre[N];
+int nxt[N];
+int idx;
+
+void init() {
+    nxt[0] = 1;
+    pre[1] = 0;
+    idx = 2;
+}
+
+void addAfter(int pos, int x) {
+    val[idx] = x;
+
+    pre[idx] = pos;
+    nxt[idx] = nxt[pos];
+
+    pre[nxt[pos]] = idx;
+    nxt[pos] = idx;
+
+    idx++;
+}
+
+void addBefore(int pos, int x) {
+    addAfter(pre[pos], x);
+}
+
+void delAt(int pos) {
+    nxt[pre[pos]] = nxt[pos];
+    pre[nxt[pos]] = pre[pos];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    init();
+
+    int m;
+    cin &gt;&gt; m;
+
+    while (m--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "L") {
+            int x;
+            cin &gt;&gt; x;
+
+            addAfter(0, x);
+        } else if (op == "R") {
+            int x;
+            cin &gt;&gt; x;
+
+            addBefore(1, x);
+        } else if (op == "D") {
+            int k;
+            cin &gt;&gt; k;
+
+            delAt(k + 1);
+        } else if (op == "IL") {
+            int k, x;
+            cin &gt;&gt; k &gt;&gt; x;
+
+            addBefore(k + 1, x);
+        } else if (op == "IR") {
+            int k, x;
+            cin &gt;&gt; k &gt;&gt; x;
+
+            addAfter(k + 1, x);
+        }
+    }
+
+    for (int i = nxt[0]; i != 1; i = nxt[i]) {
+        cout &lt;&lt; val[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+
+                <h3>Объяснение переменных</h3>
+
+                <ul>
+                    <li><b>val</b> — значения элементов</li>
+                    <li><b>pre</b> — предыдущий элемент</li>
+                    <li><b>nxt</b> — следующий элемент</li>
+                    <li><b>idx</b> — свободная ячейка для нового элемента</li>
+                    <li><b>pos</b> — позиция элемента</li>
+                </ul>
+
+                <h3>Инициализация</h3>
+
+                <pre><code class="language-cpp">void init() {
+    nxt[0] = 1;
+    pre[1] = 0;
+    idx = 2;
+}</code></pre>
+
+                <p>
+                    В начале список пустой.
+                    После левой границы <b>0</b> сразу идет правая граница <b>1</b>.
+                    Новые элементы начинаются с индекса <b>2</b>.
+                </p>
+
+                <h3>Вставка справа от элемента</h3>
+
+                <pre><code class="language-cpp">void addAfter(int pos, int x) {
+    val[idx] = x;
+
+    pre[idx] = pos;
+    nxt[idx] = nxt[pos];
+
+    pre[nxt[pos]] = idx;
+    nxt[pos] = idx;
+
+    idx++;
+}</code></pre>
+
+                <p>
+                    Новый элемент вставляется после элемента <b>pos</b>.
+                    Он становится между <b>pos</b> и старым следующим элементом.
+                </p>
+
+                <div class="scheme">
+                    было: pos ⇄ oldNext<br>
+                    стало: pos ⇄ new ⇄ oldNext
+                </div>
+
+                <h3>Вставка слева от элемента</h3>
+
+                <pre><code class="language-cpp">void addBefore(int pos, int x) {
+    addAfter(pre[pos], x);
+}</code></pre>
+
+                <p>
+                    Чтобы вставить слева от <b>pos</b>, можно вставить новый элемент
+                    справа от предыдущего элемента.
+                </p>
+
+                <div class="scheme">
+                    было: oldPrev ⇄ pos<br>
+                    стало: oldPrev ⇄ new ⇄ pos
+                </div>
+
+                <h3>Удаление элемента</h3>
+
+                <pre><code class="language-cpp">void delAt(int pos) {
+    nxt[pre[pos]] = nxt[pos];
+    pre[nxt[pos]] = pre[pos];
+}</code></pre>
+
+                <p>
+                    Чтобы удалить элемент, нужно соединить его предыдущий элемент
+                    со следующим элементом.
+                </p>
+
+                <div class="scheme">
+                    было: left ⇄ pos ⇄ right<br>
+                    стало: left ⇄ right
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

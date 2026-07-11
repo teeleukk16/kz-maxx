@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP кіріспе | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="dp_intro.html">RU</a>
+                    <a class="lang active" href="dp_intro_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Динамикалық программалауға кіріспе</h1>
+            <p>Рекурсивный метод, memoization және итеративный DP-ға ауыстыру</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Динамикалық программалау деген не?</h2>
+
+                <p>
+                    <b>Динамикалық программалау</b>, қысқаша <b>DP</b> —
+                    үлкен задачаны бірнеше кіші подзадачаға бөліп шешу әдісі.
+                </p>
+
+                <p>
+                    Біз кіші подзадачалардың жауабын бір рет есептейміз де,
+                    массивте сақтаймыз. Кейін сол жауап керек болса, қайта есептемей,
+                    дайын мәнді аламыз.
+                </p>
+
+                <div class="scheme">
+                    үлкен задача<br>
+                    ↓<br>
+                    кіші подзадачалар<br>
+                    ↓<br>
+                    жауаптарды сақтаймыз<br>
+                    ↓<br>
+                    финал answer аламыз
+                </div>
+
+                <div class="note">
+                    DP-ны түсіну үшін алдымен рекурсия арқылы ойлау ыңғайлы.
+                    Кейін рекурсияны итеративный DP-ға ауыстырамыз.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>DP қашан қолданылады?</h2>
+
+                <ul>
+                    <li>бірдей подзадачалар көп рет қайталанса</li>
+                    <li>бір мәнді бірнеше рет есептеп жатсақ</li>
+                    <li>maximum немесе minimum табу керек болса</li>
+                    <li>қанша тәсіл бар екенін санау керек болса</li>
+                    <li>кішкентай state-тен үлкен state-ке өту болса</li>
+                    <li><b>dp</b> state ойлап табуға болатын болса</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>DP-ның негізгі идеясы</h2>
+
+                <p>
+                    DP-да көбіне массив қолданамыз:
+                </p>
+
+                <pre><code class="language-cpp">dp[i]</code></pre>
+
+                <p>
+                    Бұл <b>i</b> state үшін жауап.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    dp[i] = алғашқы i элемент үшін жауап<br>
+                    dp[i] = i-ге дейін жету тәсілдерінің саны<br>
+                    dp[i] = i-ге дейін минималды cost<br>
+                    dp[i] = i-ге дейін максималды сумма
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный метод</h2>
+
+                <p>
+                    DP-ны көбіне рекурсиядан бастаған оңай.
+                </p>
+
+                <p>
+                    Біз функция жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">f(i)</code></pre>
+
+                <p>
+                    Бұл функция <b>i</b> state үшін жауап қайтарады.
+                </p>
+
+                <div class="scheme">
+                    f(i) = i state үшін answer
+                </div>
+
+                <p>
+                    Кейін <b>f(i)</b>-ді кіші мәндер арқылы жазамыз:
+                </p>
+
+                <pre><code class="language-cpp">f(i) = f(i - 1) + f(i - 2)</code></pre>
+
+                <p>
+                    Бұл <b>переход</b> деп аталады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Мысал: Фибоначчи сандары</h2>
+
+                <p>
+                    Фибоначчи сандары:
+                </p>
+
+                <div class="scheme">
+                    f(0) = 0<br>
+                    f(1) = 1<br>
+                    f(n) = f(n - 1) + f(n - 2)
+                </div>
+
+                <p>
+                    Яғни әр сан екі алдыңғы санның суммасына тең.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Обычный рекурсия</h2>
+
+                <pre><code class="language-cpp">int fib(int n) {
+    if (n == 0) {
+        return 0;
+    }
+
+    if (n == 1) {
+        return 1;
+    }
+
+    return fib(n - 1) + fib(n - 2);
+}</code></pre>
+
+                <p>
+                    Бұл код дұрыс, бірақ өте баяу.
+                </p>
+
+                <p>
+                    Неге?
+                </p>
+
+                <div class="scheme">
+                    fib(5)<br>
+                    fib(4) және fib(3) шақырады<br>
+                    fib(4) тағы fib(3) шақырады<br>
+                    бірдей мәндер көп рет есептеледі
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Обычный рекурсия проблемасы</h2>
+
+                <p>
+                    Обычный рекурсия бір state-ті бірнеше рет қайта есептейді.
+                </p>
+
+                <p>
+                    Мысалы:
+                </p>
+
+                <div class="scheme">
+                    fib(6)<br>
+                    fib(5) + fib(4)<br>
+                    fib(4) бірнеше рет есептеледі<br>
+                    fib(3) одан да көп есептеледі
+                </div>
+
+                <div class="note">
+                    Сондықтан обычный рекурсия Фибоначчи үшін шамамен O(2ⁿ) жұмыс істейді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия + memoization</h2>
+
+                <p>
+                    Бірдей мәнді қайта есептемеу үшін жауапты массивте сақтаймыз.
+                </p>
+
+                <pre><code class="language-cpp">int dp[N];</code></pre>
+
+                <p>
+                    Егер <b>dp[n]</b> бұрын есептелген болса, оны бірден қайтарамыз.
+                </p>
+
+                <pre><code class="language-cpp">if (dp[n] != -1) {
+    return dp[n];
+}</code></pre>
+
+                <p>
+                    Бұл әдіс <b>memoization</b> деп аталады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Фибоначчи memoization арқылы</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int dp[N];
+
+int fib(int n) {
+    if (n == 0) {
+        return 0;
+    }
+
+    if (n == 1) {
+        return 1;
+    }
+
+    if (dp[n] != -1) {
+        return dp[n];
+    }
+
+    dp[n] = fib(n - 1) + fib(n - 2);
+    return dp[n];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    for (int i = 0; i &lt; N; i++) {
+        dp[i] = -1;
+    }
+
+    cout &lt;&lt; fib(n);
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Не өзгерді?</h2>
+
+                <p>
+                    Енді әр <b>fib(i)</b> тек бір рет есептеледі.
+                </p>
+
+                <div class="scheme">
+                    fib(5) есептелді → dp[5]-ке сақталды<br>
+                    қайта керек болса → дайын dp[5] аламыз
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Обычный рекурсия</td>
+                        <td>O(2ⁿ)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + memoization</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсияны итеративный DP-ға қалай ауыстырамыз?</h2>
+
+                <p>
+                    Жеңіл алгоритм:
+                </p>
+
+                <div class="scheme">
+                    1. f(i) нені білдіретінін түсінеміз<br>
+                    2. f(i)-ді dp[i]-ге ауыстырамыз<br>
+                    3. Базалық жағдайларды dp-ға жазамыз<br>
+                    4. Рекурсивный переходты циклге айналдырамыз<br>
+                    5. dp-ны кіші мәннен үлкен мәнге қарай есептейміз
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қадам 1: рекурсия болды</h2>
+
+                <p>
+                    Басында былай болды:
+                </p>
+
+                <pre><code class="language-cpp">int fib(int n) {
+    if (n == 0) {
+        return 0;
+    }
+
+    if (n == 1) {
+        return 1;
+    }
+
+    return fib(n - 1) + fib(n - 2);
+}</code></pre>
+
+                <p>
+                    Мұнда state:
+                </p>
+
+                <div class="scheme">
+                    fib(n) = n-ші Фибоначчи саны
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қадам 2: f орнына dp</h2>
+
+                <p>
+                    Рекурсивный функция:
+                </p>
+
+                <pre><code class="language-cpp">fib(n)</code></pre>
+
+                <p>
+                    массивке айналады:
+                </p>
+
+                <pre><code class="language-cpp">dp[n]</code></pre>
+
+                <p>
+                    Яғни:
+                </p>
+
+                <div class="scheme">
+                    fib(0) → dp[0]<br>
+                    fib(1) → dp[1]<br>
+                    fib(i) → dp[i]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қадам 3: базалық жағдайлар</h2>
+
+                <p>
+                    Рекурсияда:
+                </p>
+
+                <pre><code class="language-cpp">if (n == 0) return 0;
+if (n == 1) return 1;</code></pre>
+
+                <p>
+                    Итеративный DP-да:
+                </p>
+
+                <pre><code class="language-cpp">dp[0] = 0;
+dp[1] = 1;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Қадам 4: переход</h2>
+
+                <p>
+                    Рекурсияда:
+                </p>
+
+                <pre><code class="language-cpp">fib(n) = fib(n - 1) + fib(n - 2)</code></pre>
+
+                <p>
+                    DP массивте:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = dp[i - 1] + dp[i - 2];</code></pre>
+
+                <p>
+                    Енді циклмен санаймыз:
+                </p>
+
+                <pre><code class="language-cpp">for (int i = 2; i &lt;= n; i++) {
+    dp[i] = dp[i - 1] + dp[i - 2];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Фибоначчи итеративный DP арқылы</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+long long dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    dp[0] = 0;
+    dp[1] = 1;
+
+    for (int i = 2; i &lt;= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+
+    cout &lt;&lt; dp[n];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсивный DP vs итеративный DP</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Қалай жұмыс істейді?</th>
+                        <th>Плюс</th>
+                        <th>Минус</th>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + memoization</td>
+                        <td>top-down</td>
+                        <td>ойлап табу оңай</td>
+                        <td>stack overflow болуы мүмкін</td>
+                    </tr>
+
+                    <tr>
+                        <td>Итеративный DP</td>
+                        <td>bottom-up</td>
+                        <td>тез және стабильный</td>
+                        <td>кейде порядок түсіну қиын</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Рекурсивный DP — top-down.
+                    Итеративный DP — bottom-up.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Мысал 2: баспалдақ</h2>
+
+                <p>
+                    <b>n</b> саты бар.
+                    Бір қадамда 1 немесе 2 сатыға көтерілуге болады.
+                    <b>n</b>-ші сатыға жетудің қанша тәсілі бар?
+                </p>
+
+                <p>
+                    State:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = i сатысына жету тәсілдерінің саны</code></pre>
+
+                <p>
+                    <b>i</b> сатысына келуге болады:
+                </p>
+
+                <ul>
+                    <li><b>i - 1</b> сатысынан</li>
+                    <li><b>i - 2</b> сатысынан</li>
+                </ul>
+
+                <p>
+                    Сондықтан:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = dp[i - 1] + dp[i - 2];</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Баспалдақ: рекурсивный метод</h2>
+
+                <pre><code class="language-cpp">int ways(int n) {
+    if (n == 0) {
+        return 1;
+    }
+
+    if (n == 1) {
+        return 1;
+    }
+
+    return ways(n - 1) + ways(n - 2);
+}</code></pre>
+
+                <p>
+                    Мұнда:
+                </p>
+
+                <div class="scheme">
+                    ways(0) = 1<br>
+                    ways(1) = 1<br>
+                    ways(n) = ways(n - 1) + ways(n - 2)
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Баспалдақ: рекурсия + memoization</h2>
+
+                <pre><code class="language-cpp">const int N = 100010;
+
+long long dp[N];
+
+long long ways(int n) {
+    if (n == 0) {
+        return 1;
+    }
+
+    if (n == 1) {
+        return 1;
+    }
+
+    if (dp[n] != -1) {
+        return dp[n];
+    }
+
+    dp[n] = ways(n - 1) + ways(n - 2);
+    return dp[n];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Баспалдақ: итеративный DP-ға ауыстыру</h2>
+
+                <p>
+                    Рекурсияда:
+                </p>
+
+                <pre><code class="language-cpp">ways(n) = ways(n - 1) + ways(n - 2)</code></pre>
+
+                <p>
+                    Итеративный DP-да:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = dp[i - 1] + dp[i - 2];</code></pre>
+
+                <p>
+                    Базалық жағдайлар:
+                </p>
+
+                <pre><code class="language-cpp">dp[0] = 1;
+dp[1] = 1;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Баспалдақ: итеративный реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+long long dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    dp[0] = 1;
+    dp[1] = 1;
+
+    for (int i = 2; i &lt;= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+
+    cout &lt;&lt; dp[n];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Мысал 3: минималды cost</h2>
+
+                <p>
+                    Баспалдақ бар. Әр сатының <b>cost[i]</b> бағасы бар.
+                    Бір қадамда 1 немесе 2 сатыға жүруге болады.
+                    <b>n</b>-ге жету үшін минималды cost табу керек.
+                </p>
+
+                <p>
+                    State:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = i сатысына дейінгі минималды cost</code></pre>
+
+                <p>
+                    Переход:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = cost[i] + min(dp[i - 1], dp[i - 2]);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Минималды cost: рекурсия</h2>
+
+                <pre><code class="language-cpp">int solve(int i) {
+    if (i == 1) {
+        return cost[1];
+    }
+
+    if (i == 2) {
+        return cost[2];
+    }
+
+    return cost[i] + min(solve(i - 1), solve(i - 2));
+}</code></pre>
+
+                <p>
+                    Бұл обычный рекурсия.
+                    Мұнда бірдей мәндер көп рет есептелуі мүмкін.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Минималды cost: memoization</h2>
+
+                <pre><code class="language-cpp">int solve(int i) {
+    if (i == 1) {
+        return cost[1];
+    }
+
+    if (i == 2) {
+        return cost[2];
+    }
+
+    if (dp[i] != -1) {
+        return dp[i];
+    }
+
+    dp[i] = cost[i] + min(solve(i - 1), solve(i - 2));
+    return dp[i];
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Минималды cost: итеративный DP</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+int cost[N];
+int dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; cost[i];
+    }
+
+    dp[1] = cost[1];
+    dp[2] = cost[2];
+
+    for (int i = 3; i &lt;= n; i++) {
+        dp[i] = cost[i] + min(dp[i - 1], dp[i - 2]);
+    }
+
+    cout &lt;&lt; dp[n];
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>DP-да қалай ойлау керек?</h2>
+
+                <p>
+                    Көп DP задачада мына план көмектеседі:
+                </p>
+
+                <div class="scheme">
+                    1. Нені табу керек?<br>
+                    2. dp state нені білдіреді?<br>
+                    3. Базалық жағдайлар қандай?<br>
+                    4. dp[i]-ге қалай өтеміз?<br>
+                    5. Қандай тәртіппен есептейміз?<br>
+                    6. Жауап қай жерде жатыр?
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>DP-ның негізгі типтері</h2>
+
+                <table>
+                    <tr>
+                        <th>Тип</th>
+                        <th>State мысалы</th>
+                        <th>Мағынасы</th>
+                    </tr>
+
+                    <tr>
+                        <td>Тәсіл саны</td>
+                        <td>dp[i]</td>
+                        <td>i-ге жетудің қанша тәсілі бар</td>
+                    </tr>
+
+                    <tr>
+                        <td>Минимум</td>
+                        <td>dp[i]</td>
+                        <td>i-ге дейін минималды cost</td>
+                    </tr>
+
+                    <tr>
+                        <td>Максимум</td>
+                        <td>dp[i]</td>
+                        <td>i-ге дейін максималды сумма</td>
+                    </tr>
+
+                    <tr>
+                        <td>2D DP</td>
+                        <td>dp[i][j]</td>
+                        <td>екі параметр бойынша answer</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия → итерация: қысқа схема</h2>
+
+                <table>
+                    <tr>
+                        <th>Рекурсия</th>
+                        <th>Итеративный DP</th>
+                    </tr>
+
+                    <tr>
+                        <td>f(i)</td>
+                        <td>dp[i]</td>
+                    </tr>
+
+                    <tr>
+                        <td>if (i == 0) return x</td>
+                        <td>dp[0] = x</td>
+                    </tr>
+
+                    <tr>
+                        <td>f(i - 1)</td>
+                        <td>dp[i - 1]</td>
+                    </tr>
+
+                    <tr>
+                        <td>f(i - 2)</td>
+                        <td>dp[i - 2]</td>
+                    </tr>
+
+                    <tr>
+                        <td>return f(i - 1) + f(i - 2)</td>
+                        <td>dp[i] = dp[i - 1] + dp[i - 2]</td>
+                    </tr>
+
+                    <tr>
+                        <td>f(n) шақыру</td>
+                        <td>answer = dp[n]</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типтік қателер</h2>
+
+                <ul>
+                    <li><b>dp[i]</b> нені білдіретінін түсінбеу</li>
+                    <li>базалық жағдайларды ұмыту</li>
+                    <li><b>dp[i - 1]</b> дайын болмай тұрып <b>dp[i]</b> санау</li>
+                    <li>minimum мен maximum шатастыру</li>
+                    <li>dp массивті дұрыс инициализация жасамау</li>
+                    <li>рекурсияда memoization қоспау</li>
+                    <li>итерацияда цикл тәртібін қате таңдау</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Уақыт</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Обычный рекурсия</td>
+                        <td>көбіне exponential</td>
+                        <td>рекурсия тереңдігіне байланысты</td>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + memoization</td>
+                        <td>state саны × transition</td>
+                        <td>state саны</td>
+                    </tr>
+
+                    <tr>
+                        <td>Итеративный DP</td>
+                        <td>state саны × transition</td>
+                        <td>state саны</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Қарапайым dp[i] және O(1) transition болса, уақыт көбіне O(n).
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Қысқа DP шаблон</h2>
+
+                <pre><code class="language-cpp">dp[0] = base_value;
+
+for (int i = 1; i &lt;= n; i++) {
+    dp[i] = transition_from_previous_states;
+}
+
+cout &lt;&lt; dp[n];</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Memoization қысқа шаблон</h2>
+
+                <pre><code class="language-cpp">int solve(int i) {
+    if (base_case) {
+        return base_value;
+    }
+
+    if (dp[i] != -1) {
+        return dp[i];
+    }
+
+    dp[i] = transition;
+    return dp[i];
+}</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

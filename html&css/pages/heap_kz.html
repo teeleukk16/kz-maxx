@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heap | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="heap.html">RU</a>
+                    <a class="lang active" href="heap_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Heap</h1>
+            <p>Куча: массив арқылы сақтау, push, pop, top, up, down</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Түсіндіру</h2>
+
+                <p>
+                    <b>Heap</b>, яғни <b>куча</b> — бұл структура данных.
+                    Ол ең кіші немесе ең үлкен элементті тез табуға көмектеседі.
+                </p>
+
+                <p>
+                    Кучаның екі негізгі түрі бар:
+                </p>
+
+                <ul>
+                    <li><b>min-heap</b> — ең кіші элемент жоғарыда тұрады</li>
+                    <li><b>max-heap</b> — ең үлкен элемент жоғарыда тұрады</li>
+                </ul>
+
+                <div class="note">
+                    Бұл бетте біз <b>min-heap</b> жазамыз.
+                    Яғни <b>h[1]</b> әрқашан ең кіші элемент болады.
+                </div>
+
+                <div class="scheme">
+                    min-heap:<br>
+                    h[1] = ең кіші элемент
+                </div>
+
+                <p>
+                    Куча binary tree сияқты көрінеді, бірақ кодта ол жай массивте сақталады.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Куча массивте қалай сақталады?</h2>
+
+                <p>
+                    Біз екі айнымалы қолданамыз:
+                </p>
+
+                <pre><code class="language-cpp">int h[N];
+int sz;</code></pre>
+
+                <ul>
+                    <li><b>h</b> — куча сақталатын массив</li>
+                    <li><b>sz</b> — кучада қанша элемент бар</li>
+                </ul>
+
+                <p>
+                    Индексация <b>1</b>-ден басталады.
+                    Себебі онда parent және child табу оңай болады.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Не табамыз</th>
+                        <th>Формула</th>
+                    </tr>
+
+                    <tr>
+                        <td>i вершинасының parent-і</td>
+                        <td><b>i / 2</b></td>
+                    </tr>
+
+                    <tr>
+                        <td>i вершинасының сол child-ы</td>
+                        <td><b>i * 2</b></td>
+                    </tr>
+
+                    <tr>
+                        <td>i вершинасының оң child-ы</td>
+                        <td><b>i * 2 + 1</b></td>
+                    </tr>
+                </table>
+
+                <h3>Мысал</h3>
+
+                <div class="scheme">
+                    индекстер: 1  2  3  4  5<br>
+                    h:          2  5  7  9  8
+                </div>
+
+                <p>
+                    Бұл кучаны дерево сияқты былай елестетуге болады:
+                </p>
+
+                <div class="scheme">
+                    2<br>
+                    5 7<br>
+                    9 8
+                </div>
+
+                <p>
+                    Min-heap үшін правило:
+                </p>
+
+                <div class="scheme">
+                    parent &lt;= children
+                </div>
+
+                <p>
+                    Мысалы, <b>2</b> өзінің балалары <b>5</b> және <b>7</b>-ден кіші.
+                    Сондықтан ең кіші элемент жоғарыда тұр.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Негізгі операциялар</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push(x)</b></td>
+                        <td><b>x</b> санын кучаға қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top()</b></td>
+                        <td>ең кіші элементті қайтарады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop()</b></td>
+                        <td>ең кіші элементті өшіреді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>up(i)</b></td>
+                        <td>элементті жоғары көтереді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>down(i)</b></td>
+                        <td>элементті төмен түсіреді</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Есеп мысалы</h2>
+
+                <p>
+                    Min-heap үшін бірнеше команда орындау керек.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>push x</b></td>
+                        <td><b>x</b> санын қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>top</b></td>
+                        <td>ең кіші элементті шығарады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>pop</b></td>
+                        <td>ең кіші элементті өшіреді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>size</b></td>
+                        <td>кучаның размерін шығарады</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">8
+push 5
+push 2
+push 7
+top
+pop
+top
+push 1
+top</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2
+5
+1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int h[N];
+int sz;
+
+void up(int u) {
+    while (u / 2 &gt; 0 &amp;&amp; h[u] &lt; h[u / 2]) {
+        swap(h[u], h[u / 2]);
+        u /= 2;
+    }
+}
+
+void down(int u) {
+    int t = u;
+
+    if (u * 2 &lt;= sz &amp;&amp; h[u * 2] &lt; h[t]) {
+        t = u * 2;
+    }
+
+    if (u * 2 + 1 &lt;= sz &amp;&amp; h[u * 2 + 1] &lt; h[t]) {
+        t = u * 2 + 1;
+    }
+
+    if (t != u) {
+        swap(h[u], h[t]);
+        down(t);
+    }
+}
+
+void push(int x) {
+    sz++;
+    h[sz] = x;
+    up(sz);
+}
+
+int top() {
+    return h[1];
+}
+
+void pop() {
+    h[1] = h[sz];
+    sz--;
+    down(1);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; q;
+
+    while (q--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "push") {
+            int x;
+            cin &gt;&gt; x;
+
+            push(x);
+        } else if (op == "top") {
+            cout &lt;&lt; top() &lt;&lt; '\n';
+        } else if (op == "pop") {
+            pop();
+        } else if (op == "size") {
+            cout &lt;&lt; sz &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Функциялар түсіндірмесі</h2>
+
+                <h3>1. up</h3>
+
+                <pre><code class="language-cpp">void up(int u) {
+    while (u / 2 &gt; 0 &amp;&amp; h[u] &lt; h[u / 2]) {
+        swap(h[u], h[u / 2]);
+        u /= 2;
+    }
+}</code></pre>
+
+                <p>
+                    <b>up</b> жаңа элемент қосылғаннан кейін керек.
+                    Жаңа элемент алдымен массивтің соңына қосылады.
+                    Егер ол parent-тен кіші болса, жоғары көтеріледі.
+                </p>
+
+                <h3>Кішкентай мысал</h3>
+
+                <div class="scheme">
+                    бұрын: 2 5 7<br>
+                    push(1)<br>
+                    up-қа дейін: 2 5 7 1
+                </div>
+
+                <p>
+                    Жаңа элемент <b>1</b> позиция <b>4</b>-те тұр.
+                    Оның parent-і позиция <b>2</b>, онда <b>5</b> тұр.
+                    <b>1 &lt; 5</b>, сондықтан орындарын ауыстырамыз.
+                </p>
+
+                <div class="scheme">
+                    2 1 7 5
+                </div>
+
+                <p>
+                    Енді <b>1</b> позиция <b>2</b>-де тұр.
+                    Оның parent-і позиция <b>1</b>, онда <b>2</b> тұр.
+                    <b>1 &lt; 2</b>, тағы ауыстырамыз.
+                </p>
+
+                <div class="scheme">
+                    1 2 7 5
+                </div>
+
+                <p>
+                    Енді <b>1</b> жоғарыда тұр.
+                    Куча дұрыс болды.
+                </p>
+
+                <h3>2. down</h3>
+
+                <pre><code class="language-cpp">void down(int u) {
+    int t = u;
+
+    if (u * 2 &lt;= sz &amp;&amp; h[u * 2] &lt; h[t]) {
+        t = u * 2;
+    }
+
+    if (u * 2 + 1 &lt;= sz &amp;&amp; h[u * 2 + 1] &lt; h[t]) {
+        t = u * 2 + 1;
+    }
+
+    if (t != u) {
+        swap(h[u], h[t]);
+        down(t);
+    }
+}</code></pre>
+
+                <p>
+                    <b>down</b> ең жоғарғы элемент өшірілгеннен кейін керек.
+                    Біз соңғы элементті жоғарыға қоямыз.
+                    Кейін ол өз орнын тапқанша төмен түседі.
+                </p>
+
+                <h3>Кішкентай мысал</h3>
+
+                <div class="scheme">
+                    бұрын: 1 3 2 8 5<br>
+                    pop()
+                </div>
+
+                <p>
+                    <b>1</b> өшіріледі.
+                    Соңғы элемент <b>5</b> жоғарыға қойылады.
+                </p>
+
+                <div class="scheme">
+                    down-ға дейін: 5 3 2 8
+                </div>
+
+                <p>
+                    <b>5</b>-тің балалары <b>3</b> және <b>2</b>.
+                    Ең кіші бала — <b>2</b>.
+                    <b>2 &lt; 5</b>, сондықтан ауыстырамыз.
+                </p>
+
+                <div class="scheme">
+                    кейін: 2 3 5 8
+                </div>
+
+                <p>
+                    Куча қайтадан дұрыс болды.
+                </p>
+
+                <h3>3. push</h3>
+
+                <pre><code class="language-cpp">void push(int x) {
+    sz++;
+    h[sz] = x;
+    up(sz);
+}</code></pre>
+
+                <p>
+                    <b>push</b> жаңа элементті соңына қосады.
+                    Кейін <b>up</b> шақырып, оны дұрыс орынға көтереді.
+                </p>
+
+                <div class="scheme">
+                    бұрын: 2 5 7<br>
+                    push(1)<br>
+                    алдымен: 2 5 7 1<br>
+                    up кейін: 1 2 7 5
+                </div>
+
+                <h3>4. top</h3>
+
+                <pre><code class="language-cpp">int top() {
+    return h[1];
+}</code></pre>
+
+                <p>
+                    Min-heap-та ең кіші элемент әрқашан <b>h[1]</b>-де тұрады.
+                    Сондықтан <b>top</b> жай ғана <b>h[1]</b> қайтарады.
+                </p>
+
+                <div class="scheme">
+                    h = 2 5 7 9<br>
+                    top() = h[1] = 2
+                </div>
+
+                <h3>5. pop</h3>
+
+                <pre><code class="language-cpp">void pop() {
+    h[1] = h[sz];
+    sz--;
+    down(1);
+}</code></pre>
+
+                <p>
+                    <b>pop</b> ең кіші элементті өшіреді.
+                    Ал ең кіші элемент <b>h[1]</b>-де тұрады.
+                </p>
+
+                <p>
+                    Өшіру жолы:
+                </p>
+
+                <ul>
+                    <li>соңғы элементті бірінші орынға қоямыз</li>
+                    <li><b>sz</b> мәнін азайтамыз</li>
+                    <li><b>down(1)</b> шақырамыз</li>
+                </ul>
+
+                <div class="scheme">
+                    бұрын: 1 3 2 8 5<br>
+                    pop()<br>
+                    5 жоғарыға келеді: 5 3 2 8<br>
+                    down кейін: 2 3 5 8
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>priority_queue в C++</h2>
+
+                <p>
+                    C++ ішінде дайын куча бар — <b>priority_queue</b>.
+                    По умолчанию ол <b>max-heap</b> болып жұмыс істейді.
+                </p>
+
+                <h3>Max-heap</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;int&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Мұнда <b>top()</b> <b>7</b> қайтарады,
+                    себебі ол ең үлкен элемент.
+                </p>
+
+                <h3>Min-heap</h3>
+
+                <pre><code class="language-cpp">priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; q;
+
+q.push(5);
+q.push(2);
+q.push(7);
+
+cout &lt;&lt; q.top();</code></pre>
+
+                <p>
+                    Мұнда <b>top()</b> <b>2</b> қайтарады,
+                    себебі ол ең кіші элемент.
+                </p>
+
+                <div class="note">
+                    Олимпиадада және экзаменде ручная реализацияны түсіну маңызды.
+                    Бірақ практикада көбіне <b>priority_queue</b> қолдануға болады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td>push</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>pop</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>top</td>
+                        <td>O(1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>size</td>
+                        <td>O(1)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перестановки | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="permutations.html">RU</a>
+                    <a class="lang" href="permutations_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Перестановки</h1>
+            <p>Все способы расставить n элементов, генерация, next_permutation и номер перестановки</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое перестановка?</h2>
+
+                <p>
+                    <b>Перестановка</b> — это способ расставить все <b>n</b> элементов в некотором порядке.
+                </p>
+
+                <div class="scheme">
+                    есть n разных элементов<br>
+                    нужно расположить их в каком-то порядке
+                </div>
+
+                <p>
+                    Например, для чисел:
+                </p>
+
+                <pre><code class="language-none">1 2 3</code></pre>
+
+                <p>
+                    Перестановки:
+                </p>
+
+                <pre><code class="language-none">1 2 3
+1 3 2
+2 1 3
+2 3 1
+3 1 2
+3 2 1</code></pre>
+
+                <div class="note">
+                    В перестановках порядок важен.
+                    Поэтому 1 2 3 и 3 2 1 — разные перестановки.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Сколько всего перестановок?</h2>
+
+                <p>
+                    Если все элементы разные, то количество перестановок равно:
+                </p>
+
+                <pre><code class="language-none">n!</code></pre>
+
+                <p>
+                    Факториал:
+                </p>
+
+                <pre><code class="language-none">n! = 1 * 2 * 3 * ... * n</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">3! = 1 * 2 * 3 = 6</code></pre>
+
+                <p>
+                    Поэтому у чисел 1, 2, 3 есть 6 перестановок.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Почему n!?</h2>
+
+                <p>
+                    Для первой позиции можно выбрать любой из <b>n</b> элементов.
+                </p>
+
+                <p>
+                    Для второй позиции остается <b>n - 1</b> элементов.
+                    Для третьей — <b>n - 2</b>.
+                </p>
+
+                <div class="scheme">
+                    n вариантов для первой позиции<br>
+                    n - 1 вариантов для второй<br>
+                    n - 2 вариантов для третьей<br>
+                    ...<br>
+                    1 вариант для последней
+                </div>
+
+                <p>
+                    Поэтому:
+                </p>
+
+                <pre><code class="language-none">n * (n - 1) * (n - 2) * ... * 1 = n!</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Перестановки, сочетания, размещения</h2>
+
+                <table>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Что значит</th>
+                        <th>Порядок важен?</th>
+                    </tr>
+
+                    <tr>
+                        <td>Перестановки</td>
+                        <td>Расставить все n элементов</td>
+                        <td>Да</td>
+                    </tr>
+
+                    <tr>
+                        <td>Сочетания</td>
+                        <td>Выбрать k из n</td>
+                        <td>Нет</td>
+                    </tr>
+
+                    <tr>
+                        <td>Размещения</td>
+                        <td>Выбрать k из n и расставить</td>
+                        <td>Да</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Задача генерации</h2>
+
+                <p>
+                    Дано число <b>n</b>.
+                    Нужно вывести все перестановки чисел от <b>1</b> до <b>n</b>.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">3</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">1 2 3
+1 3 2
+2 1 3
+2 3 1
+3 1 2
+3 2 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Идея генерации через рекурсию</h2>
+
+                <p>
+                    Будем строить перестановку слева направо.
+                </p>
+
+                <p>
+                    На каждой позиции выбираем число, которое еще не использовали.
+                </p>
+
+                <div class="scheme">
+                    cur — текущая перестановка<br>
+                    used[x] — использовали ли число x<br>
+                    если cur.size() == n, выводим cur
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код: генерация перестановок</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;int&gt; cur;
+vector&lt;int&gt; used;
+
+void gen() {
+    if ((int)cur.size() == n) {
+        for (int x : cur) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+        return;
+    }
+
+    for (int x = 1; x &lt;= n; x++) {
+        if (used[x]) {
+            continue;
+        }
+
+        used[x] = 1;
+        cur.push_back(x);
+
+        gen();
+
+        cur.pop_back();
+        used[x] = 0;
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    used.assign(n + 1, 0);
+
+    gen();
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как работает рекурсия?</h2>
+
+                <p>
+                    Для <b>n = 3</b>:
+                </p>
+
+                <div class="scheme">
+                    сначала выбираем первое число<br>
+                    потом второе<br>
+                    потом третье<br>
+                    когда длина стала 3, выводим перестановку
+                </div>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">cur = []
+берем 1 → cur = [1]
+берем 2 → cur = [1, 2]
+берем 3 → cur = [1, 2, 3]
+выводим 1 2 3</code></pre>
+
+                <p>
+                    Потом делаем откат:
+                </p>
+
+                <pre><code class="language-none">убираем 3
+убираем 2
+пробуем другое число</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Что такое backtracking?</h2>
+
+                <p>
+                    <b>Backtracking</b> — это метод, где мы:
+                </p>
+
+                <div class="scheme">
+                    1. делаем выбор<br>
+                    2. идем глубже рекурсией<br>
+                    3. откатываем выбор<br>
+                    4. пробуем следующий вариант
+                </div>
+
+                <p>
+                    В коде это выглядит так:
+                </p>
+
+                <pre><code class="language-cpp">used[x] = 1;
+cur.push_back(x);
+
+gen();
+
+cur.pop_back();
+used[x] = 0;</code></pre>
+
+                <div class="note">
+                    Если забыть pop_back или used[x] = 0, генерация сломается.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Генерация через next_permutation</h2>
+
+                <p>
+                    В C++ есть готовая функция:
+                </p>
+
+                <pre><code class="language-cpp">next_permutation</code></pre>
+
+                <p>
+                    Она переставляет массив в следующую лексикографическую перестановку.
+                </p>
+
+                <p>
+                    Нужно начать с отсортированного массива:
+                </p>
+
+                <pre><code class="language-none">1 2 3 ... n</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: next_permutation</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; a(n);
+
+    for (int i = 0; i &lt; n; i++) {
+        a[i] = i + 1;
+    }
+
+    do {
+        for (int x : a) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+    } while (next_permutation(a.begin(), a.end()));
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Лексикографический порядок</h2>
+
+                <p>
+                    <b>Лексикографический порядок</b> — это порядок как в словаре.
+                </p>
+
+                <p>
+                    Для перестановок чисел:
+                </p>
+
+                <pre><code class="language-none">1 2 3
+1 3 2
+2 1 3
+2 3 1
+3 1 2
+3 2 1</code></pre>
+
+                <p>
+                    Это именно тот порядок, который дает <b>next_permutation</b>,
+                    если начать с отсортированного массива.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>prev_permutation</h2>
+
+                <p>
+                    Есть и обратная функция:
+                </p>
+
+                <pre><code class="language-cpp">prev_permutation</code></pre>
+
+                <p>
+                    Она строит предыдущую перестановку.
+                    Для нее нужно начать с убывающего массива.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; a = {3, 2, 1};
+
+do {
+    for (int x : a) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    cout &lt;&lt; '\n';
+} while (prev_permutation(a.begin(), a.end()));</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Перестановки строки</h2>
+
+                <p>
+                    Перестановки можно генерировать не только для чисел, но и для строки.
+                </p>
+
+                <pre><code class="language-cpp">string s;
+cin &gt;&gt; s;
+
+sort(s.begin(), s.end());
+
+do {
+    cout &lt;&lt; s &lt;&lt; '\n';
+} while (next_permutation(s.begin(), s.end()));</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">abc</code></pre>
+
+                <p>
+                    Даст:
+                </p>
+
+                <pre><code class="language-none">abc
+acb
+bac
+bca
+cab
+cba</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Если есть одинаковые элементы</h2>
+
+                <p>
+                    Если в массиве есть одинаковые элементы, то <b>next_permutation</b>
+                    не будет выводить одинаковые перестановки повторно.
+                </p>
+
+                <p>
+                    Например, строка:
+                </p>
+
+                <pre><code class="language-none">aab</code></pre>
+
+                <p>
+                    Перестановки:
+                </p>
+
+                <pre><code class="language-none">aab
+aba
+baa</code></pre>
+
+                <p>
+                    Но важно сначала отсортировать:
+                </p>
+
+                <pre><code class="language-cpp">sort(s.begin(), s.end());</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: уникальные перестановки строки</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    cin &gt;&gt; s;
+
+    sort(s.begin(), s.end());
+
+    do {
+        cout &lt;&lt; s &lt;&lt; '\n';
+    } while (next_permutation(s.begin(), s.end()));
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Количество перестановок с повторами</h2>
+
+                <p>
+                    Если элементы повторяются, количество уникальных перестановок меньше.
+                </p>
+
+                <p>
+                    Формула:
+                </p>
+
+                <pre><code class="language-none">n! / (c1! * c2! * ... * ck!)</code></pre>
+
+                <p>
+                    Где <b>c1, c2, ...</b> — количества одинаковых элементов.
+                </p>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">aab</code></pre>
+
+                <p>
+                    Здесь:
+                </p>
+
+                <pre><code class="language-none">n = 3
+a встречается 2 раза
+b встречается 1 раз</code></pre>
+
+                <p>
+                    Количество:
+                </p>
+
+                <pre><code class="language-none">3! / 2! = 3</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Номер перестановки</h2>
+
+                <p>
+                    Иногда нужно найти номер перестановки в лексикографическом порядке.
+                </p>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">n = 3
+
+1: 1 2 3
+2: 1 3 2
+3: 2 1 3
+4: 2 3 1
+5: 3 1 2
+6: 3 2 1</code></pre>
+
+                <p>
+                    Перестановка <b>2 3 1</b> имеет номер <b>4</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Идея номера перестановки</h2>
+
+                <p>
+                    Смотрим слева направо.
+                    На каждой позиции считаем, сколько меньших неиспользованных чисел можно поставить.
+                </p>
+
+                <p>
+                    Если на позиции можно поставить меньшее число,
+                    то все перестановки с этим меньшим числом идут раньше.
+                </p>
+
+                <div class="scheme">
+                    количество таких перестановок = cnt * factorial[remaining]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код: номер перестановки</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; p(n);
+
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; p[i];
+    }
+
+    vector&lt;long long&gt; fact(n + 1, 1);
+
+    for (int i = 1; i &lt;= n; i++) {
+        fact[i] = fact[i - 1] * i;
+    }
+
+    vector&lt;int&gt; used(n + 1, 0);
+
+    long long rank = 1;
+
+    for (int i = 0; i &lt; n; i++) {
+        int cnt = 0;
+
+        for (int x = 1; x &lt; p[i]; x++) {
+            if (!used[x]) {
+                cnt++;
+            }
+        }
+
+        rank += cnt * fact[n - i - 1];
+        used[p[i]] = 1;
+    }
+
+    cout &lt;&lt; rank;
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Этот код использует 1-indexed номер:
+                    первая перестановка имеет номер 1.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Перестановка по номеру</h2>
+
+                <p>
+                    Обратная задача:
+                    дано <b>n</b> и номер <b>k</b>.
+                    Нужно найти k-ю перестановку в лексикографическом порядке.
+                </p>
+
+                <p>
+                    Идея:
+                </p>
+
+                <div class="scheme">
+                    на первой позиции каждая группа имеет размер (n-1)!<br>
+                    по k понимаем, какой элемент поставить первым<br>
+                    потом переходим к следующей позиции
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Код: перестановка по номеру</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    long long k;
+
+    cin &gt;&gt; n &gt;&gt; k;
+
+    vector&lt;long long&gt; fact(n + 1, 1);
+
+    for (int i = 1; i &lt;= n; i++) {
+        fact[i] = fact[i - 1] * i;
+    }
+
+    vector&lt;int&gt; nums;
+
+    for (int i = 1; i &lt;= n; i++) {
+        nums.push_back(i);
+    }
+
+    k--;
+
+    vector&lt;int&gt; ans;
+
+    for (int pos = 0; pos &lt; n; pos++) {
+        long long block = fact[n - pos - 1];
+        long long id = k / block;
+
+        ans.push_back(nums[id]);
+
+        nums.erase(nums.begin() + id);
+
+        k %= block;
+    }
+
+    for (int x : ans) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+
+                <div class="note">
+                    Здесь k тоже 1-indexed.
+                    Если k = 1, получим первую перестановку.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Пример перестановки по номеру</h2>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">3 4</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">2 3 1</code></pre>
+
+                <p>
+                    Потому что:
+                </p>
+
+                <pre><code class="language-none">1: 1 2 3
+2: 1 3 2
+3: 2 1 3
+4: 2 3 1
+5: 3 1 2
+6: 3 2 1</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Проверка, является ли массив перестановкой</h2>
+
+                <p>
+                    Иногда нужно проверить, что массив длины <b>n</b>
+                    является перестановкой чисел от <b>1</b> до <b>n</b>.
+                </p>
+
+                <p>
+                    То есть каждое число от 1 до n встречается ровно один раз.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; cnt(n + 1, 0);
+
+for (int x : a) {
+    if (x &lt; 1 || x &gt; n) {
+        cout &lt;&lt; "NO";
+        return 0;
+    }
+
+    cnt[x]++;
+}
+
+for (int x = 1; x &lt;= n; x++) {
+    if (cnt[x] != 1) {
+        cout &lt;&lt; "NO";
+        return 0;
+    }
+}
+
+cout &lt;&lt; "YES";</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полный код проверки</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; a(n);
+    vector&lt;int&gt; cnt(n + 1, 0);
+
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+
+        if (a[i] &lt; 1 || a[i] &gt; n) {
+            cout &lt;&lt; "NO";
+            return 0;
+        }
+
+        cnt[a[i]]++;
+    }
+
+    for (int x = 1; x &lt;= n; x++) {
+        if (cnt[x] != 1) {
+            cout &lt;&lt; "NO";
+            return 0;
+        }
+    }
+
+    cout &lt;&lt; "YES";
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Циклы в перестановке</h2>
+
+                <p>
+                    Перестановку можно рассматривать как отображение:
+                </p>
+
+                <pre><code class="language-none">i → p[i]</code></pre>
+
+                <p>
+                    Тогда элементы разбиваются на циклы.
+                </p>
+
+                <p>
+                    Например:
+                </p>
+
+                <pre><code class="language-none">p = [2, 3, 1, 5, 4]</code></pre>
+
+                <p>
+                    Циклы:
+                </p>
+
+                <pre><code class="language-none">1 → 2 → 3 → 1
+4 → 5 → 4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Код: разложение на циклы</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; p(n + 1);
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; p[i];
+    }
+
+    vector&lt;int&gt; used(n + 1, 0);
+
+    for (int i = 1; i &lt;= n; i++) {
+        if (!used[i]) {
+            int v = i;
+
+            while (!used[v]) {
+                used[v] = 1;
+                cout &lt;&lt; v &lt;&lt; ' ';
+                v = p[v];
+            }
+
+            cout &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Генерация всех перестановок</td>
+                        <td>O(n! * n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>next_permutation</td>
+                        <td>O(n! * n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Номер перестановки</td>
+                        <td>O(n²)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Перестановка по номеру</td>
+                        <td>O(n²)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Проверка перестановки</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Разложение на циклы</td>
+                        <td>O(n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    Перестановок очень много.
+                    Уже при n = 10 количество перестановок равно 3628800.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Когда какой способ использовать?</h2>
+
+                <table>
+                    <tr>
+                        <th>Задача</th>
+                        <th>Способ</th>
+                    </tr>
+
+                    <tr>
+                        <td>Вывести все перестановки</td>
+                        <td>Рекурсия или next_permutation</td>
+                    </tr>
+
+                    <tr>
+                        <td>Нужен лексикографический порядок</td>
+                        <td>next_permutation</td>
+                    </tr>
+
+                    <tr>
+                        <td>Нужно генерировать вручную</td>
+                        <td>Backtracking</td>
+                    </tr>
+
+                    <tr>
+                        <td>Найти номер перестановки</td>
+                        <td>Факториалы и used</td>
+                    </tr>
+
+                    <tr>
+                        <td>Найти перестановку по номеру</td>
+                        <td>Факториальная система</td>
+                    </tr>
+
+                    <tr>
+                        <td>Проверить массив</td>
+                        <td>cnt или used</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Забыть, что порядок в перестановках важен</li>
+                    <li>Не сделать <b>used[x] = 0</b> после рекурсии</li>
+                    <li>Не сделать <b>cur.pop_back()</b> после рекурсии</li>
+                    <li>Запустить <b>next_permutation</b> не с отсортированного массива</li>
+                    <li>Получить overflow в факториалах</li>
+                    <li>Перепутать 0-indexed и 1-indexed номер перестановки</li>
+                    <li>Думать, что генерация перестановок работает быстро для больших n</li>
+                    <li>Не учитывать одинаковые элементы в строке</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон генерации</h2>
+
+                <pre><code class="language-cpp">int n;
+vector&lt;int&gt; cur;
+vector&lt;int&gt; used;
+
+void gen() {
+    if ((int)cur.size() == n) {
+        for (int x : cur) {
+            cout &lt;&lt; x &lt;&lt; ' ';
+        }
+
+        cout &lt;&lt; '\n';
+        return;
+    }
+
+    for (int x = 1; x &lt;= n; x++) {
+        if (used[x]) {
+            continue;
+        }
+
+        used[x] = 1;
+        cur.push_back(x);
+
+        gen();
+
+        cur.pop_back();
+        used[x] = 0;
+    }
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон next_permutation</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; a(n);
+
+for (int i = 0; i &lt; n; i++) {
+    a[i] = i + 1;
+}
+
+do {
+    for (int x : a) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    cout &lt;&lt; '\n';
+} while (next_permutation(a.begin(), a.end()));</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Главное запомнить</h2>
+
+                <div class="scheme">
+                    перестановка = расстановка всех n элементов<br>
+                    порядок важен<br>
+                    количество перестановок = n!<br>
+                    генерировать можно рекурсией или next_permutation<br>
+                    для больших n все перестановки вывести невозможно
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

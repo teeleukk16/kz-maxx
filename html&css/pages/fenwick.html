@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дерево Фенвика | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="fenwick.html">RU</a>
+                    <a class="lang" href="fenwick_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Дерево Фенвика</h1>
+            <p>Fenwick как умная префиксная сумма: int tr[N] и int tr[N][N]</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Объяснение через префиксные суммы</h2>
+
+                <p>
+                    Дерево Фенвика работает почти как <b>префиксная сумма</b>, но умнее.
+                </p>
+
+                <p>
+                    В обычной префиксной сумме мы храним:
+                </p>
+
+                <div class="scheme">
+                    pref[i] = a[1] + a[2] + ... + a[i]
+                </div>
+
+                <p>
+                    Тогда сумму на отрезке можно найти быстро:
+                </p>
+
+                <div class="scheme">
+                    sum(l, r) = pref[r] - pref[l - 1]
+                </div>
+
+                <p>
+                    Например:
+                </p>
+
+                <div class="scheme">
+                    a = 1 2 3 4 5<br>
+                    pref = 1 3 6 10 15<br>
+                    сумма на [2, 4] = pref[4] - pref[1]<br>
+                    ответ = 10 - 1 = 9
+                </div>
+
+                <div class="note">
+                    Проблема обычного <b>pref</b> в том, что если поменять один элемент массива,
+                    нужно пересчитывать много значений. Это долго.
+                </div>
+
+                <p>
+                    Дерево Фенвика решает эту проблему.
+                    Оно тоже хранит суммы, но не все префиксы полностью,
+                    а маленькие куски префиксов.
+                </p>
+
+                <div class="scheme">
+                    Fenwick = префиксная сумма, которая умеет быстро обновляться
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Что такое tr?</h2>
+
+                <p>
+                    В Fenwick есть массив:
+                </p>
+
+                <pre><code class="language-cpp">int tr[N];</code></pre>
+
+                <p>
+                    <b>tr</b> — это массив дерева Фенвика.
+                    Каждая ячейка <b>tr[i]</b> хранит сумму маленького отрезка.
+                </p>
+
+                <p>
+                    Размер этого отрезка зависит от функции <b>lowbit</b>.
+                </p>
+
+                <pre><code class="language-cpp">int lowbit(int x) {
+    return x &amp; -x;
+}</code></pre>
+
+                <div class="scheme">
+                    tr[i] хранит сумму от:<br>
+                    i - lowbit(i) + 1<br>
+                    до i
+                </div>
+
+                <div class="note">
+                    Главное правило: <b>tr[i]</b> хранит сумму последних <b>lowbit(i)</b> элементов до позиции <b>i</b>.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как строится tr?</h2>
+
+                <p>
+                    Пусть есть массив:
+                </p>
+
+                <div class="scheme">
+                    a = 1 2 3 4 5 6 7 8
+                </div>
+
+                <p>
+                    Тогда <b>tr</b> хранит такие суммы:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>i</th>
+                        <th>lowbit(i)</th>
+                        <th>Какой отрезок хранит tr[i]</th>
+                        <th>tr[i]</th>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>[1, 1]</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>[1, 2]</td>
+                        <td>1 + 2 = 3</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>1</td>
+                        <td>[3, 3]</td>
+                        <td>3</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>[1, 4]</td>
+                        <td>1 + 2 + 3 + 4 = 10</td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td>1</td>
+                        <td>[5, 5]</td>
+                        <td>5</td>
+                    </tr>
+
+                    <tr>
+                        <td>6</td>
+                        <td>2</td>
+                        <td>[5, 6]</td>
+                        <td>5 + 6 = 11</td>
+                    </tr>
+
+                    <tr>
+                        <td>7</td>
+                        <td>1</td>
+                        <td>[7, 7]</td>
+                        <td>7</td>
+                    </tr>
+
+                    <tr>
+                        <td>8</td>
+                        <td>8</td>
+                        <td>[1, 8]</td>
+                        <td>1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 = 36</td>
+                    </tr>
+                </table>
+
+                <p>
+                    То есть <b>tr</b> не хранит сам массив.
+                    Он хранит суммы разных маленьких отрезков.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Как найти сумму?</h2>
+
+                <p>
+                    Функция <b>sum(pos)</b> находит сумму от <b>1</b> до <b>pos</b>.
+                </p>
+
+                <pre><code class="language-cpp">int sum(int pos) {
+    int ans = 0;
+
+    for (int i = pos; i &gt; 0; i -= lowbit(i)) {
+        ans += tr[i];
+    }
+
+    return ans;
+}</code></pre>
+
+                <p>
+                    Например, хотим найти:
+                </p>
+
+                <div class="scheme">
+                    sum(7) = a[1] + a[2] + ... + a[7]
+                </div>
+
+                <p>
+                    Fenwick берет не каждый элемент отдельно, а готовые куски из <b>tr</b>.
+                </p>
+
+                <div class="scheme">
+                    sum(7)<br>
+                    берем tr[7] → это [7, 7]<br>
+                    потом tr[6] → это [5, 6]<br>
+                    потом tr[4] → это [1, 4]
+                </div>
+
+                <p>
+                    Получается:
+                </p>
+
+                <div class="scheme">
+                    sum(7) = tr[7] + tr[6] + tr[4]<br>
+                    sum(7) = 7 + 11 + 10 = 28
+                </div>
+
+                <p>
+                    Мы быстро собрали весь отрезок:
+                </p>
+
+                <div class="scheme">
+                    [1, 4] + [5, 6] + [7, 7]<br>
+                    это весь отрезок [1, 7]
+                </div>
+
+                <h3>Сумма на отрезке</h3>
+
+                <p>
+                    Чтобы найти сумму на отрезке <b>[l, r]</b>, используем две префиксные суммы:
+                </p>
+
+                <pre><code class="language-cpp">int query(int l, int r) {
+    return sum(r) - sum(l - 1);
+}</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <div class="scheme">
+                    a = 1 2 3 4 5 6 7 8<br>
+                    query(3, 7)<br>
+                    это 3 + 4 + 5 + 6 + 7 = 25
+                </div>
+
+                <p>
+                    Через Fenwick:
+                </p>
+
+                <div class="scheme">
+                    query(3, 7) = sum(7) - sum(2)<br>
+                    sum(7) = 28<br>
+                    sum(2) = 3<br>
+                    ответ = 28 - 3 = 25
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как обновлять значение?</h2>
+
+                <p>
+                    Fenwick умеет быстро прибавлять число к одному элементу.
+                </p>
+
+                <pre><code class="language-cpp">void add(int pos, int x) {
+    for (int i = pos; i &lt;= n; i += lowbit(i)) {
+        tr[i] += x;
+    }
+}</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <div class="scheme">
+                    a = 1 2 3 4 5 6 7 8<br>
+                    add(3, 5)
+                </div>
+
+                <p>
+                    Это значит: к <b>a[3]</b> прибавить <b>5</b>.
+                </p>
+
+                <div class="scheme">
+                    было: a[3] = 3<br>
+                    стало: a[3] = 8
+                </div>
+
+                <p>
+                    Теперь надо обновить все <b>tr[i]</b>, которые содержат позицию <b>3</b>.
+                </p>
+
+                <div class="scheme">
+                    add(3, 5)<br>
+                    обновляем tr[3]<br>
+                    потом tr[4]<br>
+                    потом tr[8]
+                </div>
+
+                <table>
+                    <tr>
+                        <th>tr[i]</th>
+                        <th>Какой отрезок хранит</th>
+                        <th>Содержит позицию 3?</th>
+                    </tr>
+
+                    <tr>
+                        <td>tr[3]</td>
+                        <td>[3, 3]</td>
+                        <td>да</td>
+                    </tr>
+
+                    <tr>
+                        <td>tr[4]</td>
+                        <td>[1, 4]</td>
+                        <td>да</td>
+                    </tr>
+
+                    <tr>
+                        <td>tr[8]</td>
+                        <td>[1, 8]</td>
+                        <td>да</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Поэтому к этим ячейкам прибавляем <b>5</b>.
+                </p>
+
+                <div class="scheme">
+                    tr[3] += 5<br>
+                    tr[4] += 5<br>
+                    tr[8] += 5
+                </div>
+
+                <h3>Если нужно поменять значение</h3>
+
+                <p>
+                    Если нужно не прибавить, а именно поменять <b>a[pos]</b> на новое значение,
+                    считаем разницу.
+                </p>
+
+                <pre><code class="language-cpp">void change(int pos, int x) {
+    int diff = x - a[pos];
+
+    a[pos] = x;
+    add(pos, diff);
+}</code></pre>
+
+                <p>
+                    Например:
+                </p>
+
+                <div class="scheme">
+                    было: a[3] = 3<br>
+                    хотим: a[3] = 10<br>
+                    diff = 10 - 3 = 7<br>
+                    делаем add(3, 7)
+                </div>
+
+                <p>
+                    То есть Fenwick не меняет значение напрямую.
+                    Он прибавляет разницу.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: одномерный Fenwick</h2>
+
+                <p>
+                    Дан массив из <b>n</b> чисел.
+                    Нужно обработать запросы:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>Q l r</b></td>
+                        <td>Найти сумму на отрезке <b>[l, r]</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>C pos x</b></td>
+                        <td>Поменять <b>a[pos]</b> на <b>x</b></td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5 5
+1 2 3 4 5
+Q 1 5
+Q 2 4
+C 3 10
+Q 1 5
+Q 3 3</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">15
+9
+22
+10</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация одномерного Fenwick</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int n;
+int a[N];
+int tr[N];
+
+int lowbit(int x) {
+    return x &amp; -x;
+}
+
+void add(int pos, int x) {
+    for (int i = pos; i &lt;= n; i += lowbit(i)) {
+        tr[i] += x;
+    }
+}
+
+int sum(int pos) {
+    int ans = 0;
+
+    for (int i = pos; i &gt; 0; i -= lowbit(i)) {
+        ans += tr[i];
+    }
+
+    return ans;
+}
+
+int query(int l, int r) {
+    return sum(r) - sum(l - 1);
+}
+
+void change(int pos, int x) {
+    int diff = x - a[pos];
+
+    a[pos] = x;
+    add(pos, diff);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+        add(i, a[i]);
+    }
+
+    while (q--) {
+        char op;
+        cin &gt;&gt; op;
+
+        if (op == 'Q') {
+            int l, r;
+            cin &gt;&gt; l &gt;&gt; r;
+
+            cout &lt;&lt; query(l, r) &lt;&lt; '\n';
+        } else if (op == 'C') {
+            int pos, x;
+            cin &gt;&gt; pos &gt;&gt; x;
+
+            change(pos, x);
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Двумерный Fenwick</h2>
+
+                <p>
+                    Двумерный Fenwick работает так же, как префиксная сумма в матрице.
+                    Только вместо одномерного массива используется таблица.
+                </p>
+
+                <pre><code class="language-cpp">int tr[N][N];</code></pre>
+
+                <p>
+                    В обычной двумерной префиксной сумме:
+                </p>
+
+                <div class="scheme">
+                    pref[x][y] = сумма прямоугольника от (1, 1) до (x, y)
+                </div>
+
+                <p>
+                    В двумерном Fenwick <b>tr[x][y]</b> тоже хранит сумму прямоугольника,
+                    но не всегда от <b>(1, 1)</b>, а маленький кусок.
+                </p>
+
+                <div class="scheme">
+                    tr[x][y] хранит прямоугольник:<br>
+                    строки: x - lowbit(x) + 1 ... x<br>
+                    столбцы: y - lowbit(y) + 1 ... y
+                </div>
+
+                <div class="note">
+                    Двумерный Fenwick — это тот же одномерный Fenwick,
+                    только внутри одного цикла стоит второй цикл.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как находится сумма в 2D?</h2>
+
+                <p>
+                    Пусть есть матрица:
+                </p>
+
+                <div class="scheme">
+                    1  2  3  4<br>
+                    5  6  7  8<br>
+                    9  10 11 12<br>
+                    13 14 15 16
+                </div>
+
+                <p>
+                    Найдем <b>sum(3, 3)</b>.
+                    Это сумма прямоугольника от <b>(1, 1)</b> до <b>(3, 3)</b>.
+                </p>
+
+                <div class="scheme">
+                    1 + 2 + 3<br>
+                    5 + 6 + 7<br>
+                    9 + 10 + 11<br>
+                    ответ = 54
+                </div>
+
+                <p>
+                    Fenwick берет несколько готовых прямоугольников:
+                </p>
+
+                <div class="scheme">
+                    sum(3, 3)<br>
+                    берем tr[3][3] → клетка (3, 3) = 11<br>
+                    берем tr[3][2] → строка 3, столбцы 1..2 = 9 + 10 = 19<br>
+                    берем tr[2][3] → строки 1..2, столбец 3 = 3 + 7 = 10<br>
+                    берем tr[2][2] → строки 1..2, столбцы 1..2 = 1 + 2 + 5 + 6 = 14
+                </div>
+
+                <p>
+                    Итого:
+                </p>
+
+                <div class="scheme">
+                    sum(3, 3) = 11 + 19 + 10 + 14 = 54
+                </div>
+
+                <h3>Сумма в прямоугольнике</h3>
+
+                <p>
+                    Чтобы найти сумму в прямоугольнике от <b>(x1, y1)</b> до <b>(x2, y2)</b>,
+                    используем четыре префиксные суммы.
+                </p>
+
+                <pre><code class="language-cpp">int query(int x1, int y1, int x2, int y2) {
+    return sum(x2, y2)
+         - sum(x1 - 1, y2)
+         - sum(x2, y1 - 1)
+         + sum(x1 - 1, y1 - 1);
+}</code></pre>
+
+                <div class="scheme">
+                    берем большой прямоугольник<br>
+                    вычитаем верхнюю лишнюю часть<br>
+                    вычитаем левую лишнюю часть<br>
+                    добавляем угол, который вычли два раза
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как обновлять в 2D?</h2>
+
+                <p>
+                    Если делаем:
+                </p>
+
+                <div class="scheme">
+                    add(3, 2, 5)
+                </div>
+
+                <p>
+                    Это значит: к клетке <b>(3, 2)</b> прибавить <b>5</b>.
+                    Тогда обновятся все <b>tr[i][j]</b>, прямоугольники которых содержат клетку <b>(3, 2)</b>.
+                </p>
+
+                <div class="scheme">
+                    по x: 3 → 4<br>
+                    по y: 2 → 4<br>
+                    обновятся:<br>
+                    tr[3][2], tr[3][4], tr[4][2], tr[4][4]
+                </div>
+
+                <pre><code class="language-cpp">void add(int x, int y, int val) {
+    for (int i = x; i &lt;= n; i += lowbit(i)) {
+        for (int j = y; j &lt;= m; j += lowbit(j)) {
+            tr[i][j] += val;
+        }
+    }
+}</code></pre>
+
+                <p>
+                    Если нужно поменять значение клетки, снова считаем разницу.
+                </p>
+
+                <pre><code class="language-cpp">void change(int x, int y, int val) {
+    int diff = val - a[x][y];
+
+    a[x][y] = val;
+    add(x, y, diff);
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: двумерный Fenwick</h2>
+
+                <p>
+                    Дана матрица <b>n × m</b>.
+                    Нужно обрабатывать запросы:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Что делает</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>Q x1 y1 x2 y2</b></td>
+                        <td>Найти сумму в прямоугольнике от <b>(x1, y1)</b> до <b>(x2, y2)</b></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>C x y val</b></td>
+                        <td>Поменять <b>a[x][y]</b> на <b>val</b></td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">3 3 5
+1 2 3
+4 5 6
+7 8 9
+Q 1 1 3 3
+Q 2 2 3 3
+C 2 2 10
+Q 1 1 3 3
+Q 2 2 2 2</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">45
+28
+50
+10</code></pre>
+
+                <div class="note">
+                    После команды <b>C 2 2 10</b> значение в центре меняется с 5 на 10.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация двумерного Fenwick</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1010;
+
+int n, m;
+int a[N][N];
+int tr[N][N];
+
+int lowbit(int x) {
+    return x &amp; -x;
+}
+
+void add(int x, int y, int val) {
+    for (int i = x; i &lt;= n; i += lowbit(i)) {
+        for (int j = y; j &lt;= m; j += lowbit(j)) {
+            tr[i][j] += val;
+        }
+    }
+}
+
+int sum(int x, int y) {
+    int ans = 0;
+
+    for (int i = x; i &gt; 0; i -= lowbit(i)) {
+        for (int j = y; j &gt; 0; j -= lowbit(j)) {
+            ans += tr[i][j];
+        }
+    }
+
+    return ans;
+}
+
+int query(int x1, int y1, int x2, int y2) {
+    return sum(x2, y2)
+         - sum(x1 - 1, y2)
+         - sum(x2, y1 - 1)
+         + sum(x1 - 1, y1 - 1);
+}
+
+void change(int x, int y, int val) {
+    int diff = val - a[x][y];
+
+    a[x][y] = val;
+    add(x, y, diff);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int q;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; q;
+
+    for (int i = 1; i &lt;= n; i++) {
+        for (int j = 1; j &lt;= m; j++) {
+            cin &gt;&gt; a[i][j];
+            add(i, j, a[i][j]);
+        }
+    }
+
+    while (q--) {
+        char op;
+        cin &gt;&gt; op;
+
+        if (op == 'Q') {
+            int x1, y1, x2, y2;
+            cin &gt;&gt; x1 &gt;&gt; y1 &gt;&gt; x2 &gt;&gt; y2;
+
+            cout &lt;&lt; query(x1, y1, x2, y2) &lt;&lt; '\n';
+        } else if (op == 'C') {
+            int x, y, val;
+            cin &gt;&gt; x &gt;&gt; y &gt;&gt; val;
+
+            change(x, y, val);
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Версия</th>
+                        <th>Операция</th>
+                        <th>Время</th>
+                    </tr>
+
+                    <tr>
+                        <td>1D Fenwick</td>
+                        <td>add / sum / query / change</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>2D Fenwick</td>
+                        <td>add / sum / query / change</td>
+                        <td>O(log n · log m)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

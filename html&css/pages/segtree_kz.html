@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Tree | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="segtree.html">RU</a>
+                    <a class="lang active" href="segtree_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Segment Tree</h1>
+            <p>Обычное ДО және ДО с обновлениями на отрезке</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Түсіндіру</h2>
+
+                <p>
+                    Segment Tree, яғни дерево отрезков — бұл структура данных.
+                    Ол массивтің бір отрезогы бойынша сұрақтарға тез жауап береді.
+                </p>
+
+                <div class="scheme">
+                    массив: 1 2 3 4 5<br>
+                    сұрақ: [2, 4] отрезогындағы сумма<br>
+                    жауап: 2 + 3 + 4 = 9
+                </div>
+
+                <p>
+                    Егер жай циклмен санасақ, көп уақыт кетуі мүмкін.
+                    Ал Segment Tree арқылы запрос <b>O(log n)</b> уақытта жұмыс істейді.
+                </p>
+
+                <p>
+                    Әр вершина өзінің отрезогына жауап береді.
+                </p>
+
+                <div class="scheme">
+                    [1, 5]<br>
+                    [1, 3] және [4, 5]<br>
+                    [1, 2] және [3, 3] және [4, 4] және [5, 5]
+                </div>
+
+                <h3>Вершинада не сақтаймыз?</h3>
+
+                <pre><code class="language-cpp">struct Node {
+    int l, r;
+    long long sum;
+};</code></pre>
+
+                <ul>
+                    <li><b>l</b> — отрезоктың сол жақ шекарасы</li>
+                    <li><b>r</b> — отрезоктың оң жақ шекарасы</li>
+                    <li><b>sum</b> — осы отрезоктың суммасы</li>
+                </ul>
+
+                <div class="note">
+                    Егер вершина <b>[2, 4]</b> отрезогына жауап берсе,
+                    онда <b>sum</b> — 2-ден 4-ке дейінгі элементтердің суммасы.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: обычное дерево отрезков</h2>
+
+                <p>
+                    Бізге массив берілген. Екі тип запрос орындау керек.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>Q l r</b></td>
+                        <td><b>[l, r]</b> отрезогындағы сумманы табады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>C pos x</b></td>
+                        <td><b>a[pos]</b> мәнін <b>x</b>-ке өзгертеді</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5 5
+1 2 3 4 5
+Q 1 5
+Q 2 4
+C 3 10
+Q 1 5
+Q 3 3</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">15
+9
+22
+10</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Обычное ДО толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+struct Node {
+    int l, r;
+    long long sum;
+} tr[N * 4];
+
+int a[N];
+
+void pushup(int u) {
+    tr[u].sum = tr[u * 2].sum + tr[u * 2 + 1].sum;
+}
+
+void build(int u, int l, int r) {
+    tr[u].l = l;
+    tr[u].r = r;
+
+    if (l == r) {
+        tr[u].sum = a[l];
+        return;
+    }
+
+    int mid = (l + r) / 2;
+
+    build(u * 2, l, mid);
+    build(u * 2 + 1, mid + 1, r);
+
+    pushup(u);
+}
+
+void change(int u, int pos, int x) {
+    if (tr[u].l == tr[u].r) {
+        tr[u].sum = x;
+        return;
+    }
+
+    int mid = (tr[u].l + tr[u].r) / 2;
+
+    if (pos &lt;= mid) {
+        change(u * 2, pos, x);
+    } else {
+        change(u * 2 + 1, pos, x);
+    }
+
+    pushup(u);
+}
+
+long long query(int u, int l, int r) {
+    if (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) {
+        return tr[u].sum;
+    }
+
+    int mid = (tr[u].l + tr[u].r) / 2;
+    long long ans = 0;
+
+    if (l &lt;= mid) {
+        ans += query(u * 2, l, r);
+    }
+
+    if (r &gt; mid) {
+        ans += query(u * 2 + 1, l, r);
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+
+    build(1, 1, n);
+
+    while (q--) {
+        char op;
+        cin &gt;&gt; op;
+
+        if (op == 'Q') {
+            int l, r;
+            cin &gt;&gt; l &gt;&gt; r;
+
+            cout &lt;&lt; query(1, l, r) &lt;&lt; '\n';
+        } else if (op == 'C') {
+            int pos, x;
+            cin &gt;&gt; pos &gt;&gt; x;
+
+            change(1, pos, x);
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Обычное ДО функциялары</h2>
+
+                <h3>1. pushup</h3>
+
+                <pre><code class="language-cpp">void pushup(int u) {
+    tr[u].sum = tr[u * 2].sum + tr[u * 2 + 1].sum;
+}</code></pre>
+
+                <p>
+                    <b>pushup</b> вершина суммасын екі баласы арқылы қайта есептейді.
+                </p>
+
+                <div class="scheme">
+                    сол бала sum = 6<br>
+                    оң бала sum = 9<br>
+                    онда вершина sum = 6 + 9 = 15
+                </div>
+
+                <h3>2. build</h3>
+
+                <pre><code class="language-cpp">void build(int u, int l, int r)</code></pre>
+
+                <p>
+                    <b>build</b> дерево отрезков құрады.
+                    <b>u</b> вершинасы <b>[l, r]</b> отрезогына жауап береді.
+                </p>
+
+                <div class="scheme">
+                    массив: 1 2 3 4<br>
+                    build(1, 1, 4)<br>
+                    вершина 1: [1, 4]<br>
+                    сол бала: [1, 2]<br>
+                    оң бала: [3, 4]
+                </div>
+
+                <p>
+                    Егер <b>l == r</b>, онда бұл бір ғана элемент.
+                    Сол үшін <b>sum = a[l]</b>.
+                </p>
+
+                <pre><code class="language-cpp">if (l == r) {
+    tr[u].sum = a[l];
+    return;
+}</code></pre>
+
+                <h3>3. change</h3>
+
+                <pre><code class="language-cpp">void change(int u, int pos, int x)</code></pre>
+
+                <p>
+                    <b>change</b> бір элементті өзгертеді.
+                    Мысалы, <b>change(1, 3, 10)</b> дегеніміз:
+                    <b>a[3] = 10</b> қылу.
+                </p>
+
+                <div class="scheme">
+                    бұрын: 1 2 3 4 5<br>
+                    change(pos = 3, x = 10)<br>
+                    кейін: 1 2 10 4 5
+                </div>
+
+                <p>
+                    Функция төменге, керек позицияға дейін барады.
+                    Кейін жоғары қарай <b>pushup</b> арқылы суммаларды жаңартады.
+                </p>
+
+                <h3>4. query</h3>
+
+                <pre><code class="language-cpp">long long query(int u, int l, int r)</code></pre>
+
+                <p>
+                    <b>query</b> <b>[l, r]</b> отрезогындағы сумманы қайтарады.
+                </p>
+
+                <div class="scheme">
+                    массив: 1 2 3 4 5<br>
+                    query(2, 4)<br>
+                    жауап: 2 + 3 + 4 = 9
+                </div>
+
+                <p>
+                    Егер қазіргі отрезок толық запрос ішінде жатса,
+                    бірден <b>tr[u].sum</b> қайтарамыз.
+                </p>
+
+                <pre><code class="language-cpp">if (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) {
+    return tr[u].sum;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Задача 2: ДО с обновлениями на отрезке</h2>
+
+                <p>
+                    Енді біз отрезоктың барлық элементіне бір сан қосуымыз керек.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>A l r x</b></td>
+                        <td><b>[l, r]</b> отрезогындағы барлық элементке <b>x</b> қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>Q l r</b></td>
+                        <td><b>[l, r]</b> отрезогындағы сумманы табады</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">5 5
+1 2 3 4 5
+Q 1 5
+A 2 4 10
+Q 1 5
+Q 2 4
+Q 3 3</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">15
+45
+39
+13</code></pre>
+
+                <div class="note">
+                    Мұнда <b>pushdown</b> керек.
+                    Ол отложенное обновление-ді вершинадан балаларға береді.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>ДО с pushdown толық реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+struct Node {
+    int l, r;
+    long long sum;
+    long long add;
+} tr[N * 4];
+
+int a[N];
+
+void pushup(int u) {
+    tr[u].sum = tr[u * 2].sum + tr[u * 2 + 1].sum;
+}
+
+void apply(int u, long long x) {
+    int len = tr[u].r - tr[u].l + 1;
+
+    tr[u].sum += x * len;
+    tr[u].add += x;
+}
+
+void pushdown(int u) {
+    if (tr[u].add == 0) {
+        return;
+    }
+
+    apply(u * 2, tr[u].add);
+    apply(u * 2 + 1, tr[u].add);
+
+    tr[u].add = 0;
+}
+
+void build(int u, int l, int r) {
+    tr[u].l = l;
+    tr[u].r = r;
+    tr[u].add = 0;
+
+    if (l == r) {
+        tr[u].sum = a[l];
+        return;
+    }
+
+    int mid = (l + r) / 2;
+
+    build(u * 2, l, mid);
+    build(u * 2 + 1, mid + 1, r);
+
+    pushup(u);
+}
+
+void modify(int u, int l, int r, long long x) {
+    if (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) {
+        apply(u, x);
+        return;
+    }
+
+    pushdown(u);
+
+    int mid = (tr[u].l + tr[u].r) / 2;
+
+    if (l &lt;= mid) {
+        modify(u * 2, l, r, x);
+    }
+
+    if (r &gt; mid) {
+        modify(u * 2 + 1, l, r, x);
+    }
+
+    pushup(u);
+}
+
+long long query(int u, int l, int r) {
+    if (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) {
+        return tr[u].sum;
+    }
+
+    pushdown(u);
+
+    int mid = (tr[u].l + tr[u].r) / 2;
+    long long ans = 0;
+
+    if (l &lt;= mid) {
+        ans += query(u * 2, l, r);
+    }
+
+    if (r &gt; mid) {
+        ans += query(u * 2 + 1, l, r);
+    }
+
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+
+    build(1, 1, n);
+
+    while (q--) {
+        char op;
+        cin &gt;&gt; op;
+
+        if (op == 'A') {
+            int l, r;
+            long long x;
+
+            cin &gt;&gt; l &gt;&gt; r &gt;&gt; x;
+
+            modify(1, l, r, x);
+        } else if (op == 'Q') {
+            int l, r;
+            cin &gt;&gt; l &gt;&gt; r;
+
+            cout &lt;&lt; query(1, l, r) &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Pushdown версиясының функциялары</h2>
+
+                <h3>1. pushup</h3>
+
+                <pre><code class="language-cpp">void pushup(int u) {
+    tr[u].sum = tr[u * 2].sum + tr[u * 2 + 1].sum;
+}</code></pre>
+
+                <p>
+                    Бұл обычное ДО сияқты жұмыс істейді.
+                    Вершина суммасы = сол бала суммасы + оң бала суммасы.
+                </p>
+
+                <div class="scheme">
+                    left.sum = 20<br>
+                    right.sum = 25<br>
+                    u.sum = 45
+                </div>
+
+                <h3>2. apply</h3>
+
+                <pre><code class="language-cpp">void apply(int u, long long x) {
+    int len = tr[u].r - tr[u].l + 1;
+
+    tr[u].sum += x * len;
+    tr[u].add += x;
+}</code></pre>
+
+                <p>
+                    <b>apply</b> бір вершинаға толық обновление жасайды.
+                </p>
+
+                <div class="scheme">
+                    вершина [2, 4] отрезогына жауап береді<br>
+                    ұзындығы = 3<br>
+                    x = 10 қосамыз<br>
+                    сумма 10 * 3 = 30-ға өседі
+                </div>
+
+                <p>
+                    <b>add</b> кейін балаларға беру керек прибавление-ді сақтайды.
+                </p>
+
+                <h3>3. pushdown</h3>
+
+                <pre><code class="language-cpp">void pushdown(int u) {
+    if (tr[u].add == 0) {
+        return;
+    }
+
+    apply(u * 2, tr[u].add);
+    apply(u * 2 + 1, tr[u].add);
+
+    tr[u].add = 0;
+}</code></pre>
+
+                <p>
+                    <b>pushdown</b> отложенное обновление-ді балаларға береді.
+                </p>
+
+                <div class="scheme">
+                    [1, 4] вершинасында add = 5<br>
+                    [1, 2] баласына +5 береміз<br>
+                    [3, 4] баласына +5 береміз<br>
+                    [1, 4] add = 0 болады
+                </div>
+
+                <p>
+                    Бұл төменге түспей тұрып керек.
+                </p>
+
+                <h3>4. build</h3>
+
+                <pre><code class="language-cpp">void build(int u, int l, int r)</code></pre>
+
+                <p>
+                    Дерево құрады.
+                    Бұл версияда басында <b>add = 0</b> қоямыз,
+                    себебі әлі отложенное обновление жоқ.
+                </p>
+
+                <div class="scheme">
+                    build(1, 1, 5)<br>
+                    tr[1].l = 1<br>
+                    tr[1].r = 5<br>
+                    tr[1].add = 0
+                </div>
+
+                <h3>5. modify</h3>
+
+                <pre><code class="language-cpp">void modify(int u, int l, int r, long long x)</code></pre>
+
+                <p>
+                    <b>modify</b> <b>[l, r]</b> отрезогындағы барлық элементке <b>x</b> қосады.
+                </p>
+
+                <div class="scheme">
+                    массив: 1 2 3 4 5<br>
+                    modify(2, 4, +10)<br>
+                    кейін: 1 12 13 14 5
+                </div>
+
+                <p>
+                    Егер қазіргі вершина толық запрос ішінде болса,
+                    бірден <b>apply</b> шақырамыз.
+                </p>
+
+                <pre><code class="language-cpp">if (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) {
+    apply(u, x);
+    return;
+}</code></pre>
+
+                <p>
+                    Егер төменге түсу керек болса,
+                    алдымен <b>pushdown</b> шақырамыз.
+                </p>
+
+                <h3>6. query</h3>
+
+                <pre><code class="language-cpp">long long query(int u, int l, int r)</code></pre>
+
+                <p>
+                    <b>query</b> <b>[l, r]</b> отрезогындағы сумманы қайтарады.
+                </p>
+
+                <div class="scheme">
+                    массив после обновления: 1 12 13 14 5<br>
+                    query(2, 4)<br>
+                    жауап: 12 + 13 + 14 = 39
+                </div>
+
+                <p>
+                    Егер қазіргі отрезок толық запрос ішінде болса,
+                    <b>tr[u].sum</b> қайтарамыз.
+                    Әйтпесе төменге түспей тұрып <b>pushdown</b> жасаймыз.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Уақыт</th>
+                    </tr>
+
+                    <tr>
+                        <td>build</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>query</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>change</td>
+                        <td>O(log n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>modify</td>
+                        <td>O(log n)</td>
+                    </tr>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

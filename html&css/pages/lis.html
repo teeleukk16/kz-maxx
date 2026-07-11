@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIS | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang active" href="lis.html">RU</a>
+                    <a class="lang" href="lis_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website.html">← Главная</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Наибольшая возрастающая подпоследовательность</h1>
+            <p>LIS: динамическое программирование O(n²), восстановление ответа и оптимизация O(n log n)</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Что такое LIS?</h2>
+
+                <p>
+                    <b>LIS</b> — это <b>Longest Increasing Subsequence</b>.
+                    По-русски: <b>наибольшая возрастающая подпоследовательность</b>.
+                </p>
+
+                <p>
+                    Нам дан массив чисел.
+                    Нужно выбрать из него несколько элементов так, чтобы:
+                </p>
+
+                <ul>
+                    <li>порядок элементов сохранился</li>
+                    <li>выбранные числа строго возрастали</li>
+                    <li>длина была максимальной</li>
+                </ul>
+
+                <div class="note">
+                    Подпоследовательность — это не обязательно подряд.
+                    Главное — не менять порядок элементов.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Пример</h2>
+
+                <p>
+                    Дан массив:
+                </p>
+
+                <pre><code class="language-none">5 1 6 2 3 4</code></pre>
+
+                <p>
+                    Одна из наибольших возрастающих подпоследовательностей:
+                </p>
+
+                <pre><code class="language-none">1 2 3 4</code></pre>
+
+                <p>
+                    Ее длина:
+                </p>
+
+                <pre><code class="language-none">4</code></pre>
+
+                <p>
+                    Почему нельзя взять <b>1 2 3 4 6</b>?
+                    Потому что <b>6</b> стоит раньше, чем <b>2 3 4</b>.
+                    Порядок менять нельзя.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Подпоследовательность и подотрезок</h2>
+
+                <table>
+                    <tr>
+                        <th>Термин</th>
+                        <th>Что значит</th>
+                        <th>Пример</th>
+                    </tr>
+
+                    <tr>
+                        <td>Подпоследовательность</td>
+                        <td>можно пропускать элементы</td>
+                        <td>1 2 4 из 5 1 6 2 3 4</td>
+                    </tr>
+
+                    <tr>
+                        <td>Подотрезок</td>
+                        <td>элементы идут подряд</td>
+                        <td>2 3 4 из 5 1 6 2 3 4</td>
+                    </tr>
+                </table>
+
+                <div class="note">
+                    LIS — это именно подпоследовательность, а не подотрезок.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Главная идея DP</h2>
+
+                <p>
+                    Придумаем массив:
+                </p>
+
+                <pre><code class="language-cpp">dp[i]</code></pre>
+
+                <p>
+                    <b>dp[i]</b> — длина наибольшей возрастающей подпоследовательности,
+                    которая заканчивается именно в позиции <b>i</b>.
+                </p>
+
+                <div class="scheme">
+                    dp[i] = лучший ответ<br>
+                    если последний выбранный элемент — a[i]
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как сделать переход?</h2>
+
+                <p>
+                    Чтобы посчитать <b>dp[i]</b>, смотрим все предыдущие позиции <b>j</b>.
+                </p>
+
+                <p>
+                    Если:
+                </p>
+
+                <pre><code class="language-cpp">a[j] &lt; a[i]</code></pre>
+
+                <p>
+                    значит можно поставить <b>a[i]</b> после <b>a[j]</b>.
+                </p>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = max(dp[i], dp[j] + 1);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Базовое значение</h2>
+
+                <p>
+                    Каждый элемент сам по себе уже является возрастающей подпоследовательностью длины 1.
+                </p>
+
+                <pre><code class="language-cpp">dp[i] = 1;</code></pre>
+
+                <p>
+                    Поэтому сначала для всех <b>i</b> ставим:
+                </p>
+
+                <pre><code class="language-cpp">for (int i = 1; i &lt;= n; i++) {
+    dp[i] = 1;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Формула DP</h2>
+
+                <pre><code class="language-cpp">dp[i] = 1;
+
+for (int j = 1; j &lt; i; j++) {
+    if (a[j] &lt; a[i]) {
+        dp[i] = max(dp[i], dp[j] + 1);
+    }
+}</code></pre>
+
+                <p>
+                    Ответ — максимум среди всех <b>dp[i]</b>.
+                </p>
+
+                <pre><code class="language-cpp">ans = max(ans, dp[i]);</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример руками</h2>
+
+                <p>
+                    Массив:
+                </p>
+
+                <pre><code class="language-none">5 1 6 2 3 4</code></pre>
+
+                <table>
+                    <tr>
+                        <th>i</th>
+                        <th>a[i]</th>
+                        <th>Лучшая подпоследовательность</th>
+                        <th>dp[i]</th>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>6</td>
+                        <td>5 6</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>2</td>
+                        <td>1 2</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td>3</td>
+                        <td>1 2 3</td>
+                        <td>3</td>
+                    </tr>
+
+                    <tr>
+                        <td>6</td>
+                        <td>4</td>
+                        <td>1 2 3 4</td>
+                        <td>4</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Задача 1: найти длину LIS</h2>
+
+                <p>
+                    Дан массив из <b>n</b> чисел.
+                    Нужно найти длину наибольшей возрастающей подпоследовательности.
+                </p>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">6
+5 1 6 2 3 4</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">4</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация O(n²)</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 5010;
+
+int n;
+int a[N];
+int dp[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+
+    int ans = 0;
+
+    for (int i = 1; i &lt;= n; i++) {
+        dp[i] = 1;
+
+        for (int j = 1; j &lt; i; j++) {
+            if (a[j] &lt; a[i]) {
+                dp[i] = max(dp[i], dp[j] + 1);
+            }
+        }
+
+        ans = max(ans, dp[i]);
+    }
+
+    cout &lt;&lt; ans;
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Почему это O(n²)?</h2>
+
+                <p>
+                    У нас два цикла:
+                </p>
+
+                <pre><code class="language-cpp">for (int i = 1; i &lt;= n; i++) {
+    for (int j = 1; j &lt; i; j++) {
+        ...
+    }
+}</code></pre>
+
+                <p>
+                    Для каждой позиции <b>i</b> мы смотрим все предыдущие позиции <b>j</b>.
+                </p>
+
+                <div class="scheme">
+                    примерно n × n проверок<br>
+                    значит время O(n²)
+                </div>
+
+                <div class="note">
+                    Если n примерно до 5000, O(n²) часто проходит.
+                    Если n = 100000, нужно O(n log n).
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Восстановление самой подпоследовательности</h2>
+
+                <p>
+                    Иногда нужно вывести не только длину, но и саму LIS.
+                </p>
+
+                <p>
+                    Для этого будем хранить:
+                </p>
+
+                <pre><code class="language-cpp">parent[i]</code></pre>
+
+                <p>
+                    <b>parent[i]</b> — предыдущая позиция перед <b>i</b> в лучшей подпоследовательности.
+                </p>
+
+                <div class="scheme">
+                    если dp[i] улучшилось через j<br>
+                    значит parent[i] = j
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Как обновлять parent?</h2>
+
+                <pre><code class="language-cpp">if (a[j] &lt; a[i] &amp;&amp; dp[j] + 1 &gt; dp[i]) {
+    dp[i] = dp[j] + 1;
+    parent[i] = j;
+}</code></pre>
+
+                <p>
+                    После этого надо найти позицию <b>pos</b>, где <b>dp[pos]</b> максимальный.
+                </p>
+
+                <pre><code class="language-cpp">if (dp[i] &gt; ans) {
+    ans = dp[i];
+    pos = i;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Как восстановить ответ?</h2>
+
+                <p>
+                    Идем назад по массиву <b>parent</b>.
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; lis;
+
+while (pos != -1) {
+    lis.push_back(a[pos]);
+    pos = parent[pos];
+}
+
+reverse(lis.begin(), lis.end());</code></pre>
+
+                <p>
+                    Сначала получаем ответ с конца, поэтому в конце делаем <b>reverse</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Полная реализация с восстановлением</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 5010;
+
+int n;
+int a[N];
+int dp[N];
+int parent[N];
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+
+    int ans = 0;
+    int pos = -1;
+
+    for (int i = 1; i &lt;= n; i++) {
+        dp[i] = 1;
+        parent[i] = -1;
+
+        for (int j = 1; j &lt; i; j++) {
+            if (a[j] &lt; a[i] &amp;&amp; dp[j] + 1 &gt; dp[i]) {
+                dp[i] = dp[j] + 1;
+                parent[i] = j;
+            }
+        }
+
+        if (dp[i] &gt; ans) {
+            ans = dp[i];
+            pos = i;
+        }
+    }
+
+    vector&lt;int&gt; lis;
+
+    while (pos != -1) {
+        lis.push_back(a[pos]);
+        pos = parent[pos];
+    }
+
+    reverse(lis.begin(), lis.end());
+
+    cout &lt;&lt; ans &lt;&lt; '\n';
+
+    for (int x : lis) {
+        cout &lt;&lt; x &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Оптимизация O(n log n)</h2>
+
+                <p>
+                    Если <b>n</b> большое, O(n²) может не пройти.
+                    Тогда используют метод с бинарным поиском.
+                </p>
+
+                <p>
+                    Создадим массив:
+                </p>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; d;</code></pre>
+
+                <p>
+                    <b>d[len]</b> хранит минимально возможный последний элемент
+                    возрастающей подпоследовательности длины <b>len + 1</b>.
+                </p>
+
+                <div class="note">
+                    Чем меньше последний элемент, тем легче потом продолжить подпоследовательность.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Идея O(n log n)</h2>
+
+                <p>
+                    Идем по массиву слева направо.
+                    Для каждого <b>a[i]</b> находим первую позицию в <b>d</b>,
+                    где значение не меньше <b>a[i]</b>.
+                </p>
+
+                <pre><code class="language-cpp">auto it = lower_bound(d.begin(), d.end(), a[i]);</code></pre>
+
+                <p>
+                    Если такой позиции нет, добавляем элемент в конец.
+                </p>
+
+                <p>
+                    Иначе заменяем найденное значение на <b>a[i]</b>.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Почему lower_bound?</h2>
+
+                <p>
+                    Для строго возрастающей подпоследовательности нужно использовать:
+                </p>
+
+                <pre><code class="language-cpp">lower_bound</code></pre>
+
+                <p>
+                    Потому что одинаковые значения не должны увеличивать длину.
+                </p>
+
+                <div class="scheme">
+                    strict increasing: 1 2 3<br>
+                    не подходит: 1 2 2 3
+                </div>
+
+                <div class="note">
+                    Для неубывающей подпоследовательности используют upper_bound.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализация O(n log n)</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; d;
+
+    for (int i = 0; i &lt; n; i++) {
+        int x;
+        cin &gt;&gt; x;
+
+        auto it = lower_bound(d.begin(), d.end(), x);
+
+        if (it == d.end()) {
+            d.push_back(x);
+        } else {
+            *it = x;
+        }
+    }
+
+    cout &lt;&lt; d.size();
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Пример работы O(n log n)</h2>
+
+                <p>
+                    Массив:
+                </p>
+
+                <pre><code class="language-none">5 1 6 2 3 4</code></pre>
+
+                <table>
+                    <tr>
+                        <th>Берем</th>
+                        <th>d после обработки</th>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td>5</td>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>6</td>
+                        <td>1 6</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>1 2</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>1 2 3</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>1 2 3 4</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Длина массива <b>d</b> в конце равна 4.
+                    Значит LIS имеет длину 4.
+                </p>
+            </section>
+
+            <section class="box">
+                <h2>Важно про массив d</h2>
+
+                <p>
+                    Массив <b>d</b> не всегда является настоящей подпоследовательностью из массива.
+                </p>
+
+                <p>
+                    Он нужен для нахождения длины.
+                </p>
+
+                <div class="note">
+                    Если нужно восстановить саму LIS в O(n log n),
+                    нужно дополнительно хранить позиции и parent.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Строго возрастающая и неубывающая</h2>
+
+                <table>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Условие</th>
+                        <th>Бинарный поиск</th>
+                    </tr>
+
+                    <tr>
+                        <td>Возрастающая</td>
+                        <td>a1 &lt; a2 &lt; a3</td>
+                        <td>lower_bound</td>
+                    </tr>
+
+                    <tr>
+                        <td>Неубывающая</td>
+                        <td>a1 ≤ a2 ≤ a3</td>
+                        <td>upper_bound</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>LIS через рекурсию</h2>
+
+                <p>
+                    Для понимания можно думать рекурсивно.
+                    Пусть:
+                </p>
+
+                <pre><code class="language-cpp">solve(i)</code></pre>
+
+                <p>
+                    Это длина LIS, которая заканчивается в позиции <b>i</b>.
+                </p>
+
+                <p>
+                    Тогда:
+                </p>
+
+                <pre><code class="language-cpp">solve(i) = 1 + max(solve(j)), где j &lt; i и a[j] &lt; a[i]</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия + мемоизация</h2>
+
+                <pre><code class="language-cpp">int solve(int i) {
+    if (dp[i] != -1) {
+        return dp[i];
+    }
+
+    dp[i] = 1;
+
+    for (int j = 1; j &lt; i; j++) {
+        if (a[j] &lt; a[i]) {
+            dp[i] = max(dp[i], solve(j) + 1);
+        }
+    }
+
+    return dp[i];
+}</code></pre>
+
+                <p>
+                    Потом ответ:
+                </p>
+
+                <pre><code class="language-cpp">for (int i = 1; i &lt;= n; i++) {
+    ans = max(ans, solve(i));
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Полная рекурсивная реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 5010;
+
+int n;
+int a[N];
+int dp[N];
+
+int solve(int i) {
+    if (dp[i] != -1) {
+        return dp[i];
+    }
+
+    dp[i] = 1;
+
+    for (int j = 1; j &lt; i; j++) {
+        if (a[j] &lt; a[i]) {
+            dp[i] = max(dp[i], solve(j) + 1);
+        }
+    }
+
+    return dp[i];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+        dp[i] = -1;
+    }
+
+    int ans = 0;
+
+    for (int i = 1; i &lt;= n; i++) {
+        ans = max(ans, solve(i));
+    }
+
+    cout &lt;&lt; ans;
+
+    return 0;
+}</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Рекурсия → итеративный DP</h2>
+
+                <table>
+                    <tr>
+                        <th>Рекурсия</th>
+                        <th>Итеративный DP</th>
+                    </tr>
+
+                    <tr>
+                        <td>solve(i)</td>
+                        <td>dp[i]</td>
+                    </tr>
+
+                    <tr>
+                        <td>solve(j), где j &lt; i</td>
+                        <td>dp[j], который уже посчитан</td>
+                    </tr>
+
+                    <tr>
+                        <td>dp[i] = max(solve(j) + 1)</td>
+                        <td>dp[i] = max(dp[j] + 1)</td>
+                    </tr>
+
+                    <tr>
+                        <td>вызвать solve для всех i</td>
+                        <td>цикл i от 1 до n</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Типичные ошибки</h2>
+
+                <ul>
+                    <li>Думать, что подпоследовательность должна идти подряд</li>
+                    <li>Забыть, что порядок элементов менять нельзя</li>
+                    <li>Писать <b>a[j] &lt;= a[i]</b> вместо <b>a[j] &lt; a[i]</b> для строго возрастающей LIS</li>
+                    <li>Забыть поставить <b>dp[i] = 1</b></li>
+                    <li>Искать ответ только в <b>dp[n]</b>, хотя нужно максимум по всем <b>dp[i]</b></li>
+                    <li>Использовать O(n²), когда n слишком большое</li>
+                    <li>Думать, что массив <b>d</b> в O(n log n) всегда является настоящей LIS</li>
+                </ul>
+            </section>
+
+            <section class="box">
+                <h2>Асимптотика</h2>
+
+                <table>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Время</th>
+                        <th>Память</th>
+                    </tr>
+
+                    <tr>
+                        <td>Рекурсия + мемоизация</td>
+                        <td>O(n²)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Итеративный DP</td>
+                        <td>O(n²)</td>
+                        <td>O(n)</td>
+                    </tr>
+
+                    <tr>
+                        <td>Бинарный поиск</td>
+                        <td>O(n log n)</td>
+                        <td>O(n)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Как думать на задачах LIS?</h2>
+
+                <div class="scheme">
+                    1. Нужно найти длину или саму подпоследовательность?<br>
+                    2. Строго возрастающая или неубывающая?<br>
+                    3. Какое n?<br>
+                    4. Если n маленькое — O(n²)<br>
+                    5. Если n большое — O(n log n)<br>
+                    6. Если нужно восстановление — храним parent
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон O(n²)</h2>
+
+                <pre><code class="language-cpp">int ans = 0;
+
+for (int i = 1; i &lt;= n; i++) {
+    dp[i] = 1;
+
+    for (int j = 1; j &lt; i; j++) {
+        if (a[j] &lt; a[i]) {
+            dp[i] = max(dp[i], dp[j] + 1);
+        }
+    }
+
+    ans = max(ans, dp[i]);
+}
+
+cout &lt;&lt; ans;</code></pre>
+            </section>
+
+            <section class="box">
+                <h2>Короткий шаблон O(n log n)</h2>
+
+                <pre><code class="language-cpp">vector&lt;int&gt; d;
+
+for (int i = 0; i &lt; n; i++) {
+    auto it = lower_bound(d.begin(), d.end(), a[i]);
+
+    if (it == d.end()) {
+        d.push_back(a[i]);
+    } else {
+        *it = a[i];
+    }
+}
+
+cout &lt;&lt; d.size();</code></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>

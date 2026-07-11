@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubly Linked List | kz-maxx</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="page">
+        <header class="top">
+            <h1 class="logo">
+                <a href="../website_kz.html">kz<span>-</span>maxx</a>
+            </h1>
+
+            <div class="right">
+                <div class="langs">
+                    <a class="lang" href="list2.html">RU</a>
+                    <a class="lang active" href="list2_kz.html">KZ</a>
+                </div>
+
+                <a class="back" href="../website_kz.html">← Басты бет</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Doubly Linked List</h1>
+            <p>Жеңіл түсіндіру, есеп мысалы және массив арқылы реализация</p>
+        </section>
+
+        <main>
+            <section class="box">
+                <h2>Түсіндіру</h2>
+
+                <p>
+                    Doubly Linked List — бұл двусвязный список.
+                    Мұнда әр элемент тек келесі элементті ғана емес,
+                    алдыңғы элементті де біледі.
+                </p>
+
+                <div class="scheme">
+                    басы ⇄ 10 ⇄ 20 ⇄ 30 ⇄ соңы
+                </div>
+
+                <p>
+                    Singly Linked List-та әр элемент тек алға қарай жүреді.
+                    Ал Doubly Linked List-та екі бағыт бар:
+                </p>
+
+                <ul>
+                    <li><b>pre[i]</b> — алдыңғы элементтің индексі</li>
+                    <li><b>nxt[i]</b> — келесі элементтің индексі</li>
+                </ul>
+
+                <p>
+                    Сондықтан біз элементтің сол жағына да, оң жағына да тез қоса аламыз.
+                    Белгілі элементті өшіру де оңай болады.
+                </p>
+
+                <div class="note">
+                    Кейде оны “двумерный список” деп айтуы мүмкін.
+                    Бірақ алгоритмде дұрыс атауы — <b>Doubly Linked List</b> немесе <b>двусвязный список</b>.
+                </div>
+
+                <h3>Массивте не сақтаймыз?</h3>
+
+                <ul>
+                    <li><b>val[i]</b> — <b>i</b> индексіндегі элементтің мәні</li>
+                    <li><b>pre[i]</b> — <b>i</b> элементінің алдындағы элемент</li>
+                    <li><b>nxt[i]</b> — <b>i</b> элементінен кейінгі элемент</li>
+                    <li><b>idx</b> — жаңа элемент салатын бос индекс</li>
+                </ul>
+
+                <h3>Фиктивные вершины</h3>
+
+                <p>
+                    Код оңай болу үшін біз екі арнайы элемент қолданамыз:
+                </p>
+
+                <ul>
+                    <li><b>0</b> — сол жақ шекара</li>
+                    <li><b>1</b> — оң жақ шекара</li>
+                </ul>
+
+                <div class="scheme">
+                    0 ⇄ список элементтері ⇄ 1
+                </div>
+
+                <p>
+                    Нағыз элементтер <b>2</b> индексінен басталады.
+                </p>
+
+                <div class="note">
+                    Егер список бос болса, онда 0-ден кейін бірден 1 тұрады.  
+                    Яғни <b>nxt[0] = 1</b> және <b>pre[1] = 0</b>.
+                </div>
+
+                <h3>Сақталу мысалы</h3>
+
+                <p>
+                    Бізде мынадай список бар:
+                </p>
+
+                <div class="scheme">
+                    10 ⇄ 20 ⇄ 30
+                </div>
+
+                <p>
+                    Массив арқылы ол былай сақталуы мүмкін:
+                </p>
+
+                <table>
+                    <tr>
+                        <th>i</th>
+                        <th>val[i]</th>
+                        <th>pre[i]</th>
+                        <th>nxt[i]</th>
+                    </tr>
+
+                    <tr>
+                        <td>0</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>2</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>10</td>
+                        <td>0</td>
+                        <td>3</td>
+                    </tr>
+
+                    <tr>
+                        <td>3</td>
+                        <td>20</td>
+                        <td>2</td>
+                        <td>4</td>
+                    </tr>
+
+                    <tr>
+                        <td>4</td>
+                        <td>30</td>
+                        <td>3</td>
+                        <td>1</td>
+                    </tr>
+
+                    <tr>
+                        <td>1</td>
+                        <td>-</td>
+                        <td>4</td>
+                        <td>-</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <h2>Реализацияға арналған есеп мысалы</h2>
+
+                <p>
+                    Басында список бос. Бірнеше команда беріледі.
+                    Сол командаларды орындау керек.
+                </p>
+
+                <table>
+                    <tr>
+                        <th>Команда</th>
+                        <th>Не істейді</th>
+                    </tr>
+
+                    <tr>
+                        <td><b>L x</b></td>
+                        <td><b>x</b> санын списоктың басына қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>R x</b></td>
+                        <td><b>x</b> санын списоктың соңына қосады</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>D k</b></td>
+                        <td><b>k-шы қосылған элементті</b> өшіреді</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>IL k x</b></td>
+                        <td><b>k-шы қосылған элементтің</b> сол жағына <b>x</b> қояды</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>IR k x</b></td>
+                        <td><b>k-шы қосылған элементтің</b> оң жағына <b>x</b> қояды</td>
+                    </tr>
+                </table>
+
+                <h3>Input</h3>
+
+                <pre><code class="language-none">7
+L 10
+R 20
+IR 1 15
+IL 2 17
+D 3
+L 5
+R 30</code></pre>
+
+                <h3>Output</h3>
+
+                <pre><code class="language-none">5 10 17 20 30</code></pre>
+
+                <div class="note">
+                    Бірінші нағыз элементтің индексі <b>2</b> болады.  
+                    Сондықтан <b>k-шы қосылған элемент</b> массивте <b>k + 1</b> индексінде тұрады.
+                </div>
+            </section>
+
+            <section class="box">
+                <h2>Реализация</h2>
+
+                <pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 100010;
+
+int val[N];
+int pre[N];
+int nxt[N];
+int idx;
+
+void init() {
+    nxt[0] = 1;
+    pre[1] = 0;
+    idx = 2;
+}
+
+void addAfter(int pos, int x) {
+    val[idx] = x;
+
+    pre[idx] = pos;
+    nxt[idx] = nxt[pos];
+
+    pre[nxt[pos]] = idx;
+    nxt[pos] = idx;
+
+    idx++;
+}
+
+void addBefore(int pos, int x) {
+    addAfter(pre[pos], x);
+}
+
+void delAt(int pos) {
+    nxt[pre[pos]] = nxt[pos];
+    pre[nxt[pos]] = pre[pos];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    init();
+
+    int m;
+    cin &gt;&gt; m;
+
+    while (m--) {
+        string op;
+        cin &gt;&gt; op;
+
+        if (op == "L") {
+            int x;
+            cin &gt;&gt; x;
+
+            addAfter(0, x);
+        } else if (op == "R") {
+            int x;
+            cin &gt;&gt; x;
+
+            addBefore(1, x);
+        } else if (op == "D") {
+            int k;
+            cin &gt;&gt; k;
+
+            delAt(k + 1);
+        } else if (op == "IL") {
+            int k, x;
+            cin &gt;&gt; k &gt;&gt; x;
+
+            addBefore(k + 1, x);
+        } else if (op == "IR") {
+            int k, x;
+            cin &gt;&gt; k &gt;&gt; x;
+
+            addAfter(k + 1, x);
+        }
+    }
+
+    for (int i = nxt[0]; i != 1; i = nxt[i]) {
+        cout &lt;&lt; val[i] &lt;&lt; ' ';
+    }
+
+    return 0;
+}</code></pre>
+
+                <h3>Айнымалылар</h3>
+
+                <ul>
+                    <li><b>val</b> — элементтердің мәндері</li>
+                    <li><b>pre</b> — алдыңғы элементтің индексі</li>
+                    <li><b>nxt</b> — келесі элементтің индексі</li>
+                    <li><b>idx</b> — жаңа элементке арналған бос индекс</li>
+                    <li><b>pos</b> — әрекет жасайтын позиция</li>
+                </ul>
+
+                <h3>Инициализация</h3>
+
+                <pre><code class="language-cpp">void init() {
+    nxt[0] = 1;
+    pre[1] = 0;
+    idx = 2;
+}</code></pre>
+
+                <p>
+                    Басында список бос.
+                    Сол жақ шекара <b>0</b>, оң жақ шекара <b>1</b>.
+                    Нағыз элементтер <b>2</b> индексінен басталады.
+                </p>
+
+                <h3>Оң жағына қосу</h3>
+
+                <pre><code class="language-cpp">void addAfter(int pos, int x) {
+    val[idx] = x;
+
+    pre[idx] = pos;
+    nxt[idx] = nxt[pos];
+
+    pre[nxt[pos]] = idx;
+    nxt[pos] = idx;
+
+    idx++;
+}</code></pre>
+
+                <p>
+                    Жаңа элемент <b>pos</b> элементінен кейін қойылады.
+                    Ол <b>pos</b> пен ескі келесі элементтің ортасына кіреді.
+                </p>
+
+                <div class="scheme">
+                    бұрын: pos ⇄ oldNext<br>
+                    кейін: pos ⇄ new ⇄ oldNext
+                </div>
+
+                <h3>Сол жағына қосу</h3>
+
+                <pre><code class="language-cpp">void addBefore(int pos, int x) {
+    addAfter(pre[pos], x);
+}</code></pre>
+
+                <p>
+                    <b>pos</b> элементінің сол жағына қосу үшін,
+                    жаңа элементті <b>pos</b>-тың алдындағы элементтен кейін қоямыз.
+                </p>
+
+                <div class="scheme">
+                    бұрын: oldPrev ⇄ pos<br>
+                    кейін: oldPrev ⇄ new ⇄ pos
+                </div>
+
+                <h3>Элементті өшіру</h3>
+
+                <pre><code class="language-cpp">void delAt(int pos) {
+    nxt[pre[pos]] = nxt[pos];
+    pre[nxt[pos]] = pre[pos];
+}</code></pre>
+
+                <p>
+                    Элементті өшіру үшін оның алдындағы элементті
+                    оның келесі элементімен қосамыз.
+                    Өшірілген элемент массивте қалады, бірақ списоктың ішінде болмайды.
+                </p>
+
+                <div class="scheme">
+                    бұрын: left ⇄ pos ⇄ right<br>
+                    кейін: left ⇄ right
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <footer class="footer">
+    © 2026 kz-maxx. Created by Teeleu. All rights reserved.
+</footer>
+</body>
+</html>
