@@ -1,6 +1,7 @@
 # KZ-MAXX
 
 Educational web platform for competitive programming.
+Link: https://teeleukk16.github.io/kz-maxx/
 
 ## Features
 
